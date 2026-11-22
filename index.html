@@ -1,0 +1,1540 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>出海达人匹配助手</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: operator console. Left rail = the 5-step pipeline, right = the working step. */
+:root{
+  --bg:#F2F4F7; --panel:#FFFFFF; --ink:#142030; --muted:#5A6778; --line:#DAE0E8; --chip:#ECEFF4;
+  --accent:#DD5418; --accent-ink:#FFFFFF; --accent-soft:#FCE9DF;
+  --good:#1D7F55; --good-soft:#E1F3EA; --warn:#A86C12; --warn-soft:#FAEFD8; --bad:#BE3429; --bad-soft:#FBE4E1;
+  --focus:#2B6CDF; --shadow:0 1px 2px rgba(20,32,48,.06),0 4px 16px rgba(20,32,48,.06);
+  --display:'Space Grotesk','PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif;
+  --body:'Inter','PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0D131A; --panel:#151D27; --ink:#E5EBF2; --muted:#93A0AF; --line:#26313E; --chip:#1D2733;
+  --accent:#FF7A3D; --accent-ink:#1A0B03; --accent-soft:#3A2116;
+  --good:#4CC38A; --good-soft:#14301F; --warn:#E2B04B; --warn-soft:#33280F; --bad:#F0736A; --bad-soft:#3A1A18;
+  --focus:#6EA0FF; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0D131A; --panel:#151D27; --ink:#E5EBF2; --muted:#93A0AF; --line:#26313E; --chip:#1D2733;
+  --accent:#FF7A3D; --accent-ink:#1A0B03; --accent-soft:#3A2116;
+  --good:#4CC38A; --good-soft:#14301F; --warn:#E2B04B; --warn-soft:#33280F; --bad:#F0736A; --bad-soft:#3A1A18;
+  --focus:#6EA0FF; --shadow:0 1px 2px rgba(0,0,0,.3),0 4px 16px rgba(0,0,0,.25); color-scheme:dark }
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.55;margin:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 56px}
+.wrap{max-width:1180px;margin:0 auto}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.92em}
+
+header.top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-block:18px 14px;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.logo{width:36px;height:36px;border-radius:10px;background:var(--ink);display:grid;place-items:center;flex:none}
+.logo svg{width:22px;height:22px}
+h1{font-family:var(--display);font-size:19px;margin:0;letter-spacing:-.01em;line-height:1.2}
+.sub{color:var(--muted);font-size:12.5px}
+.top-right{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.demo-tag{font-size:12px;padding:4px 10px;border-radius:999px;background:var(--warn-soft);color:var(--warn);font-weight:600}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:0;background:transparent;padding:6px 12px;font-size:13px;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:disabled{opacity:.45;cursor:not-allowed}
+
+.layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:28px;padding-top:22px}
+nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+.step-btn{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
+.step-btn .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:11px;flex:none}
+.step-btn[aria-current="step"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
+.step-btn[aria-current="step"] .n{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.step-btn.done .n{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.step-btn:disabled{opacity:.45;cursor:default}
+.hand{font-size:10.5px;color:var(--accent);font-weight:600;margin-left:auto;white-space:nowrap}
+.rail-note{margin-top:18px;font-size:12px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.rail-note b{color:var(--ink);font-weight:600}
+@media (max-width:820px){
+  .layout{grid-template-columns:minmax(0,1fr);gap:16px}
+  nav.steps ol{flex-direction:row;flex-wrap:wrap;position:static}
+  .step-btn{width:auto;padding:6px 8px}
+  .step-btn .lbl{display:none}
+  .step-btn[aria-current="step"] .lbl{display:inline}
+  .hand,.rail-note{display:none}
+}
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.step-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px 16px}
+h2{font-family:var(--display);font-size:22px;margin:0;letter-spacing:-.01em;text-wrap:balance}
+h3{font-family:var(--display);font-size:15px;margin:0}
+.lead{color:var(--muted);margin:4px 0 0;max-width:68ch}
+.takeover{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);padding:4px 10px;border-radius:999px;white-space:nowrap}
+.why{font-size:12.5px;color:var(--muted);border-left:3px solid var(--line);padding:2px 0 2px 12px;max-width:80ch}
+.why b{color:var(--ink);font-weight:600}
+
+.btn{border:1px solid var(--line);background:var(--panel);padding:8px 14px;border-radius:8px;cursor:pointer;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);font-weight:600}
+.btn.primary:hover{filter:brightness(1.05)}
+.btn.dark{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.btn:disabled{opacity:.5;cursor:not-allowed;filter:none}
+.btn.sm{padding:5px 10px;font-size:12.5px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.spacer{flex:1}
+
+.chip{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--line);background:var(--chip);padding:4px 10px;border-radius:999px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip.static{cursor:default}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:500;white-space:nowrap}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.warn{background:var(--warn-soft);color:var(--warn)}
+.tag.good{background:var(--good-soft);color:var(--good)}
+.tag.neutral{background:var(--chip);color:var(--muted)}
+.tag.ai{background:var(--accent-soft);color:var(--accent)}
+
+textarea,input[type=text],input[type=number],select{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:8px;padding:9px 11px}
+textarea{resize:vertical;min-height:110px;line-height:1.6}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:12.5px;color:var(--muted);font-weight:500;min-width:0}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 16px}
+.grid2 .full{grid-column:1/-1}
+@media (max-width:620px){.grid2{grid-template-columns:minmax(0,1fr)}}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+
+.callout{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--bg);font-size:13px}
+.callout.ask{border-color:var(--warn);background:var(--warn-soft)}
+.callout.ask b{color:var(--warn)}
+.callout ul{margin:6px 0 0;padding-left:18px}
+
+.funnel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+.funnel .stage{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.funnel .stage b{font-family:var(--mono);font-size:14px}
+.funnel .arr{color:var(--muted)}
+
+.list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.item{display:grid;grid-template-columns:24px 30px minmax(0,1fr) 150px auto;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line);background:var(--panel)}
+.item:first-child{border-top:0}
+.item.sel{background:var(--accent-soft)}
+.rank{font-family:var(--mono);color:var(--muted);font-size:13px;text-align:center}
+.who{display:flex;gap:10px;min-width:0}
+.av{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none;color:#fff}
+.who-main{min-width:0;display:flex;flex-direction:column;gap:3px}
+.who-name{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-weight:600}
+.handle{color:var(--muted);font-weight:400;font-size:12.5px}
+.meta{font-size:12.5px;color:var(--muted)}
+.reason{font-size:13px;color:var(--ink)}
+.risks{display:flex;flex-wrap:wrap;gap:4px}
+.score{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.score b{font-family:var(--mono);font-size:16px;color:var(--ink)}
+.bar{height:6px;background:var(--chip);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.bar.good i{background:var(--good)} .bar.warn i{background:var(--warn)} .bar.bad i{background:var(--bad)}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:pointer}
+@media (max-width:760px){
+  .item{grid-template-columns:24px minmax(0,1fr) auto;grid-template-areas:"c w a" "c s s"}
+  .item .rank{display:none}
+  .item>input{grid-area:c}
+  .item .who{grid-area:w}
+  .item .score{grid-area:s}
+  .item .act{grid-area:a}
+}
+
+.budget{display:flex;flex-direction:column;gap:6px;min-width:220px;flex:1;max-width:420px;font-size:12.5px;color:var(--muted)}
+.sticky-bar{position:sticky;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;flex-wrap:wrap;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;box-shadow:var(--shadow);z-index:5}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+@media (max-width:400px){.cards{grid-template-columns:minmax(0,1fr)}}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;background:var(--panel);display:flex;flex-direction:column;gap:12px;min-width:0}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kv div{background:var(--bg);border-radius:8px;padding:8px 10px;min-width:0}
+.kv span{display:block;font-size:11.5px;color:var(--muted)}
+.kv b{font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.aud{display:flex;flex-direction:column;gap:5px;font-size:12.5px}
+.aud-row{display:grid;grid-template-columns:64px minmax(0,1fr) 40px;gap:8px;align-items:center}
+.aud-row .bar{height:8px}
+.aud-row.hit .bar i{background:var(--good)}
+.aud-row em{font-style:normal;font-family:var(--mono);text-align:right;font-size:12px}
+.posts{margin:0;padding-left:18px;font-size:12.5px;color:var(--muted)}
+.posts li{margin:2px 0}
+.lbl-s{font-size:11.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+
+.mail{border:1px solid var(--line);border-radius:12px;background:var(--panel);display:flex;flex-direction:column;min-width:0}
+.mail-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.mail-body{padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.mail-body textarea{min-height:220px;font-size:13px;background:var(--bg)}
+.mail-foot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:10px 14px;border-top:1px solid var(--line);font-size:13px}
+.mail-foot label{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-weight:500}
+
+.board{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.board{grid-template-columns:minmax(0,1fr)}}
+.col{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;min-height:120px}
+.col h3{display:flex;justify-content:space-between;font-size:14px}
+.col h3 span{font-family:var(--mono);color:var(--muted)}
+.bcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+@media (max-width:760px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.stat{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--panel)}
+.stat span{font-size:12px;color:var(--muted)}
+.stat b{display:block;font-family:var(--display);font-size:24px;font-variant-numeric:tabular-nums;margin-top:2px}
+.stat small{color:var(--muted);font-size:12px}
+
+#drawer{position:fixed;inset:0;z-index:20;display:flex;justify-content:flex-end;background:rgba(10,16,24,.45)}
+#drawer .sheet{width:min(560px,100%);height:100%;overflow:auto;background:var(--panel);border-left:1px solid var(--line);
+  padding:calc(env(safe-area-inset-top,0px) + 18px) max(18px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 24px) 18px;display:flex;flex-direction:column;gap:16px}
+.x{margin-left:auto;border:0;background:var(--chip);width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 20px);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:13px;z-index:30;max-width:min(560px,calc(100% - 32px))}
+.thinking{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite ease-in-out}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+@media (prefers-reduced-motion: reduce){.dot{animation:none}}
+.empty{color:var(--muted);font-size:13px;padding:8px 2px}
+.av{overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+a.ext{color:var(--focus);text-decoration:none}
+.wt{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.wt-row{display:grid;grid-template-columns:92px 118px 62px minmax(0,1fr);gap:8px;align-items:center;padding:7px 10px;border-top:1px solid var(--line);font-size:12.5px}
+.wt-row:first-child{border-top:0}
+.wt-row em{font-style:normal;color:var(--muted);font-size:12px}
+@media (max-width:620px){.wt-row{grid-template-columns:minmax(0,1fr) auto auto}.wt-row em{grid-column:1/-1}}
+a.ext:hover{text-decoration:underline}
+.posts a{color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--bg)" stroke-width="1.6" opacity=".55"/><circle cx="12" cy="12" r="5" stroke="var(--bg)" stroke-width="1.6" opacity=".8"/><path d="M12 12 L19 6" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/><circle cx="16.5" cy="8.2" r="1.8" fill="var(--accent)"/></svg>
+      </div>
+      <div>
+        <h1>出海达人匹配助手</h1>
+        <div class="sub">从一句话需求到第一封邀约：需求解析 → 匹配排序 → 审核 → 邀约 → 看板 · <span class="num">版本 11-22 · DeepSeek</span></div>
+      </div>
+    </div>
+    <div class="top-right">
+      <span class="demo-tag" id="demo-tag">示例数据 · 达人与品牌均为虚构</span>
+      <div class="seg" role="group" aria-label="数据来源">
+        <button id="src-sample" type="button" aria-pressed="true">示例数据</button>
+        <button id="src-yt" type="button" aria-pressed="false">YouTube 实时</button>
+      </div>
+      <div class="seg" role="group" aria-label="运行模式">
+        <button id="mode-ai" type="button" aria-pressed="false" disabled title="在 claude.ai 中打开时可用">AI 模式</button>
+        <button id="mode-rule" type="button" aria-pressed="true">规则模式</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="steps" aria-label="流程">
+      <ol id="steps"></ol>
+      <div class="rail-note"><b>人工接管点</b><br>需求确认、达人选择、邀约发送三处必须由人点头。AI 只做理解、排序和起草。</div>
+      <div class="rail-note">进度会自动保存，刷新或重新打开页面会回到原来那一步。<br><button type="button" class="btn sm" data-act="restart" style="margin-top:8px">重新开始</button></div>
+    </nav>
+    <section id="view" aria-live="polite"></section>
+  </div>
+</div>
+
+<div id="drawer" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="达人详情"></div></div>
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- utils ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const sum = a => a.reduce((x,y)=>x+y,0);
+const fmtK = n => n>=1e6 ? (n/1e6).toFixed(n>=1e7?0:1)+'M' : n>=1e4 ? Math.round(n/1e3)+'K' : n>=1e3 ? (n/1e3).toFixed(1)+'K' : String(n);
+const money = n => '$'+Math.round(n).toLocaleString('en-US');
+function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hasKw(t, w){ return /^[a-z0-9 ]+$/i.test(w) ? new RegExp('(^|[^a-z0-9])'+w+'([^a-z0-9]|$)','i').test(t) : t.indexOf(w) >= 0; }
+let toastTimer;
+function toast(msg){ const el=$('#toast'); el.textContent=msg; el.hidden=false; clearTimeout(toastTimer); toastTimer=setTimeout(()=>{el.hidden=true},3200); }
+
+/* ---------- dictionaries ---------- */
+const CATS = {
+  outdoor:{zh:'户外露营',en:'outdoor gear',kw:['露营','户外','camping','camp','outdoor','徒步','hiking','登山','帐篷','营地','露营灯','lantern','手电','tent']},
+  pets:{zh:'宠物',en:'pet product',kw:['宠物','猫','狗','pet','pets','cat','dog','饮水机','猫砂','fountain','狗粮']},
+  beauty:{zh:'美妆个护',en:'beauty product',kw:['美妆','护肤','口红','beauty','skincare','makeup','面膜','香水','彩妆','精华','lipstick','防晒','sunscreen']},
+  home:{zh:'家居厨房',en:'home gadget',kw:['家居','厨房','收纳','home','kitchen','清洁','空气炸锅','拖把','cleaning']},
+  tech:{zh:'3C 数码',en:'tech accessory',kw:['数码','耳机','充电','手机壳','tech','gadget','3c','电子','键盘','投影','earbuds','charger','projector','充电宝']},
+  fitness:{zh:'运动健身',en:'fitness gear',kw:['健身','运动','瑜伽','fitness','gym','yoga','跑步','筋膜枪','workout']},
+  fashion:{zh:'服饰穿搭',en:'fashion line',kw:['服装','穿搭','女装','男装','fashion','outfit','鞋','包包','饰品','连衣裙','jeans']},
+  baby:{zh:'母婴',en:'baby product',kw:['母婴','宝宝','婴儿','baby','宝妈','儿童','玩具','toddler','奶瓶']}
+};
+const STYLES = {unboxing:'开箱',review:'测评',tutorial:'教程',vlog:'Vlog',skit:'剧情',haul:'好物推荐'};
+const STYLE_KW = {unboxing:['开箱','unboxing'],review:['测评','评测','review','对比'],tutorial:['教程','tutorial','教学','how to'],vlog:['vlog','日常','生活记录'],skit:['剧情','搞笑','短剧','skit'],haul:['好物','种草','推荐','haul','合集']};
+const STYLE_EN = {unboxing:'unboxing',review:'honest reviews',tutorial:'step-by-step tutorials',vlog:'vlogs',skit:'funny skits',haul:'roundups'};
+const COUNTRIES = {US:'美国',UK:'英国',DE:'德国',FR:'法国',CA:'加拿大',AU:'澳大利亚',JP:'日本',ID:'印尼',TH:'泰国',VN:'越南',PH:'菲律宾',MY:'马来西亚',BR:'巴西',MX:'墨西哥',SA:'沙特',AE:'阿联酋'};
+const COUNTRY_EN = {US:'the US',UK:'the UK',DE:'Germany',FR:'France',CA:'Canada',AU:'Australia',JP:'Japan',ID:'Indonesia',TH:'Thailand',VN:'Vietnam',PH:'the Philippines',MY:'Malaysia',BR:'Brazil',MX:'Mexico',SA:'Saudi Arabia',AE:'the UAE'};
+const COUNTRY_KW = {US:['美国','usa','america','us'],UK:['英国','uk','britain'],DE:['德国','germany'],FR:['法国','france'],CA:['加拿大','canada'],AU:['澳大利亚','澳洲','australia'],JP:['日本','japan'],ID:['印尼','印度尼西亚','indonesia'],TH:['泰国','thailand'],VN:['越南','vietnam'],PH:['菲律宾','philippines'],MY:['马来西亚','malaysia'],BR:['巴西','brazil'],MX:['墨西哥','mexico'],SA:['沙特','saudi'],AE:['阿联酋','迪拜','uae','dubai']};
+const REGIONS = {'东南亚':['ID','TH','VN','PH','MY'],'欧美':['US','UK','DE','FR','CA'],'欧洲':['UK','DE','FR'],'北美':['US','CA'],'中东':['SA','AE'],'拉美':['BR','MX']};
+const REGION_OF = {US:'NA',CA:'NA',UK:'EU',DE:'EU',FR:'EU',AU:'ANZ',JP:'JP',ID:'SEA',TH:'SEA',VN:'SEA',PH:'SEA',MY:'SEA',BR:'LATAM',MX:'LATAM',SA:'ME',AE:'ME'};
+const PLATFORMS = ['TikTok','Instagram','YouTube'];
+const LANG_OF = {US:'en',UK:'en',CA:'en',AU:'en',PH:'en',MY:'en',DE:'de',FR:'fr',JP:'ja',ID:'id',TH:'th',VN:'vi',BR:'pt',MX:'es',SA:'ar',AE:'ar'};
+const PRODUCT_EN = [['露营灯','camping lantern'],['营地灯','camping lantern'],['帐篷','camping tent'],['宠物饮水机','pet water fountain'],['饮水机','pet water fountain'],['猫砂','cat litter'],['喂食器','automatic pet feeder'],['防晒','sunscreen'],['口红','lipstick'],['面膜','face mask'],['耳机','earbuds'],['投影','portable projector'],['充电宝','power bank'],['空气炸锅','air fryer'],['扫地机','robot vacuum'],['瑜伽垫','yoga mat'],['筋膜枪','massage gun'],['奶瓶','baby bottle'],['婴儿车','stroller']];
+const IN_ARTIFACT = location.protocol!=='file:' && !!(window.claude && typeof window.claude.use==='function');
+const ctry = c => c.country ? (COUNTRIES[c.country] || c.country) : '国家未公开';
+const CPM = {TikTok:25,Instagram:35,YouTube:45};
+
+/* ---------- sample creator library (fictional) ---------- */
+const FIRST = ['Mia','Jake','Ava','Leo','Nora','Sam','Iris','Kai','Zoe','Ethan','Lina','Omar','Rina','Bao','Putri','Ana','Lucas','Hana','Yuki','Max','Ella','Noah','Sofia','Dewi','Mai','Arjun','Chloe','Finn','Tara','Ivy','Rafa','Nina','Theo','Lea','Aiko','Diego','Sara','Minh','Anh','Joy'];
+const LAST = ['R.','K.','M.','T.','S.','L.','P.','W.','D.','N.','H.','B.'];
+const HANDLE_WORD = {outdoor:['trails','camps','wild','outside'],pets:['paws','pets','meow','woof'],beauty:['glow','beauty','glam','skin'],home:['nest','home','tidy','cozy'],tech:['tech','gadgets','setup','bytes'],fitness:['fit','moves','strong','flow'],fashion:['style','fits','closet','wears'],baby:['mama','littles','tinyhome','momlife']};
+const POSTS = {
+  outdoor:['3 nights off-grid with a $35 lantern','My ultralight camp kitchen setup','Rainy night camping: what actually worked','Packing list for a first solo hike','Van life morning routine','Testing 4 camp lights in the dark'],
+  pets:['Does my cat actually like this fountain?','Testing 5 dog toys so you don’t have to','Grooming my husky at home','Pet gadgets that are worth it','Week in the life of a rescue cat','Automatic feeder: 30 days later'],
+  beauty:['GRWM: 5-minute everyday makeup','Testing viral skincare for 14 days','Drugstore vs luxury: blind test','My night routine for dry skin','Lipstick haul under $15','Sunscreen that doesn’t leave a white cast'],
+  home:['Small kitchen organizing hacks','Cleaning gadgets I use every week','Air fryer recipes for busy days','Cozy bedroom makeover on a budget','Things that made my home easier','Testing a cordless vacuum on pet hair'],
+  tech:['Budget earbuds that beat my old pair?','My desk setup tour','Unboxing a pocket projector','Phone accessories worth buying','Fast chargers tested side by side','Travel tech I never leave without'],
+  fitness:['20-minute home workout, no equipment','What I eat in a training week','Yoga flow for tight hips','Couch to 5K: week 6 update','Gym bag essentials','Resistance bands vs dumbbells'],
+  fashion:['5 outfits, 1 pair of jeans','Thrift flip: old denim jacket','Spring capsule wardrobe','Accessories that upgrade any outfit','Try-on haul: work outfits','Sneakers I actually wear every day'],
+  baby:['Diaper bag essentials for newborns','Toddler toys that kept us busy','Baby gear I regret buying','Morning routine with two under 3','Stroller showdown','Bottle warmers compared']
+};
+const BRANDS = {outdoor:['LumaTrail','Ridgefox','Campora','PeakNest'],pets:['Pawlio','Whiskerly','TailNest','Furrowy'],beauty:['Glowmint','Velvé','Dewly','RosaLab'],home:['Nestora','Kitchly','Tidyo','Homelyne'],tech:['Voltiq','Sonaro','Pixbeam','Chargely'],fitness:['Flexora','Stridely','ZenMat','LiftLab'],fashion:['Threadly','Mona Rue','Urbane Co','Stitchwell'],baby:['Bloomkin','Tinytote','Nappa Baby','Cuddlo']};
+const FEMALE = {outdoor:40,pets:66,beauty:86,home:72,tech:24,fitness:55,fashion:78,baby:88};
+const AGE = {outdoor:{'25-34':5,'18-24':3,'35-44':2},pets:{'25-34':5,'18-24':3,'35-44':2},beauty:{'18-24':6,'25-34':4},home:{'25-34':5,'35-44':4,'18-24':1},tech:{'18-24':5,'25-34':5},fitness:{'18-24':4,'25-34':5,'35-44':1},fashion:{'18-24':6,'25-34':4},baby:{'25-34':7,'35-44':3}};
+const CW = {US:30,UK:10,DE:5,FR:4,CA:6,AU:6,JP:3,ID:8,TH:5,VN:5,PH:6,MY:4,BR:4,MX:4,SA:3,AE:3};
+const AV_COLORS = ['#3B6FD8','#1D8A6B','#B4529A','#C46A12','#6A55C8','#2A8DA8','#B24343','#5E7A1E'];
+
+function erBench(platform, followers){
+  const base = {TikTok:5.2,Instagram:2.6,YouTube:3.4}[platform];
+  const k = followers>500000 ? .7 : followers<50000 ? 1.25 : 1;
+  return +(base*k).toFixed(1);
+}
+function priceOf(c){
+  const mkt = {SEA:.4,LATAM:.5,ME:.8,JP:.9}[REGION_OF[c.country]] || 1;
+  const base = Math.max(150, c.avgViews/1000*CPM[c.platform]*mkt);
+  return {lo:Math.round(base*.8/10)*10, hi:Math.round(base*1.25/10)*10};
+}
+function genCreators(n){
+  const r = rng(20261122);
+  const pick = a => a[Math.floor(r()*a.length)];
+  const wpick = o => { let t=0; for(const k in o) t+=o[k]; let x=r()*t; for(const k in o){ x-=o[k]; if(x<=0) return k; } return Object.keys(o)[0]; };
+  const shuffle = a => { a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(r()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+  const catKeys = Object.keys(CATS), out=[], used=new Set();
+  for(let i=0;i<n;i++){
+    const cat = catKeys[i%catKeys.length];
+    const cat2 = r()<.35 ? pick(catKeys.filter(k=>k!==cat)) : null;
+    const country = wpick(CW);
+    const platform = wpick({TikTok:45,Instagram:35,YouTube:20});
+    const followers = Math.round(Math.pow(10, 3.6 + r()*2.7)/100)*100;
+    const vf = {TikTok:[.08,.45],Instagram:[.03,.15],YouTube:[.06,.3]}[platform];
+    let avgViews = Math.round(followers*(vf[0]+r()*(vf[1]-vf[0])));
+    const bench = erBench(platform, followers);
+    let er = +(bench*(.6+r()*1.0)).toFixed(1);
+    let fakePct = Math.round(3+r()*12);
+    const anomaly = r()<.08;
+    if(anomaly){ er = +(bench*(3+r()*1.5)).toFixed(1); fakePct = Math.round(24+r()*18); avgViews = Math.round(avgViews*.4); }
+    const region = REGION_OF[country];
+    const near = shuffle(Object.keys(REGION_OF).filter(k=>k!==country && REGION_OF[k]===region));
+    const far = shuffle(['US','UK','CA','AU'].filter(k=>k!==country && near.indexOf(k)<0));
+    const others = near.concat(far).slice(0,2);
+    const own = 45 + Math.round(r()*35);
+    const s2 = Math.round((100-own)*(.35+r()*.25));
+    const s3 = Math.round((100-own-s2)*(.4+r()*.3));
+    const aud = {}; aud[country]=own; aud[others[0]]=s2; aud[others[1]]=s3;
+    const first = pick(FIRST);
+    let handle; do { handle = '@'+first.toLowerCase()+'.'+pick(HANDLE_WORD[cat])+(r()<.5?Math.floor(r()*90+10):''); } while(used.has(handle));
+    used.add(handle);
+    const posts = shuffle(POSTS[cat]).slice(0,2).concat(cat2 ? [pick(POSTS[cat2])] : [shuffle(POSTS[cat])[0]]);
+    const c = {
+      id:'c'+String(i+1).padStart(3,'0'), name:first+' '+pick(LAST), first, handle, platform, country, cat, cat2,
+      styles:shuffle(Object.keys(STYLES)).slice(0,2), followers, avgViews, er, fakePct, aud,
+      female:clamp(Math.round(FEMALE[cat]+(r()-.5)*22),5,97), age:wpick(AGE[cat]),
+      responseRate:Math.round(15+r()*55), lastActive: r()<.07 ? Math.round(31+r()*40) : Math.round(r()*9),
+      brands:shuffle(BRANDS[cat]).slice(0, r()<.3?0:(r()<.6?1:2)), posts:Array.from(new Set(posts)),
+      color:AV_COLORS[i%AV_COLORS.length]
+    };
+    c.price = priceOf(c);
+    out.push(c);
+  }
+  return out;
+}
+const LIB = genCreators(320);
+const BY_ID = Object.fromEntries(LIB.map(c=>[c.id,c]));
+
+/* ---------- scoring ---------- */
+function riskOf(c, b){
+  if(c.real) return riskReal(c, b);
+  const r = [];
+  const bench = erBench(c.platform, c.followers);
+  if(c.fakePct>=20) r.push({lv:'bad', t:'疑似假粉 '+c.fakePct+'%'});
+  if(c.er > bench*2.6) r.push({lv:'bad', t:'互动率异常偏高，疑似刷量'});
+  if(c.lastActive>30) r.push({lv:'warn', t:c.lastActive+' 天未更新'});
+  if(b && b.budgetUsd && c.price.lo > b.budgetUsd*.6) r.push({lv:'warn', t:'单人报价可能超预算'});
+  if(c.brands.length && b && (c.cat===b.category)) r.push({lv:'neutral', t:'合作过同品类：'+c.brands[0]});
+  return r;
+}
+function targetShare(c, b){ return sum(b.countries.map(cc=>c.aud[cc]||0)); }
+function scoreOf(c, b){
+  if(c.real) return scoreReal(c, b);
+  const bench = erBench(c.platform, c.followers);
+  const share = targetShare(c, b);
+  const fCat = c.cat===b.category ? 1 : c.cat2===b.category ? .6 : 0;
+  const fAud = Math.min(share/70, 1);
+  const fEr = clamp((c.er/bench)/2, 0, 1);
+  const styleHit = c.styles.filter(s=>b.styles.indexOf(s)>=0);
+  const fStyle = b.styles.length ? (styleHit.length ? 1 : 0) : .5;
+  const fGender = b.gender==='female' ? c.female/100 : b.gender==='male' ? (100-c.female)/100 : .7;
+  const fQ = 1 - clamp(c.fakePct/40, 0, 1);
+  let s = 35*fCat + 25*fAud + 15*fEr + 10*fStyle + 5*fGender + 10*fQ;
+  const risks = riskOf(c, b);
+  if(risks.some(x=>x.lv==='bad')) s -= 18;
+  if(c.lastActive>30) s -= 8;
+  const parts = [];
+  if(fCat===1) parts.push('内容以'+CATS[c.cat].zh+'为主');
+  else if(fCat>0) parts.push('兼做'+CATS[b.category].zh+'内容');
+  if(share>0) parts.push('受众 '+share+'% 在'+b.countries.filter(cc=>c.aud[cc]).map(cc=>COUNTRIES[cc]).join('/'));
+  parts.push('互动率 '+c.er+'%（同量级参考 '+bench+'%）');
+  if(styleHit.length) parts.push('擅长'+styleHit.map(s=>STYLES[s]).join('、'));
+  return {score:clamp(Math.round(s),0,100), reason:parts.join('，'), risks};
+}
+function hardFilter(b){
+  const notes = [];
+  let fmin=b.followersMin, fmax=b.followersMax, plats=b.platforms.slice(), minShare=15;
+  const run = () => LIB.filter(c => plats.indexOf(c.platform)>=0 && c.followers>=fmin && c.followers<=fmax && targetShare(c,b)>=minShare && c.lastActive<=60);
+  let pool = run();
+  const catHits = p => p.filter(c=>c.cat===b.category||c.cat2===b.category).length;
+  if(catHits(pool) < 5){ fmin=Math.round(fmin/2); fmax=fmax*2; pool=run(); notes.push('同品类达人不足 5 位，粉丝量放宽到 '+fmtK(fmin)+'–'+fmtK(fmax)); }
+  if(catHits(pool) < 5 && plats.length<3){ plats=PLATFORMS.slice(); pool=run(); notes.push('仍然不足，平台放宽到 TikTok / Instagram / YouTube'); }
+  if(catHits(pool) < 3){ minShare=5; pool=run(); notes.push('仍然不足，目标国家受众占比门槛从 15% 降到 5%'); }
+  return {pool, notes};
+}
+function similar(c, exclude){
+  const sim = d => {
+    const cat = d.cat===c.cat ? 1 : (d.cat2===c.cat||d.cat===c.cat2) ? .5 : 0;
+    const st = d.styles.filter(s=>c.styles.indexOf(s)>=0).length/2;
+    const reg = REGION_OF[d.country]===REGION_OF[c.country] ? 1 : 0;
+    const size = 1 - clamp(Math.abs(Math.log10(d.followers)-Math.log10(c.followers))/1.5, 0, 1);
+    return .4*cat + .2*st + .2*reg + .2*size;
+  };
+  const base = c.real ? S.pool : LIB;
+  return base.filter(d=>d.id!==c.id && !exclude.has(d.id) && (d.real ? d.vps>=.01 : d.fakePct<20) && d.lastActive<=30)
+    .map(d=>({d, s:sim(d)})).sort((x,y)=>y.s-x.s).slice(0,5);
+}
+
+/* ---------- requirement parsing (rules) ---------- */
+function parseRule(text){
+  const t = text.toLowerCase();
+  const b = {product:'', productEn:'', category:null, countries:[], platforms:[], followersMin:10000, followersMax:500000, budgetUsd:null, styles:[], gender:'any', format:'寄样 + 付费短视频'};
+  const notes = [];
+  let best=null, bc=0;
+  for(const k in CATS){ const c = CATS[k].kw.filter(w=>hasKw(t,w)).length; if(c>bc){ bc=c; best=k; } }
+  b.category = best;
+  for(const reg in REGIONS) if(t.indexOf(reg)>=0) b.countries.push.apply(b.countries, REGIONS[reg]);
+  for(const cc in COUNTRY_KW) if(COUNTRY_KW[cc].some(w=>hasKw(t,w))) b.countries.push(cc);
+  b.countries = Array.from(new Set(b.countries));
+  if(hasKw(t,'tiktok')||hasKw(t,'tk')||t.indexOf('抖音')>=0) b.platforms.push('TikTok');
+  if(hasKw(t,'instagram')||hasKw(t,'ins')||hasKw(t,'ig')) b.platforms.push('Instagram');
+  if(hasKw(t,'youtube')||hasKw(t,'yt')||t.indexOf('油管')>=0) b.platforms.push('YouTube');
+  if(!b.platforms.length){ b.platforms = PLATFORMS.slice(); notes.push('没说平台，默认三个平台都找'); }
+  const unit = u => (u==='万'||u==='w') ? 10000 : (u==='k'||u==='千') ? 1000 : 1;
+  const fr = t.match(/(\d+(?:\.\d+)?)\s*(万|w|k|千)?\s*(?:到|-|~|至|—)\s*(\d+(?:\.\d+)?)\s*(万|w|k|千)\s*粉?/);
+  if(fr){ b.followersMin = Math.round(parseFloat(fr[1])*unit(fr[2]||fr[4])); b.followersMax = Math.round(parseFloat(fr[3])*unit(fr[4])); }
+  else if(/头部|大v|百万粉/.test(t)){ b.followersMin=500000; b.followersMax=5000000; }
+  else if(/中腰部|腰部/.test(t)){ b.followersMin=50000; b.followersMax=500000; }
+  else if(/中小/.test(t)){ b.followersMin=10000; b.followersMax=300000; }
+  else if(/素人|小达人|nano|micro|kol小/.test(t)){ b.followersMin=3000; b.followersMax=100000; }
+  else notes.push('没说粉丝量级，默认 1 万–50 万');
+  let m = t.match(/\$\s*([\d,]+(?:\.\d+)?)\s*(k)?/) || t.match(/(\d+(?:\.\d+)?)\s*(k|千|万)?\s*(?:美元|美金|刀|usd|dollars?)/);
+  if(m){ let v=parseFloat(m[1].replace(/,/g,'')); v*=unit(m[2]); b.budgetUsd=Math.round(v); }
+  else { m = t.match(/(\d+(?:\.\d+)?)\s*(千|万|w)?\s*(?:元|块|人民币|rmb)/); if(m){ b.budgetUsd=Math.round(parseFloat(m[1])*unit(m[2])/7.2); notes.push('预算按 1 美元 ≈ 7.2 元换算'); } }
+  for(const s in STYLE_KW) if(STYLE_KW[s].some(w=>hasKw(t,w))) b.styles.push(s);
+  if(/女性|女生|宝妈|女孩|女士|women|female/.test(t)) b.gender='female';
+  else if(/男性|男生|男士|men\b|male/.test(t)) b.gender='male';
+  const pm = text.match(/(?:一款|做|卖|推广|推)([^，,。；;！!\s]{2,14}?)(?:的|，|,|。|$)/);
+  b.product = pm ? pm[1] : (b.category ? CATS[b.category].zh+'类商品' : '');
+  const pe = PRODUCT_EN.find(x=>text.indexOf(x[0])>=0);
+  b.productEn = pe ? pe[1] : (b.category ? CATS[b.category].en : 'product');
+  b.query = b.productEn;
+  const q = [];
+  if(!b.category) q.push('主推的是哪类商品？比如露营灯、宠物饮水机。');
+  if(!b.countries.length){ b.countries=['US']; q.push('想先打哪个国家？没说的话先按美国匹配。'); }
+  if(b.budgetUsd==null) q.push('这一轮达人合作的总预算大概多少？');
+  if(!b.category) b.category='outdoor';
+  return {b, notes, questions:q.slice(0,2)};
+}
+
+/* ---------- AI (claude.ai sample capability), with rule fallback ---------- */
+let sampleFn = null;
+const HARD_OFF = ['not_granted','sampling_disabled','not_declared','capability_disabled','capability_removed'];
+const aiName = () => IN_ARTIFACT ? 'Claude' : 'DeepSeek';
+function loadDsKey(){ try { return localStorage.getItem('ds_api_key') || ''; } catch(e){ return ''; } }
+function saveDsKey(k){ try { if(k) localStorage.setItem('ds_api_key', k); else localStorage.removeItem('ds_api_key'); } catch(e){} }
+function parseLooseJson(t){
+  t = String(t||'').trim().replace(/^```(?:json)?\s*/i,'').replace(/```\s*$/,'');
+  try { return JSON.parse(t); } catch(e){}
+  const a = t.search(/[\[{]/), b = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+  if(a>=0 && b>a){ try { return JSON.parse(t.slice(a, b+1)); } catch(e){} }
+  return null;
+}
+async function dsJson(prompt){
+  const ctl = new AbortController();
+  const timer = setTimeout(()=>ctl.abort(), 90000);
+  let res;
+  try {
+    res = await fetch('https://api.deepseek.com/chat/completions', {
+      method:'POST', signal:ctl.signal,
+      headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+S.dsKey},
+      body: JSON.stringify({
+        model:'deepseek-chat', temperature:0.3, max_tokens:4000,
+        response_format:{type:'json_object'},
+        messages:[
+          {role:'system', content:'你是出海品牌的达人营销助手。只输出一个 JSON 对象，格式为 {"result": ...}，result 里放用户要求的 JSON（对象或数组），不要输出任何其他文字。'},
+          {role:'user', content:prompt}
+        ]
+      })
+    });
+  } catch(e){
+    clearTimeout(timer);
+    throw {code: e && e.name==='AbortError' ? 'timeout' : 'network'};
+  }
+  clearTimeout(timer);
+  let j = {};
+  try { j = await res.json(); } catch(e){}
+  if(!res.ok) throw {code:'http_'+res.status, message:(j.error && j.error.message) || ''};
+  const content = j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+  const obj = parseLooseJson(content);
+  if(obj==null) throw {code:'invalid_json'};
+  return (obj && typeof obj==='object' && !Array.isArray(obj) && 'result' in obj) ? obj.result : obj;
+}
+const DS_MSG = {http_401:'DeepSeek Key 无效，检查有没有复制完整。', http_402:'DeepSeek 账户余额不足，充值后再试。', http_429:'DeepSeek 请求太频繁，稍等再试。', http_500:'DeepSeek 服务出错了，这一步先用规则结果。', http_503:'DeepSeek 服务繁忙，这一步先用规则结果。', timeout:'DeepSeek 响应超时，这一步先用规则结果。', network:'连不上 DeepSeek，检查网络。', invalid_json:'DeepSeek 返回的格式不对，这一步先用规则结果。'};
+async function dsPing(){
+  try {
+    const r = await fetch('https://api.deepseek.com/chat/completions', {method:'POST',
+      headers:{'Content-Type':'application/json', 'Authorization':'Bearer '+S.dsKey},
+      body: JSON.stringify({model:'deepseek-chat', max_tokens:5, messages:[{role:'user', content:'ping'}]})});
+    let j = {}; try { j = await r.json(); } catch(e){}
+    if(r.ok) return {lv:'good', t:'连接正常，Key 有效、余额可用。右上角 AI 模式已开启。'};
+    const code = 'http_'+r.status;
+    return {lv:'bad', t:(DS_MSG[code] || ('DeepSeek 返回错误（'+r.status+'）')) + ((j.error && j.error.message) ? ' 原始信息：'+j.error.message : '')};
+  } catch(e){
+    return {lv:'bad', t:'连不上 api.deepseek.com（'+(e && e.message || e)+'）。检查网络，或者是否开了会拦截请求的代理、插件。'};
+  }
+}
+async function aiJson(prompt){
+  if(S.mode!=='ai') return null;
+  if(!IN_ARTIFACT){
+    if(!S.dsKey) return null;
+    try { return await dsJson(prompt); }
+    catch(e){
+      const code = (e && e.code) || 'error';
+      S.dsStatus = {lv:(code==='http_401'||code==='http_402')?'bad':'warn', t:DS_MSG[code] || ('调用失败（'+code+'）'+((e&&e.message)?'：'+e.message:''))};
+      if(code==='http_401' || code==='http_402'){ S.aiAvailable=false; S.mode='rule'; renderMode(); }
+      toast((DS_MSG[code] || ('DeepSeek 调用失败（'+code+'），这一步先用规则结果。')) + (code==='http_401'||code==='http_402' ? ' 已切换到规则模式。' : ''));
+      return null;
+    }
+  }
+  if(!sampleFn) return null;
+  try { return await sampleFn.json(prompt, {modelTier:'quick'}); }
+  catch(e){
+    const code = e && e.code;
+    if(HARD_OFF.indexOf(code)>=0){ S.aiAvailable=false; S.mode='rule'; renderMode(); toast('AI 不可用，已切换到规则模式'); }
+    else if(code==='rate_limited') toast('AI 调用太频繁，这一步先用规则结果');
+    else if(code!=='cancelled') toast('AI 这次没有返回可用结果，已用规则结果兜底');
+    return null;
+  }
+}
+
+
+/* ---------- YouTube Data API v3 (offline file only) ---------- */
+const YT_BASE = 'https://www.googleapis.com/youtube/v3/';
+const YT_REASON = {
+  keyInvalid:'API Key 无效，检查一下有没有复制完整。',
+  API_KEY_INVALID:'API Key 无效，检查一下有没有复制完整。',
+  badRequest:'API Key 无效或请求参数有误。',
+  quotaExceeded:'今天的免费额度用完了，北京时间下午 3–4 点重置。可以先切回示例数据。',
+  dailyLimitExceeded:'今天的免费额度用完了，可以先切回示例数据。',
+  accessNotConfigured:'这个 Key 所在的 Google Cloud 项目还没有启用 YouTube Data API v3。',
+  forbidden:'这个 Key 没有调用 YouTube Data API 的权限。',
+  ipRefererBlocked:'这个 Key 设置了网站或 IP 限制，本地文件打开时被拦截了。在 Google Cloud 里把限制改成“无”或只限制 API。',
+  API_KEY_SERVICE_BLOCKED:'这个 Key 被限制成不能调用 YouTube Data API，在 Key 的“API 限制”里加上它。'
+};
+async function yt(path, params){
+  const url = YT_BASE + path + '?' + new URLSearchParams(params).toString();
+  let res;
+  try { res = await fetch(url, {headers:{'X-Goog-Api-Key':S.ytKey}}); }
+  catch(e){ throw new Error('连不上 YouTube 接口。检查网络，国内网络需要能访问 Google。'); }
+  let j = {};
+  try { j = await res.json(); } catch(e){}
+  if(!res.ok){
+    const er = j.error || {};
+    const r1 = (er.details && er.details[0] && er.details[0].reason) || '';
+    const r2 = (er.errors && er.errors[0] && er.errors[0].reason) || '';
+    throw new Error(YT_REASON[r1] || YT_REASON[r2] || ('YouTube 接口报错（'+res.status+'）：'+(er.message||'未知错误')));
+  }
+  return j;
+}
+function decodeHtml(t){ const x = document.createElement('textarea'); x.innerHTML = t; return x.value; }
+const daysAgo = d => d ? Math.max(0, Math.round((Date.now()-new Date(d).getTime())/86400000)) : 999;
+function hashStr(t){ let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))|0; return Math.abs(h); }
+const STYLE_EN_KW = {review:['review','tested','test','vs','compared','worth it','honest'],unboxing:['unboxing','unbox','first look'],tutorial:['how to','tutorial','guide','tips','setup'],vlog:['vlog','day in','week in','trip','routine'],haul:['haul','favorites','top ','best ','must have'],skit:['funny','skit','prank','comedy']};
+function detectStyles(text){
+  const t = ' '+text.toLowerCase()+' ';
+  return Object.keys(STYLE_EN_KW).filter(k=>STYLE_EN_KW[k].some(w=>t.indexOf(w)>=0)).slice(0,3);
+}
+const YT_CAT = {1:'影视动画',2:'汽车',10:'音乐',15:'宠物与动物',17:'体育',19:'旅行与活动',20:'游戏',22:'人物与博客',23:'喜剧',24:'娱乐',25:'新闻与政治',26:'教程与风格',27:'教育',28:'科技'};
+const TREND_CAT = {outdoor:'19',pets:'15',beauty:'26',home:'26',tech:'28',fitness:'17',fashion:'26',baby:'22'};
+const LANG_ZH = {en:'英语',es:'西班牙语',pt:'葡萄牙语',de:'德语',fr:'法语',id:'印尼语',th:'泰语',vi:'越南语',ar:'阿拉伯语',ja:'日语',ko:'韩语',zh:'中文',ru:'俄语',hi:'印地语',other:'无法判断'};
+const STOPW = {
+  en:['the','and','is','this','you','to','it','for','that','my','with','great','love','what','so','was','are','have','i','of','in','just','but','not','video','thanks','thank'],
+  es:['el','la','que','de','y','es','en','muy','para','los','las','pero','me','gracias','por','con','una','lo','como','del','buen'],
+  pt:['o','que','de','não','muito','para','com','um','uma','eu','você','obrigado','do','da','os','mas','meu','bom','é'],
+  de:['der','die','und','ist','das','nicht','ich','ein','mit','sehr','auch','für','du','es','sie','zu','auf','danke','eine'],
+  fr:['le','la','et','est','les','des','une','je','pas','très','pour','merci','vous','que','du','qui','sur','avec','ce'],
+  id:['yang','dan','ini','itu','tidak','saya','ada','bagus','sangat','dengan','untuk','kak','aku','juga','bisa','mantap','banget']
+};
+function detectLang(t){
+  if(/[฀-๿]/.test(t)) return 'th';
+  if(/[؀-ۿ]/.test(t)) return 'ar';
+  if(/[぀-ヿ]/.test(t)) return 'ja';
+  if(/[가-힯]/.test(t)) return 'ko';
+  if(/[一-鿿]/.test(t)) return 'zh';
+  if(/[Ѐ-ӿ]/.test(t)) return 'ru';
+  if(/[ऀ-ॿ]/.test(t)) return 'hi';
+  if(/[ăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]/i.test(t)) return 'vi';
+  const words = t.toLowerCase().split(/[^a-zà-ÿ]+/).filter(Boolean);
+  let best = 'other', bc = 1;
+  for(const l in STOPW){ const set = STOPW[l]; let c = 0; words.forEach(w=>{ if(set.indexOf(w)>=0) c++; }); if(c>bc){ bc=c; best=l; } }
+  return best;
+}
+function parseDur(iso){ const m = /P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/.exec(iso||''); return m ? (+m[1]||0)*86400+(+m[2]||0)*3600+(+m[3]||0)*60+(+m[4]||0) : 0; }
+function fmtDur(x){ const h=Math.floor(x/3600), m=Math.floor(x%3600/60), s2=x%60; return (h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s2).padStart(2,'0'); }
+function parseKeywords(k){ if(!k) return []; const out=[]; String(k).replace(/"([^"]+)"|(\S+)/g, (m,a,b2)=>{ out.push(a||b2); return m; }); return out.slice(0,12); }
+const SPON_RX = /#ad\b|#sponsored|sponsored by|for sponsoring|this video is sponsored|paid promotion|paid partnership|in partnership with|partnered with/i;
+const AFF_RX = /affiliate|commission|amzn\.to|amazon\.com\/shop|geni\.us|use (?:my )?code|discount code|promo code|\d+% off/i;
+const BW = "[A-Z][\\w&'-]*(?:\\.[a-z]{2,4})?";
+const BRAND_RX = [
+  new RegExp("[Ss]ponsored [Bb]y:?\\s+@?("+BW+"(?: "+BW+"){0,2})", 'g'),
+  new RegExp("[Tt]hanks?\\s+(?:to\\s+)?@?("+BW+"(?: "+BW+"){0,2})\\s+for\\s+sponsoring", 'g'),
+  new RegExp("(?:[Pp]artnered|[Pp]artnership) with\\s+@?("+BW+"(?: "+BW+"){0,2})", 'g'),
+  new RegExp("code\\s+[A-Z0-9]{3,}\\s+(?:at|on|for)\\s+@?("+BW+"(?: "+BW+")?)", 'g')
+];
+const BRAND_STOP = new Set(['This','The','My','Our','Today','Check','Use','Get','You','Your','Their','Amazon','YouTube','Instagram','TikTok','Patreon','Link','Links','Me','Us','All','Everyone','For','And','Click','Visit','Shop','Save','Go','Head']);
+function scanBrands(text){
+  const out = [];
+  BRAND_RX.forEach(rx => {
+    rx.lastIndex = 0; let m;
+    while((m = rx.exec(text))){
+      const words = m[1].split(' '); const keep = [];
+      for(const w of words){ if(BRAND_STOP.has(w)) break; keep.push(w); }
+      const b2 = keep.join(' ').trim();
+      if(b2.length<2) continue;
+      const head = b2.split(' ')[0].toLowerCase();
+      if(out.some(x=>x.split(' ')[0].toLowerCase()===head)) continue;
+      out.push(b2);
+    }
+  });
+  return out.slice(0,3);
+}
+function findEmail(text){
+  const re = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi; let m, first = null;
+  while((m = re.exec(text||''))){
+    const e = m[0].replace(/\.+$/,'');
+    if(/example\.|\.(png|jpe?g|gif|webp)$|sentry|wixpress/i.test(e)) continue;
+    const ctx = text.slice(Math.max(0, m.index-90), m.index).toLowerCase();
+    if(/business|inquir|enquir|collab|sponsor|contact|partner|brand|media|booking/.test(ctx)) return e;
+    if(!first) first = e;
+  }
+  return first;
+}
+async function ytFetch(b){
+  const region = b.countries[0];
+  const after = new Date(Date.now()-365*86400000).toISOString();
+  S.busyMsg = '正在搜索 YouTube 近一年的相关视频…'; render();
+  const s = await yt('search', {part:'snippet', type:'video', q:b.query, maxResults:'50', regionCode:region, relevanceLanguage:LANG_OF[region]||'en', publishedAfter:after, order:'relevance'});
+  const items = s.items || [];
+  const hits = {};
+  items.forEach(it => {
+    const id = it.snippet && it.snippet.channelId; if(!id) return;
+    const h = hits[id] || (hits[id] = {n:0, titles:[]});
+    h.n++; if(h.titles.length<2) h.titles.push(decodeHtml(it.snippet.title||''));
+  });
+  const ids = Object.keys(hits);
+  if(!ids.length) return {searched:items.length, channels:0, shortlist:[]};
+  S.busyMsg = '读取 '+ids.length+' 个频道的公开数据…'; render();
+  const ch = await yt('channels', {part:'snippet,statistics,contentDetails,brandingSettings,topicDetails,status', id:ids.slice(0,50).join(','), maxResults:'50'});
+  const chans = (ch.items||[]).filter(c=>c.statistics && !c.statistics.hiddenSubscriberCount).map(c => ({
+    id:c.id, real:true, platform:'YouTube', name:c.snippet.title, first:c.snippet.title,
+    handle:c.snippet.customUrl || c.snippet.title, country:c.snippet.country || null,
+    thumb:(c.snippet.thumbnails && c.snippet.thumbnails.default && c.snippet.thumbnails.default.url) || '',
+    followers:+c.statistics.subscriberCount||0, videoCount:+c.statistics.videoCount||0, totalViews:+c.statistics.viewCount||0,
+    uploads:c.contentDetails && c.contentDetails.relatedPlaylists && c.contentDetails.relatedPlaylists.uploads,
+    desc:c.snippet.description||'', since:c.snippet.publishedAt, defaultLang:c.snippet.defaultLanguage||'',
+    keywords:parseKeywords(c.brandingSettings && c.brandingSettings.channel && c.brandingSettings.channel.keywords),
+    topics:((c.topicDetails && c.topicDetails.topicCategories)||[]).map(u=>decodeURIComponent(String(u).split('/').pop()).replace(/_/g,' ').replace(/\s*\(.*\)$/,'')),
+    madeForKids:!!(c.status && c.status.madeForKids),
+    hit:hits[c.id], cat:b.category, cat2:null, aud:{}, brands:[]
+  }));
+  const short = chans.filter(c=>c.followers>=b.followersMin/2 && c.followers<=b.followersMax*2)
+    .sort((x,y)=>y.hit.n-x.hit.n || y.followers-x.followers).slice(0,24);
+  S.busyMsg = '读取 '+short.length+' 个频道最近 10 条视频…'; render();
+  const lists = await Promise.all(short.map(c => c.uploads ? yt('playlistItems', {part:'contentDetails,snippet', playlistId:c.uploads, maxResults:'10'}).catch(()=>null) : null));
+  const vids = [];
+  short.forEach((c,i) => {
+    const l = lists[i];
+    c.recent = l ? (l.items||[]).map(x=>({id:x.contentDetails.videoId, title:decodeHtml(x.snippet.title||''), at:x.contentDetails.videoPublishedAt||x.snippet.publishedAt})) : [];
+    c.recent.forEach(v=>vids.push(v.id));
+  });
+  const meta = {};
+  for(let i=0;i<vids.length;i+=50){
+    const v = await yt('videos', {part:'snippet,statistics,contentDetails', id:vids.slice(i,i+50).join(','), maxResults:'50'});
+    (v.items||[]).forEach(x=>{ const sn = x.snippet||{}; meta[x.id] = {s:x.statistics||{}, desc:sn.description||'', tags:sn.tags||[], cat:sn.categoryId, lang:sn.defaultAudioLanguage||sn.defaultLanguage||'', dur:parseDur(x.contentDetails && x.contentDetails.duration)}; });
+  }
+  short.forEach(c => {
+    c.recent.forEach(v=>{ const m = meta[v.id] || {}; v.s = m.s || {}; v.desc = m.desc || ''; v.tags = m.tags || []; v.cat = m.cat; v.lang = m.lang || ''; v.dur = m.dur || 0; v.spon = SPON_RX.test(v.desc); v.aff = AFF_RX.test(v.desc); v.brands = scanBrands(v.desc); });
+    const vs = c.recent.filter(v=>v.s.viewCount!=null);
+    const views = vs.map(v=>+v.s.viewCount);
+    const tv = sum(views);
+    c.avgViews = views.length ? Math.round(tv/views.length) : 0;
+    c.er = tv ? +(sum(vs.map(v=>(+v.s.likeCount||0)+(+v.s.commentCount||0)))/tv*100).toFixed(1) : 0;
+    c.likeSum = sum(vs.map(v=>+v.s.likeCount||0)); c.cmtSum = sum(vs.map(v=>+v.s.commentCount||0)); c.viewList = views;
+    c.lastActive = c.recent.length ? Math.min.apply(null, c.recent.map(v=>daysAgo(v.at))) : 999;
+    c.posts = Array.from(new Set(c.hit.titles.concat(c.recent.map(v=>v.title)))).slice(0,3);
+    c.styles = detectStyles(c.hit.titles.concat(c.recent.map(v=>v.title)).join(' | '));
+    c.vps = c.followers ? c.avgViews/c.followers : 0;
+    const wd = c.recent.filter(v=>v.dur>0);
+    const sh = wd.filter(v=>v.dur<=180), lg = wd.filter(v=>v.dur>180);
+    c.shortsRatio = wd.length ? sh.length/wd.length : 0;
+    const avgOf = a => { const x = a.filter(v=>v.s.viewCount!=null).map(v=>+v.s.viewCount); return x.length ? Math.round(sum(x)/x.length) : 0; };
+    c.avgShorts = avgOf(sh); c.avgLong = avgOf(lg);
+    const ts = c.recent.map(v=>new Date(v.at).getTime()).filter(x=>!isNaN(x)).sort((x,y)=>y-x);
+    c.perWeek = ts.length>1 ? +((ts.length-1)/Math.max(1,(ts[0]-ts[ts.length-1])/86400000)*7).toFixed(1) : 0;
+    c.sponCount = c.recent.filter(v=>v.spon).length;
+    c.affCount = c.recent.filter(v=>v.aff).length;
+    const bc = {}; c.recent.forEach(v=>v.brands.forEach(x=>{ bc[x]=(bc[x]||0)+1; }));
+    c.brands = Object.keys(bc).sort((x,y)=>bc[y]-bc[x]).slice(0,5);
+    const e1 = findEmail(c.desc);
+    c.email = e1 || findEmail(c.recent.map(v=>v.desc).join('\n')) || '';
+    c.emailSrc = e1 ? '频道简介' : c.email ? '视频描述' : '';
+    const cc = {}; c.recent.forEach(v=>{ if(v.cat) cc[v.cat]=(cc[v.cat]||0)+1; });
+    const topCat = Object.keys(cc).sort((x,y)=>cc[y]-cc[x])[0];
+    c.mainCat = topCat ? (YT_CAT[topCat] || ('分类 '+topCat)) : '';
+    const lc = {}; c.recent.forEach(v=>{ if(v.lang){ const l = v.lang.slice(0,2).toLowerCase(); lc[l]=(lc[l]||0)+1; } });
+    c.contentLang = Object.keys(lc).sort((x,y)=>lc[y]-lc[x])[0] || c.defaultLang.slice(0,2).toLowerCase();
+    c.color = AV_COLORS[hashStr(c.id)%AV_COLORS.length];
+    c.price = priceOf(c);
+    BY_ID[c.id] = c;
+  });
+  const ready = short.filter(c=>c.recent.length);
+  S.busyMsg = '读取 '+ready.length+' 个频道的评论区，推测受众语言…'; render();
+  await Promise.all(ready.map(async c => {
+    const top = c.recent.filter(v=>v.s.viewCount!=null).sort((x,y)=>(+y.s.commentCount||0)-(+x.s.commentCount||0))[0];
+    if(!top || !(+top.s.commentCount)){ c.commentsOff = !top || top.s.commentCount==null; c.commentN = 0; return; }
+    try {
+      const r = await yt('commentThreads', {part:'snippet', videoId:top.id, maxResults:'50', order:'relevance', textFormat:'plainText'});
+      const langs = {}; let n = 0; const cm = [];
+      (r.items||[]).forEach(it => {
+        const sn = it.snippet && it.snippet.topLevelComment && it.snippet.topLevelComment.snippet;
+        const t = sn && sn.textOriginal;
+        if(!t) return; const l = detectLang(t); langs[l] = (langs[l]||0)+1; n++;
+        cm.push({t, a:(sn.authorChannelId && sn.authorChannelId.value) || sn.authorDisplayName || ''});
+      });
+      c.commentLangs = langs; c.commentN = n; c.commentVideo = top.title; c.cmts = cm;
+    } catch(e){ c.commentsOff = true; c.commentN = 0; }
+  }));
+  ready.forEach(c=>{ c.water = assessWater(c); });
+  return {searched:items.length, channels:chans.length, shortlist:ready};
+}
+const GENERIC = new Set(['nice','nice video','nice one','great','great video','great content','cool','wow','awesome','amazing','first','love it','love this','good','good video','super','best','beautiful','thanks','thank you','hi','hello','lol','keep it up','very nice','so cool','wonderful','perfect','excellent','great job','well done','fire','sub','subscribed','nice work']);
+const LINK_RX = /https?:\/\/|www\.|t\.me\/|wa\.me\/|whatsapp|telegram/i;
+function assessWater(c){
+  const sig = []; let score = 0;
+  const add = (o) => { sig.push(o); score += o.w; };
+  const bench = ytBench(c.followers);
+  const vp = c.vps*100;
+  add({name:'播放 / 订阅', value:vp.toFixed(1)+'%', lv:vp<1?'bad':vp<3?'warn':'good', w:vp<1?35:vp<3?18:0,
+       note:'近 10 条平均播放占订阅数的比例。低于 3% 说明大量订阅不活跃，低于 1% 水分很可能偏大'});
+  const erx = bench ? c.er/bench : 0;
+  add({name:'互动率', value:c.er+'%（参考 '+bench+'%）', lv:erx>3?'warn':'good', w:erx>3?15:0,
+       note:erx>3?'超过参考值 3 倍，可能刷过点赞或评论':'（点赞 + 评论）/ 播放，在正常范围'});
+  const cm = c.cmts || [];
+  if(cm.length>=10){
+    const norm = t => t.toLowerCase().replace(/[^\p{L}\p{N} ]+/gu,' ').replace(/\s+/g,' ').trim();
+    const gen = cm.filter(x=>{ const n = norm(x.t); return !n || (n.length<=20 && GENERIC.has(n)); }).length/cm.length;
+    const cnt = {}; cm.forEach(x=>{ const n = norm(x.t); if(n.length>=3) cnt[n]=(cnt[n]||0)+1; });
+    const dup = cm.filter(x=>{ const n = norm(x.t); return n.length>=3 && cnt[n]>1; }).length/cm.length;
+    const link = cm.filter(x=>LINK_RX.test(x.t)).length/cm.length;
+    const ac = {}; cm.forEach(x=>{ if(x.a) ac[x.a]=(ac[x.a]||0)+1; });
+    const rp = cm.filter(x=>x.a && ac[x.a]>1).length/cm.length;
+    const bot = .4*gen + .3*dup + .2*link + .1*rp;
+    add({name:'评论质量', value:'模板 '+Math.round(gen*100)+'% · 重复 '+Math.round(dup*100)+'%'+(link>0?' · 链接 '+Math.round(link*100)+'%':''),
+         lv:bot>=.45?'bad':bot>=.25?'warn':'good', w:bot>=.45?20:bot>=.25?10:0,
+         note:'抽样 '+cm.length+' 条热门评论。纯表情、“Nice video”类模板评论、重复内容、带链接的评论越多，越像机器人'});
+  } else {
+    sig.push({name:'评论质量', value:'—', lv:'neutral', w:0, note:c.commentsOff ? '评论区关闭，无法判断' : '评论太少，无法判断'});
+  }
+  if(c.likeSum>=100){
+    const r = c.cmtSum/c.likeSum;
+    add({name:'评论 / 点赞', value:Math.round(r*100)+'%', lv:r>.4?'warn':'good', w:r>.4?8:0,
+         note:'正常频道的评论数远少于点赞数，评论异常多可能是刷评论'});
+  }
+  const vl = (c.viewList||[]).filter(x=>x>0);
+  if(vl.length>=5){
+    const tot = sum(vl), topShare = Math.max.apply(null, vl)/tot;
+    const sorted = vl.slice().sort((a,b)=>a-b), med = sorted[Math.floor(sorted.length/2)], ratio = med/(tot/vl.length);
+    const spike = topShare>.6, flat = ratio<.25;
+    add({name:'播放稳定性', value:'最高一条占 '+Math.round(topShare*100)+'%', lv:spike||flat?'warn':'good', w:spike?10:flat?6:0,
+         note:spike ? '播放集中在单条视频，可能是偶然爆款或买过量，平均播放不代表常态' : '中位数 / 平均数 = '+ratio.toFixed(2)+'，越接近 1 越稳定'});
+  }
+  if(c.since){
+    const age = daysAgo(c.since);
+    const young = (age<180 && c.followers>=50000) || (age<365 && c.followers>=200000);
+    add({name:'频道年龄', value:age>=365 ? (age/365).toFixed(1)+' 年' : age+' 天', lv:young?'warn':'good', w:young?15:0,
+         note:young ? '建号时间短、订阅增长偏快，要看增长是否自然' : '平均每天涨 '+fmtK(Math.round(c.followers/Math.max(age,1)))+' 个订阅'});
+  }
+  score = Math.min(100, score);
+  const level = score>=35 ? '高' : score>=15 ? '中' : '低';
+  const t = sig.filter(x=>x.w>0).sort((a,b)=>b.w-a.w)[0];
+  return {score, level, signals:sig, top:t ? t.name+' '+t.value : ''};
+}
+function waterBlock(c){
+  const w = c.water; if(!w) return '';
+  const cls = w.level==='高' ? 'bad' : w.level==='中' ? 'warn' : 'good';
+  const st = lv => lv==='good' ? '正常' : lv==='warn' ? '偏高' : lv==='bad' ? '异常' : '无法判断';
+  return '<div class="stack" style="gap:6px"><div class="row" style="gap:8px"><span class="lbl-s">粉丝水分评估</span><span class="tag '+cls+'">风险'+w.level+' · '+w.score+' 分</span></div>'
+    +'<div class="wt">'+w.signals.map(x=>'<div class="wt-row"><span>'+esc(x.name)+'</span><b class="num">'+esc(x.value)+'</b><span class="tag '+x.lv+'">'+st(x.lv)+'</span><em>'+esc(x.note)+'</em></div>').join('')+'</div>'
+    +'<div class="meta">YouTube 不公开订阅者名单，没法逐个识别假粉。这里用公开数据估算水分风险，只作提示，不是结论。风险分 ≥ 35 为高，15–34 为中。</div></div>';
+}
+async function ytTrending(b){
+  const region = b.countries[0], cat = TREND_CAT[b.category];
+  const q = {part:'snippet,statistics', chart:'mostPopular', regionCode:region, maxResults:'6'};
+  const map = r => (r.items||[]).map(x=>({id:x.id, title:(x.snippet||{}).title||'', channel:(x.snippet||{}).channelTitle||'', views:+((x.statistics||{}).viewCount)||0}));
+  try { const r = await yt('videos', Object.assign({videoCategoryId:cat}, q)); const a = map(r); if(a.length) return {cat:YT_CAT[cat]||'全部', items:a}; } catch(e){}
+  try { const r = await yt('videos', q); return {cat:'全部分类', items:map(r)}; } catch(e){ return null; }
+}
+function realFilter(list, b){
+  const notes = [];
+  const ok = c => c.avgViews>0 && c.lastActive<=90;
+  const inC = c => !c.country || b.countries.indexOf(c.country)>=0;
+  let pool = list.filter(c=>ok(c) && inC(c) && c.followers>=b.followersMin && c.followers<=b.followersMax);
+  if(pool.length<5){
+    pool = list.filter(c=>ok(c) && inC(c));
+    notes.push('符合条件的频道不足 5 个，订阅数放宽到 '+fmtK(Math.round(b.followersMin/2))+'–'+fmtK(b.followersMax*2));
+  }
+  if(pool.length<5){
+    pool = list.filter(ok);
+    notes.push('仍然不足，放开频道国家限制（国家不符的会在风险标签里标出）');
+  }
+  return {pool, notes};
+}
+const ytBench = f => +(2.4*(f>500000?.7:f<50000?1.25:1)).toFixed(1);
+function relKw(b){
+  const q = String(b.query||'').toLowerCase().split(/[^a-z0-9]+/).filter(w=>w.length>=4);
+  const k = (CATS[b.category]||{kw:[]}).kw.filter(w=>/^[a-z ]+$/.test(w) && w.length>=4);
+  return Array.from(new Set(q.concat(k)));
+}
+function langShare(c, b){
+  if(!c.commentN || c.commentN<8 || !c.commentLangs) return null;
+  const valid = c.commentN - (c.commentLangs.other||0);
+  if(valid<5) return null;
+  const tl = new Set(b.countries.map(x=>LANG_OF[x]).filter(Boolean));
+  let n = 0; tl.forEach(l=>{ n += c.commentLangs[l]||0; });
+  return n/valid;
+}
+function targetLangNames(b){ return Array.from(new Set(b.countries.map(x=>LANG_ZH[LANG_OF[x]]).filter(Boolean))).join('/'); }
+function riskReal(c, b){
+  const r = [], bench = ytBench(c.followers);
+  const w = c.water;
+  if(w && w.level==='高') r.push({lv:'bad', t:'粉丝水分风险高：'+w.top});
+  else if(w && w.level==='中') r.push({lv:'warn', t:'粉丝水分风险中：'+w.top});
+  if(c.lastActive>30) r.push({lv:'warn', t:c.lastActive+' 天未更新'});
+  if(!c.country) r.push({lv:'neutral', t:'频道未公开国家'});
+  else if(b && b.countries.indexOf(c.country)<0) r.push({lv:'warn', t:'频道国家不在目标市场'});
+  const ls = b ? langShare(c, b) : null;
+  if(ls!=null && ls<.3) r.push({lv:'warn', t:'评论区只有 '+Math.round(ls*100)+'% 用'+targetLangNames(b)});
+  if(b && b.budgetUsd && c.price.lo > b.budgetUsd*.6) r.push({lv:'warn', t:'单人报价可能超预算'});
+  if(c.sponCount>=6) r.push({lv:'warn', t:'近 10 条有 '+c.sponCount+' 条商单，广告密度高'});
+  if(c.madeForKids) r.push({lv:'warn', t:'面向儿童的频道，评论和个性化广告受限'});
+  if(c.commentsOff) r.push({lv:'neutral', t:'评论区关闭或没有评论'});
+  if(c.sponCount>0 && c.sponCount<6) r.push({lv:'good', t:'近 10 条接过 '+c.sponCount+' 条商单'});
+  if(c.email) r.push({lv:'good', t:'公开了联系邮箱'});
+  return r;
+}
+function scoreReal(c, b){
+  const bench = ytBench(c.followers);
+  const kws = relKw(b);
+  c.relRecent = (c.recent||[]).filter(v=>{ const t = v.title.toLowerCase(); return kws.some(w=>t.indexOf(w)>=0); }).length;
+  const chText = (c.desc+' '+(c.keywords||[]).join(' ')+' '+(c.topics||[]).join(' ')).toLowerCase();
+  c.chRel = kws.some(w=>chText.indexOf(w)>=0);
+  const fRel = Math.min((c.hit.n + c.relRecent + (c.chRel?1:0))/4, 1);
+  const cFit = !c.country ? null : (b.countries.indexOf(c.country)>=0 ? 1 : 0);
+  const lFit = langShare(c, b);
+  const fAud = cFit==null && lFit==null ? .5 : cFit==null ? lFit : lFit==null ? cFit : (cFit+lFit)/2;
+  const fEr = c.er ? clamp((c.er/bench)/2, 0, 1) : .3;
+  const styleHit = c.styles.filter(s=>b.styles.indexOf(s)>=0);
+  const fStyle = b.styles.length ? (styleHit.length ? 1 : 0) : .5;
+  const fAct = .6*(c.lastActive<=14 ? 1 : c.lastActive<=30 ? .6 : .2) + .4*clamp(c.perWeek, 0, 1);
+  const fReach = clamp(c.vps/.15, 0, 1);
+  let s = 30*fRel + 20*fAud + 15*fEr + 15*fReach + 10*fStyle + 10*fAct;
+  const risks = riskReal(c, b);
+  if(risks.some(x=>x.lv==='bad')) s -= 18;
+  if(c.sponCount>=6) s -= 5;
+  if(c.water && c.water.level==='中') s -= 6;
+  const t0 = c.hit.titles[0] || '';
+  const parts = ['搜索命中 '+c.hit.n+' 条、最近 10 条里 '+c.relRecent+' 条相关，如“'+(t0.length>30?t0.slice(0,30)+'…':t0)+'”'];
+  parts.push('近 10 条平均播放 '+fmtK(c.avgViews)+'（订阅的 '+Math.round(c.vps*100)+'%）');
+  parts.push('互动率 '+c.er+'%（参考 '+bench+'%）');
+  if(lFit!=null) parts.push('评论 '+Math.round(lFit*100)+'% 用'+targetLangNames(b));
+  parts.push(c.country ? '频道国家：'+ctry(c) : '频道未公开国家');
+  if(c.brands.length) parts.push('合作过 '+c.brands.slice(0,2).join('、'));
+  if(styleHit.length) parts.push('常做'+styleHit.map(x=>STYLES[x]).join('、'));
+  return {score:clamp(Math.round(s),0,100), reason:parts.join('，'), risks};
+}
+function candJson(c, score){
+  if(c.real) return {id:c.id, channel:c.name, channel_country:c.country||'未公开', subscribers:c.followers, avg_views_recent10:c.avgViews, er:c.er, er_bench:ytBench(c.followers), related_videos_last_year:c.hit.n, related_in_recent10:c.relRecent||0, recent_titles:c.posts, days_since_upload:c.lastActive, uploads_per_week:c.perWeek, views_per_sub:+c.vps.toFixed(3), shorts_ratio:+c.shortsRatio.toFixed(2), sponsored_in_recent10:c.sponCount, past_brands:c.brands, comment_languages:c.commentLangs||null, has_contact_email:!!c.email, made_for_kids:c.madeForKids, fake_follower_risk:c.water?{level:c.water.level, score:c.water.score, main_signal:c.water.top}:null, audience_demographics:'公开接口不提供', rule_score:score};
+  return {id:c.id, cat:CATS[c.cat].zh, cat2:c.cat2?CATS[c.cat2].zh:'', platform:c.platform, followers:c.followers, avg_views:c.avgViews, er:c.er, er_bench:erBench(c.platform,c.followers), audience:c.aud, female_pct:c.female, styles:c.styles.map(s=>STYLES[s]), recent_posts:c.posts, fake_pct:c.fakePct, days_since_post:c.lastActive, rule_score:score};
+}
+function loadKey(){ try { return localStorage.getItem('yt_api_key') || ''; } catch(e){ return ''; } }
+function saveKey(k){ try { if(k) localStorage.setItem('yt_api_key', k); else localStorage.removeItem('yt_api_key'); } catch(e){} }
+
+/* ---------- state ---------- */
+const PRESETS = [
+  {label:'露营灯 · 美国', text:'我们是做户外露营灯的，想打美国市场，预算 5000 美元，找 TikTok 和 Instagram 上的中小达人，最好是做测评或开箱的。'},
+  {label:'宠物饮水机 · 英国', text:'卖智能宠物饮水机，主攻英国和德国，Instagram 为主，1万到20万粉，女性受众多一点，预算3万人民币。'},
+  {label:'防晒 · 东南亚', text:'新出了一款清爽防晒霜，想做东南亚市场，TikTok 达人，要会做护肤教程和好物推荐的。'}
+];
+const S = {
+  step:1, max:1, mode:'rule', aiAvailable:false,
+  input:PRESETS[0].text, brief:null, briefSrc:'', notes:[], questions:[],
+  pool:[], relax:[], results:[], rankSrc:'', selected:new Set(), lookalikeIds:new Set(),
+  sender:{brand:'Your Brand', name:'Alex', productEn:''}, emails:{}, mailSrc:'', checked:new Set(),
+  board:{}, t0:null, tSend:null, busy:'', busyMsg:'',
+  source:'sample', ytKey:loadKey(), ytError:'', realStats:null, trending:null, dsKey:loadDsKey(), dsStatus:null
+};
+
+/* ---------- rendering helpers ---------- */
+const STEPS = [
+  {n:1, t:'输入需求'}, {n:2, t:'确认需求', h:true}, {n:3, t:'匹配排序'},
+  {n:4, t:'审核确认', h:true}, {n:5, t:'生成邀约', h:true}, {n:6, t:'合作看板'}
+];
+function renderSteps(){
+  $('#steps').innerHTML = STEPS.map(s => {
+    const cur = s.n===S.step, done = s.n<S.max && !cur;
+    return '<li><button type="button" class="step-btn'+(done?' done':'')+'" data-go="'+s.n+'"'+(cur?' aria-current="step"':'')+(s.n>S.max?' disabled':'')+'>'
+      +'<span class="n">'+(done?'✓':s.n)+'</span><span class="lbl">'+s.t+'</span>'+(s.h?'<span class="hand">人工</span>':'')+'</button></li>';
+  }).join('');
+}
+function renderMode(){
+  const a=$('#mode-ai'), r=$('#mode-rule');
+  a.disabled = IN_ARTIFACT ? !S.aiAvailable : false;
+  a.title = S.aiAvailable ? '需求解析、排序理由和邀约由 '+aiName()+' 生成' : (IN_ARTIFACT ? '在 claude.ai 中打开时可用' : '在第 1 步填 DeepSeek API Key 后可用');
+  a.setAttribute('aria-pressed', String(S.mode==='ai'));
+  r.setAttribute('aria-pressed', String(S.mode==='rule'));
+  const ss=$('#src-sample'), sy=$('#src-yt');
+  sy.disabled = IN_ARTIFACT;
+  sy.title = IN_ARTIFACT ? '在线版不能访问外部网络，请用桌面离线版' : '用 YouTube Data API 搜索真实频道';
+  ss.setAttribute('aria-pressed', String(S.source==='sample'));
+  sy.setAttribute('aria-pressed', String(S.source==='youtube'));
+  $('#demo-tag').textContent = S.source==='youtube' ? 'YouTube 实时数据 · 公开接口' : '示例数据 · 达人与品牌均为虚构';
+}
+function go(n){ S.step=n; S.max=Math.max(S.max,n); render(); window.scrollTo({top:0, behavior:'smooth'}); }
+function avatar(c){
+  const w = String(c.name||'?').trim().split(/\s+/);
+  const ini = (w[0]||'?').slice(0,1) + (w[1]||'').slice(0,1);
+  return '<div class="av" style="background:'+c.color+'">'+(c.thumb?'<img src="'+esc(c.thumb)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':esc(ini.toUpperCase()))+'</div>';
+}
+function dataTag(c){ return c.real ? '<span class="tag good">YouTube 实时</span>' : '<span class="tag neutral">示例</span>'; }
+function riskTags(risks){ return risks.map(x=>'<span class="tag '+x.lv+'">'+esc(x.t)+'</span>').join(''); }
+function srcTag(src){ return src==='ai' ? '<span class="tag ai">'+aiName()+' 生成</span>' : '<span class="tag neutral">规则生成</span>'; }
+function thinking(msg){ return '<span class="thinking"><span class="dot"></span>'+esc(msg)+'</span>'; }
+function selectedList(){ return Array.from(S.selected).map(id=>BY_ID[id]).filter(Boolean); }
+function budgetBar(){
+  const sel = selectedList();
+  const lo = sum(sel.map(c=>c.price.lo)), hi = sum(sel.map(c=>c.price.hi));
+  const B = S.brief && S.brief.budgetUsd;
+  const pct = B ? clamp(hi/B*100,0,100) : 0;
+  const cls = !B ? '' : hi>B ? 'bad' : hi>B*.85 ? 'warn' : 'good';
+  return '<div class="budget"><div>已选 <b class="num">'+sel.length+'</b> 人 · 预计 <b class="num">'+money(lo)+'–'+money(hi)+'</b>'+(B?' / 预算 <b class="num">'+money(B)+'</b>':'（未设预算）')+'</div>'
+    +(B?'<div class="bar '+cls+'"><i style="width:'+pct+'%"></i></div>':'')+'</div>';
+}
+
+/* ---------- step 1 ---------- */
+function v1(){
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>说一句需求就行</h2><p class="lead">像跟同事说话一样描述商品、市场、平台和预算。也可以贴商品链接，Demo 只读链接里的文字，不会抓取网页。</p></div></div>'
+  +'<div class="panel stack">'
+    +'<div class="chips">'+PRESETS.map((p,i)=>'<button type="button" class="chip" data-preset="'+i+'">'+esc(p.label)+'</button>').join('')+'</div>'
+    +'<label class="f" for="need">品牌需求<textarea id="need" rows="4">'+esc(S.input)+'</textarea></label>'
+    +'<div class="row"><button type="button" class="btn primary" data-act="parse"'+(S.busy?' disabled':'')+'>解析需求</button>'
+    +(S.busy==='parse'?thinking(aiName()+' 正在理解需求…'):'<span class="meta">'+(S.mode==='ai'?'由 '+aiName()+' 解析，失败时自动用规则兜底':'规则模式：关键词 + 正则解析，离线可用')+'</span>')+'</div>'
+  +'</div>'
+  +(S.source==='youtube'?'<div class="panel stack"><div class="row"><h3>YouTube API Key</h3><span class="spacer"></span>'+(S.ytKey?'<span class="tag good">已保存</span>':'<span class="tag warn">未填写</span>')+'</div>'
+    +'<label class="f" for="yt-key">粘贴你自己的 Key，只保存在这台电脑的浏览器里，不会写进文件<input id="yt-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.ytKey)+'" placeholder="AIza…"></label>'
+    +'<div class="row"><button type="button" class="btn dark" data-act="saveKey">保存 Key</button><button type="button" class="btn" data-act="clearKey">清除</button></div>'
+    +'<div class="meta">实时模式只搜 YouTube：按搜索词找近一年的相关视频，再读频道简介和主题、最近 10 条视频的播放和描述、热门评论和目标市场热门榜。免费额度每天 10,000 单位，一次匹配约 150 单位。受众画像属于频道私有数据，公开接口拿不到。</div></div>':'')
+  +(!IN_ARTIFACT?'<div class="panel stack"><div class="row"><h3>AI 模式 · DeepSeek API Key</h3><span class="spacer"></span>'+(!S.dsKey?'<span class="tag neutral">未填写，当前用规则模式</span>':S.dsStatus&&S.dsStatus.lv==='good'?'<span class="tag good">连接正常</span>':S.dsStatus&&S.dsStatus.lv==='bad'?'<span class="tag bad">不可用</span>':'<span class="tag warn">已保存，未测试</span>')+'</div>'
+    +(S.dsStatus?'<div class="callout'+(S.dsStatus.lv==='bad'?' ask':'')+'"><b>连接状态：</b>'+esc(S.dsStatus.t)+'</div>':'')
+    +'<label class="f" for="ds-key">粘贴你自己的 Key，只保存在这台电脑的浏览器里，不会写进文件<input id="ds-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.dsKey)+'" placeholder="sk-…"></label>'
+    +'<div class="row"><button type="button" class="btn dark" data-act="saveDs">保存 Key</button><button type="button" class="btn primary" data-act="testDs">测试连接</button><button type="button" class="btn" data-act="clearDs">清除</button></div>'
+    +'<div class="meta">填了以后右上角“AI 模式”可用：需求解析、推荐理由和邀约邮件交给 DeepSeek（deepseek-chat）生成，失败时自动用规则结果兜底。品牌需求、达人公开数据和邮件草稿会发送到 DeepSeek。按量计费，一次完整演示约几分钱。</div></div>':'')
+  +'<p class="why"><b>设计取舍：</b>品牌方不会填 20 个筛选项，所以入口只有一个输入框。AI 负责把自然语言变成结构化条件，下一步由人确认，理解错了当场改。</p>'
+  +'</div>';
+}
+async function doParse(){
+  S.input = $('#need').value.trim();
+  if(!S.input){ toast('先写一句需求'); return; }
+  if(!S.t0) S.t0 = Date.now();
+  const rule = parseRule(S.input);
+  let b = rule.b, notes = rule.notes, questions = rule.questions, src='rule';
+  if(S.mode==='ai'){
+    S.busy='parse'; render();
+    const prompt = '把下面的出海品牌达人营销需求解析成 JSON。只回复一个 JSON 对象，字段如下：\n'
+      +'category: 只能是 '+Object.keys(CATS).join('|')+' 之一\n'
+      +'product: 商品一句话描述，中文，不超过 16 字\n'
+      +'product_en: 商品的英文名，2-4 个词，小写\n'
+      +'countries: 国家码数组，只能从 ['+Object.keys(COUNTRIES).join(',')+'] 里选；"东南亚"展开为 ID,TH,VN,PH,MY，"欧洲"展开为 UK,DE,FR，"北美"展开为 US,CA；没说填 []\n'
+      +'platforms: 从 ["TikTok","Instagram","YouTube"] 里选，没说填全部三个\n'
+      +'followers_min, followers_max: 整数；"中小达人"=10000-300000，"腰部"=50000-500000，"头部"=500000-5000000，没说填 10000 和 500000\n'
+      +'budget_usd: 整数美元，人民币按 7.2 换算，没说填 null\n'
+      +'styles: 从 ['+Object.keys(STYLES).join(',')+'] 里选（unboxing=开箱, review=测评, tutorial=教程, vlog, skit=剧情, haul=好物推荐），没说填 []\n'
+      +'gender: female|male|any\n'
+      +'format: 合作形式，中文，不超过 12 字，没说填 "寄样 + 付费短视频"\n'
+      +'notes: 你做的默认假设，中文数组，最多 3 条\n'
+      +'questions: 信息不足、需要追问品牌的问题，中文数组，最多 2 条；信息够就填 []\n\n'
+      +'需求：'+S.input;
+    const j = await aiJson(prompt);
+    S.busy='';
+    if(j && typeof j==='object'){
+      const okCat = Object.prototype.hasOwnProperty.call(CATS, j.category);
+      const cs = Array.isArray(j.countries) ? j.countries.filter(c=>COUNTRIES[c]) : [];
+      const ps = Array.isArray(j.platforms) ? j.platforms.filter(p=>PLATFORMS.indexOf(p)>=0) : [];
+      const st = Array.isArray(j.styles) ? j.styles.filter(s=>STYLES[s]) : [];
+      const fmin = parseInt(j.followers_min,10), fmax = parseInt(j.followers_max,10), bud = parseInt(j.budget_usd,10);
+      b = {
+        product: String(j.product||b.product).slice(0,30), productEn: String(j.product_en||b.productEn).slice(0,40),
+        category: okCat ? j.category : b.category, countries: cs.length ? cs : b.countries, platforms: ps.length ? ps : b.platforms,
+        followersMin: fmin>0 ? fmin : b.followersMin, followersMax: fmax>fmin ? fmax : b.followersMax,
+        budgetUsd: bud>0 ? bud : b.budgetUsd, styles: st, gender: ['female','male','any'].indexOf(j.gender)>=0 ? j.gender : b.gender,
+        format: String(j.format||b.format).slice(0,20), query: String(j.product_en||b.query).slice(0,60)
+      };
+      notes = Array.isArray(j.notes) ? j.notes.map(String).slice(0,3) : [];
+      questions = Array.isArray(j.questions) ? j.questions.map(String).slice(0,2) : [];
+      src='ai';
+    }
+  }
+  S.brief=b; S.notes=notes; S.questions=questions; S.briefSrc=src;
+  S.sender.productEn = b.productEn;
+  S.results=[]; S.selected=new Set(); S.emails={}; S.checked=new Set(); S.board={}; S.tSend=null; S.max=2;
+  go(2);
+}
+
+/* ---------- step 2 ---------- */
+function v2(){
+  const b = S.brief;
+  const chipSet = (name, items, active) => '<div class="chips" data-group="'+name+'">'+items.map(([k,l])=>'<button type="button" class="chip" data-k="'+k+'" aria-pressed="'+(active.indexOf(k)>=0)+'">'+esc(l)+'</button>').join('')+'</div>';
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>确认 AI 理解的需求</h2><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/3</span></div>'
+  +(S.questions.length?'<div class="callout ask"><b>需要向品牌追问</b><ul>'+S.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')
+  +'<div class="panel stack">'
+    +'<div class="row"><h3>需求卡</h3><span class="spacer"></span>'+srcTag(S.briefSrc)+'</div>'
+    +'<div class="grid2">'
+      +'<label class="f" for="f-product">商品<input id="f-product" type="text" value="'+esc(b.product)+'"></label>'
+      +'<label class="f" for="f-cat">品类<select id="f-cat">'+Object.keys(CATS).map(k=>'<option value="'+k+'"'+(k===b.category?' selected':'')+'>'+CATS[k].zh+'</option>').join('')+'</select></label>'
+      +'<div class="f full">目标国家'+chipSet('countries', Object.keys(COUNTRIES).map(k=>[k,COUNTRIES[k]]), b.countries)+'</div>'
+      +(S.source==='youtube'
+        ? '<label class="f" for="f-query">YouTube 搜索词（英文效果更好）<input id="f-query" type="text" value="'+esc(b.query||b.productEn||'')+'"></label>'
+        : '<div class="f">平台'+chipSet('platforms', PLATFORMS.map(p=>[p,p]), b.platforms)+'</div>')
+      +'<div class="f">内容风格（可不选）'+chipSet('styles', Object.keys(STYLES).map(k=>[k,STYLES[k]]), b.styles)+'</div>'
+      +'<label class="f" for="f-fmin">粉丝量下限<input id="f-fmin" type="number" min="0" step="1000" value="'+b.followersMin+'"></label>'
+      +'<label class="f" for="f-fmax">粉丝量上限<input id="f-fmax" type="number" min="0" step="1000" value="'+b.followersMax+'"></label>'
+      +'<label class="f" for="f-budget">总预算（美元）<input id="f-budget" type="number" min="0" step="100" value="'+(b.budgetUsd==null?'':b.budgetUsd)+'" placeholder="未提供"></label>'
+      +'<label class="f" for="f-gender">受众性别偏好<select id="f-gender">'+[['any','不限'],['female','偏女性'],['male','偏男性']].map(([k,l])=>'<option value="'+k+'"'+(k===b.gender?' selected':'')+'>'+l+'</option>').join('')+'</select></label>'
+      +'<label class="f full" for="f-format">合作形式<input id="f-format" type="text" value="'+esc(b.format)+'"></label>'
+    +'</div>'
+    +(S.notes.length?'<div class="callout"><b>AI 做的默认假设</b><ul>'+S.notes.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></div>':'')
+    +'<div class="row"><button type="button" class="btn primary" data-act="match"'+(S.busy?' disabled':'')+'>确认需求，开始匹配</button>'
+    +(S.busy==='rank'?thinking(aiName()+' 正在给候选达人排序并写推荐理由…'):S.busy==='yt'?thinking(S.busyMsg||'正在请求 YouTube…'):'')+'</div>'
+    +(S.ytError?'<div class="callout ask"><b>YouTube 数据没拿到</b><ul><li>'+esc(S.ytError)+'</li></ul></div>':'')
+    +(S.source==='youtube'?'<div class="meta">实时模式只搜 YouTube，目标国家取第一个（'+esc(ctry({country:b.countries[0]}))+'）作为搜索地区。</div>':'')
+  +'</div>'
+  +'<p class="why"><b>为什么要这一步：</b>国家、平台、粉丝量这类硬条件一旦理解错，后面全错。所以让人在花钱的环节之前确认一次，成本最低。</p>'
+  +'</div>';
+}
+function readBrief(){
+  const b = S.brief;
+  b.product = $('#f-product').value.trim();
+  b.category = $('#f-cat').value;
+  b.followersMin = Math.max(0, parseInt($('#f-fmin').value,10)||0);
+  b.followersMax = Math.max(b.followersMin+1000, parseInt($('#f-fmax').value,10)||500000);
+  const bv = parseInt($('#f-budget').value,10); b.budgetUsd = bv>0 ? bv : null;
+  b.gender = $('#f-gender').value;
+  b.format = $('#f-format').value.trim() || '寄样 + 付费短视频';
+  const grp = g => Array.from(document.querySelectorAll('[data-group="'+g+'"] .chip[aria-pressed="true"]')).map(x=>x.dataset.k);
+  b.countries = grp('countries'); b.styles = grp('styles');
+  if(S.source==='youtube'){ b.platforms = ['YouTube']; const q = $('#f-query'); b.query = (q && q.value.trim()) || b.productEn || CATS[b.category].en; }
+  else b.platforms = grp('platforms');
+  if(!b.countries.length){ toast('至少选一个目标国家'); return false; }
+  if(!b.platforms.length){ toast('至少选一个平台'); return false; }
+  return true;
+}
+async function doMatch(skipRead){
+  if(!skipRead && !readBrief()) return;
+  const b = S.brief;
+  let scored;
+  S.ytError = '';
+  if(S.source==='youtube'){
+    if(!S.ytKey){ S.ytError = '先在第 1 步填写并保存 YouTube API Key。'; render(); return; }
+    S.busy='yt'; render();
+    try {
+      const r = await ytFetch(b);
+      const f = realFilter(r.shortlist, b);
+      S.busyMsg = '读取'+ctry({country:b.countries[0]})+'的 YouTube 热门榜…'; render();
+      S.trending = await ytTrending(b);
+      S.pool = f.pool; S.relax = f.notes; S.realStats = {searched:r.searched, channels:r.channels, detailed:r.shortlist.length, query:b.query, region:b.countries[0]};
+    } catch(e){ S.busy=''; S.busyMsg=''; S.ytError = (e && e.message) || String(e); render(); return; }
+    S.busy=''; S.busyMsg='';
+  } else {
+    const f = hardFilter(b); S.pool = f.pool; S.relax = f.notes; S.realStats = null;
+  }
+  scored = S.pool.map(c=>Object.assign({id:c.id, src:'rule'}, scoreOf(c,b))).sort((x,y)=>y.score-x.score);
+  let top = scored.slice(0,10);
+  S.rankSrc='rule';
+  if(S.mode==='ai' && scored.length){
+    S.busy='rank'; render();
+    const cands = scored.slice(0,20).map(x=>candJson(BY_ID[x.id], x.score));
+    const prompt = '你是出海品牌的达人营销助手。根据品牌需求，从候选达人里选出最合适的 10 位，按合适程度从高到低排序。\n'
+      +'规则：\n- 只能使用下面给出的数据，不要编造任何数字或事实。\n- reason 用中文一句话，不超过 45 字，必须引用具体数据（如目标国家受众占比、互动率、内容方向、某条近期作品）。\n- score 为 0-100 的整数。\n- fake_pct 高、互动率远高于 er_bench、或 views_per_sub 很低的达人要降分。\n- 数据里没有的字段（比如真实频道没有受众画像）不要推测；comment_languages 只是评论语言分布，不等于受众国家。\n'
+      +'只回复 JSON 数组，例如：[{"id":"c012","score":88,"reason":"……"}]\n\n'
+      +'品牌需求：'+JSON.stringify({product:b.product, category:CATS[b.category].zh, countries:b.countries, platforms:b.platforms, followers:[b.followersMin,b.followersMax], budget_usd:b.budgetUsd, styles:b.styles.map(s=>STYLES[s]), gender:b.gender})+'\n\n'
+      +'候选达人：\n'+cands.map(c=>JSON.stringify(c)).join('\n');
+    const j = await aiJson(prompt);
+    S.busy='';
+    if(Array.isArray(j)){
+      const seen = new Set(), byId = Object.fromEntries(scored.map(x=>[x.id,x]));
+      const ai = j.filter(x=>x && byId[x.id] && !seen.has(x.id) && seen.add(x.id)).slice(0,10)
+        .map(x=>Object.assign({}, byId[x.id], {score:clamp(parseInt(x.score,10)||byId[x.id].score,0,100), reason:String(x.reason||byId[x.id].reason).slice(0,90), src:'ai'}));
+      if(ai.length>=5){ top=ai; S.rankSrc='ai'; }
+    }
+  }
+  S.results = top.map((x,i)=>Object.assign(x,{rank:i+1}));
+  S.lookalikeIds = new Set();
+  S.selected = new Set();
+  S.max = 3;
+  go(3);
+}
+
+/* ---------- step 3 ---------- */
+function itemRow(x){
+  const c = BY_ID[x.id], sel = S.selected.has(c.id);
+  const cls = x.score>=75?'good':x.score>=55?'':'warn';
+  return '<div class="item'+(sel?' sel':'')+'">'
+    +'<input type="checkbox" data-sel="'+c.id+'" aria-label="选择 '+esc(c.name)+'"'+(sel?' checked':'')+'>'
+    +'<div class="rank">'+(x.src==='similar'?'≈':'#'+x.rank)+'</div>'
+    +'<div class="who">'+avatar(c)+'<div class="who-main">'
+      +'<div class="who-name">'+esc(c.name)+' <span class="handle">'+esc(c.handle)+'</span>'+dataTag(c)+(x.src==='similar'?'<span class="tag ai">相似推荐</span>':'')+'</div>'
+      +'<div class="meta">'+c.platform+' · '+ctry(c)+' · <span class="num">'+fmtK(c.followers)+'</span> 粉 · 均播 <span class="num">'+fmtK(c.avgViews)+'</span> · 报价约 <span class="num">'+money(c.price.lo)+'–'+money(c.price.hi)+'</span></div>'
+      +'<div class="reason">'+esc(x.reason)+'</div>'
+      +(x.risks.length?'<div class="risks">'+riskTags(x.risks)+'</div>':'')
+    +'</div></div>'
+    +'<div class="score"><span>匹配分 <b>'+x.score+'</b></span><div class="bar '+cls+'"><i style="width:'+x.score+'%"></i></div></div>'
+    +'<div class="act"><button type="button" class="btn sm" data-detail="'+c.id+'">详情</button></div>'
+  +'</div>';
+}
+function v3(){
+  const b = S.brief;
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>推荐达人</h2><p class="lead">硬条件用规则筛，相关度用'+(S.rankSrc==='ai'?' '+aiName()+' ':'规则打分')+'排序。每个推荐都写明理由，风险标签由规则判定。</p></div>'+srcTag(S.rankSrc)+'</div>'
+  +(S.realStats
+    ? '<div class="funnel"><span class="stage">YouTube 近一年相关视频 <b>'+S.realStats.searched+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">涉及频道 <b>'+S.realStats.channels+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">读取近期视频 <b>'+S.realStats.detailed+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">硬条件筛选后 <b>'+S.pool.length+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">排序展示 <b>'+S.results.length+'</b></span>'
+      +'<span class="meta">搜索词“'+esc(S.realStats.query)+'” · 地区 '+esc(ctry({country:S.realStats.region}))+' · '+fmtK(b.followersMin)+'–'+fmtK(b.followersMax)+' 订阅 · 90 天内有更新</span></div>'
+    : '<div class="funnel"><span class="stage">示例达人库 <b>'+LIB.length+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">硬条件筛选后 <b>'+S.pool.length+'</b></span><span class="arr">→</span>'
+      +'<span class="stage">排序展示 <b>'+S.results.length+'</b></span>'
+      +'<span class="meta">条件：'+esc(b.countries.map(c=>COUNTRIES[c]).join('/'))+' · '+esc(b.platforms.join('/'))+' · '+fmtK(b.followersMin)+'–'+fmtK(b.followersMax)+' 粉 · 目标国家受众 ≥ 15%</span></div>')
+  +(S.realStats && S.trending && S.trending.items.length ? '<div class="panel stack" style="gap:8px;padding:14px 16px"><div class="row"><h3>'+esc(ctry({country:S.realStats.region}))+' YouTube 热门榜 · '+esc(S.trending.cat)+'</h3><span class="spacer"></span><span class="meta">可用来判断当下流行的内容方向</span></div>'
+    +'<ul class="posts" style="color:var(--ink)">'+S.trending.items.slice(0,5).map(v=>'<li><a class="ext" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">'+esc(v.title)+'</a> <span class="meta">· '+esc(v.channel)+' · 播放 '+fmtK(v.views)+'</span></li>').join('')+'</ul></div>' : '')
+  +(S.relax.length?'<div class="callout ask"><b>结果太少，已自动放宽条件</b><ul>'+S.relax.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></div>':'')
+  +(S.results.length?'<div class="list">'+S.results.map(itemRow).join('')+'</div>':'<div class="empty">没有符合条件的达人。回到上一步换个搜索词，或放宽国家和粉丝量。</div>')
+  +(S.realStats?'<p class="why"><b>实时数据说明：</b>订阅、播放、点赞、评论、频道简介、视频描述、时长和热门评论都来自 YouTube 公开接口。受众国家、年龄、性别属于频道私有数据，要达人授权（YouTube Analytics）才能看，所以这里用“频道国家 + 评论语言”推测受众，用“粉丝水分评估”（播放 / 订阅、互动率、评论质量、评论 / 点赞、播放稳定性、频道年龄）代替假粉判断；商单和品牌从视频描述里识别，可能有遗漏。</p>':'')
+  +'<div class="sticky-bar">'+budgetBar()+'<span class="spacer"></span>'
+    +(S.aiAvailable&&S.mode==='ai'&&S.rankSrc!=='ai'?'<button type="button" class="btn" data-act="rerank">用 '+aiName()+' 重新排序</button>':'')
+    +'<button type="button" class="btn primary" data-act="toReview"'+(S.selected.size?'':' disabled')+'>下一步：审核已选达人</button></div>'
+  +'<p class="why"><b>设计取舍：</b>国家、平台、粉丝量这类条件交给规则，不让大模型猜，结果可控、成本低；“内容合不合适”这种软判断才交给 AI。假粉和刷量是确定性的数据校验，也由规则判定，不交给 AI。</p>'
+  +'</div>';
+}
+
+/* ---------- detail drawer ---------- */
+function detailHTML(c, compact){
+  if(c.real) return detailReal(c, compact);
+  const b = S.brief, bench = erBench(c.platform, c.followers);
+  const entries = Object.entries(c.aud).sort((x,y)=>y[1]-x[1]);
+  const other = 100 - sum(entries.map(e=>e[1]));
+  const rows = entries.map(([cc,p])=>'<div class="aud-row'+(b&&b.countries.indexOf(cc)>=0?' hit':'')+'"><span>'+COUNTRIES[cc]+'</span><div class="bar"><i style="width:'+p+'%"></i></div><em>'+p+'%</em></div>').join('')
+    + (other>0?'<div class="aud-row"><span>其他</span><div class="bar"><i style="width:'+other+'%;opacity:.4"></i></div><em>'+other+'%</em></div>':'');
+  const risks = riskOf(c, b);
+  return '<div class="kv">'
+      +'<div><span>粉丝</span><b>'+fmtK(c.followers)+'</b></div>'
+      +'<div><span>平均播放</span><b>'+fmtK(c.avgViews)+'</b></div>'
+      +'<div><span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
+      +'<div><span>假粉比例</span><b style="color:var('+(c.fakePct>=20?'--bad':'--ink')+')">'+c.fakePct+'%</b></div>'
+      +'<div><span>回复率</span><b>'+c.responseRate+'%</b></div>'
+      +'<div><span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
+    +'</div>'
+    +(risks.length?'<div class="risks">'+riskTags(risks)+'</div>':'<div class="risks"><span class="tag good">未发现数据风险</span></div>')
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">受众国家</span><div class="aud">'+rows+'</div>'
+    +'<div class="meta">女性受众 '+c.female+'% · 主力年龄 '+c.age+'</div></div>'
+    +(compact?'':'<div class="stack" style="gap:6px"><span class="lbl-s">内容</span><div class="chips">'
+      +'<span class="chip static">'+CATS[c.cat].zh+'</span>'+(c.cat2?'<span class="chip static">'+CATS[c.cat2].zh+'</span>':'')
+      +c.styles.map(s=>'<span class="chip static">'+STYLES[s]+'</span>').join('')+'</div></div>')
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">近期作品</span><ul class="posts">'+c.posts.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul></div>'
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">过往合作</span><div class="meta">'+(c.brands.length?c.brands.map(esc).join('、'):'暂无公开合作记录')+'</div></div>'
+    +'<div class="meta">建议报价 <b class="num">'+money(c.price.lo)+'–'+money(c.price.hi)+'</b>（按均播 × '+c.platform+' 参考 CPM $'+CPM[c.platform]+' × 市场系数估算）</div>';
+}
+function detailReal(c, compact){
+  const b = S.brief, bench = ytBench(c.followers), risks = riskReal(c, b);
+  const hasIssue = risks.some(x=>x.lv==='bad'||x.lv==='warn');
+  const vids = (c.recent||[]).slice(0, compact?3:8);
+  const pct = x => Math.round(x*100)+'%';
+  let langBlock;
+  if(c.commentN>=8 && c.commentLangs){
+    const tl = new Set(b ? b.countries.map(x=>LANG_OF[x]) : []);
+    const ent = Object.entries(c.commentLangs).sort((x,y)=>y[1]-x[1]).slice(0,5);
+    langBlock = '<div class="aud">'+ent.map(([l,n])=>'<div class="aud-row'+(tl.has(l)?' hit':'')+'"><span>'+(LANG_ZH[l]||l)+'</span><div class="bar"><i style="width:'+Math.round(n/c.commentN*100)+'%"></i></div><em>'+Math.round(n/c.commentN*100)+'%</em></div>').join('')+'</div>'
+      +'<div class="meta">样本：“'+esc(String(c.commentVideo||'').slice(0,40))+'”下的 '+c.commentN+' 条热门评论。英语评论不等于美国受众，只能作参考。</div>';
+  } else langBlock = '<div class="meta">'+(c.commentsOff?'评论区关闭或没有评论，无法推测。':'评论太少，无法推测。')+'</div>';
+  const spon = '<div class="meta">近 10 条里 <b>'+c.sponCount+'</b> 条有赞助信号（#ad、sponsored 等），<b>'+c.affCount+'</b> 条有带货或联盟链接（折扣码、Amazon 链接等）。</div>'
+    +(c.brands.length?'<div class="chips">'+c.brands.map(x=>'<span class="chip static">'+esc(x)+'</span>').join('')+'</div>':'<div class="meta">没有从描述里识别出具体品牌。</div>');
+  const contact = c.email
+    ? '<div class="row" style="gap:8px"><code class="num" style="user-select:all">'+esc(c.email)+'</code><button type="button" class="btn sm" data-copy="'+esc(c.email)+'">复制</button><span class="meta">来自'+c.emailSrc+'，是频道主自己公开写的</span></div>'
+    : '<div class="meta">频道简介和近期视频描述里没有公开邮箱，需要到频道“关于”页手动查看。</div>';
+  return '<div class="kv">'
+      +'<div><span>订阅</span><b>'+fmtK(c.followers)+'</b></div>'
+      +'<div><span>近 10 条均播</span><b>'+fmtK(c.avgViews)+'</b></div>'
+      +'<div><span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
+      +'<div><span>播放 / 订阅</span><b>'+pct(c.vps)+'</b></div>'
+      +'<div><span>更新频率</span><b>'+c.perWeek+' 条/周</b></div>'
+      +'<div><span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
+      +'<div><span>Shorts 占比</span><b>'+pct(c.shortsRatio)+'</b></div>'
+      +'<div><span>Shorts / 长视频均播</span><b>'+fmtK(c.avgShorts)+' / '+fmtK(c.avgLong)+'</b></div>'
+      +'<div><span>总播放 / 视频数</span><b>'+fmtK(c.totalViews)+' / '+fmtK(c.videoCount)+'</b></div>'
+    +'</div>'
+    +'<div class="risks">'+riskTags(risks)+(hasIssue?'':'<span class="tag good">未发现数据风险</span>')+'</div>'
+    +waterBlock(c)
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">评论语言（推测受众）</span>'+langBlock+'<div class="meta">频道自填国家：'+esc(ctry(c))+(c.contentLang?' · 内容语言：'+esc(LANG_ZH[c.contentLang]||c.contentLang):'')+'。受众年龄、性别、国家分布需要达人授权才能看到。</div></div>'
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">商业合作</span>'+spon+'</div>'
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">联系方式</span>'+contact+'</div>'
+    +(compact?'':'<div class="stack" style="gap:6px"><span class="lbl-s">频道定位</span><div class="chips">'
+      +(c.mainCat?'<span class="chip static">'+esc(c.mainCat)+'</span>':'')
+      +(c.topics||[]).slice(0,4).map(t=>'<span class="chip static">'+esc(t)+'</span>').join('')
+      +c.styles.map(x=>'<span class="chip static">'+STYLES[x]+'</span>').join('')
+      +(c.keywords||[]).slice(0,6).map(k=>'<span class="chip static">#'+esc(k)+'</span>').join('')+'</div>'
+      +(c.desc?'<div class="meta">'+esc(c.desc.slice(0,220))+(c.desc.length>220?'…':'')+'</div>':'')+'</div>')
+    +'<div class="stack" style="gap:6px"><span class="lbl-s">最近视频</span><ul class="posts">'+vids.map(v=>'<li><a class="ext" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">'+esc(v.title)+'</a> · '+(v.dur?(v.dur<=180?'Shorts ':'')+fmtDur(v.dur)+' · ':'')+'播放 '+fmtK(+(v.s&&v.s.viewCount)||0)+' · '+daysAgo(v.at)+' 天前'+(v.spon?' <span class="tag warn">商单</span>':v.aff?' <span class="tag neutral">带货链接</span>':'')+'</li>').join('')+'</ul></div>'
+    +'<div class="row"><a class="ext" href="https://www.youtube.com/channel/'+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">在 YouTube 打开频道 ↗</a></div>'
+    +'<div class="meta">匹配分 = 内容相关度 30 + 受众匹配（频道国家 + 评论语言）20 + 互动率 15 + 触达（播放 / 订阅）15 + 内容风格 10 + 活跃度 10</div>'
+    +'<div class="meta">建议报价 <b class="num">'+money(c.price.lo)+'–'+money(c.price.hi)+'</b>（按近 10 条均播 × YouTube 参考 CPM $'+CPM.YouTube+' 估算，仅供参考）</div>';
+}
+function openDrawer(id){
+  const c = BY_ID[id]; if(!c) return;
+  const inList = S.results.some(x=>x.id===id);
+  $('#sheet').innerHTML = '<div class="row">'+avatar(c)+'<div><h3>'+esc(c.name)+' '+dataTag(c)+'</h3><div class="meta">'+esc(c.handle)+' · '+c.platform+' · '+ctry(c)+'</div></div><button type="button" class="x" data-act="close" aria-label="关闭">×</button></div>'
+    + detailHTML(c, false)
+    + '<div class="row">'+(inList?'<button type="button" class="btn '+(S.selected.has(id)?'':'primary')+'" data-toggle="'+id+'">'+(S.selected.has(id)?'取消选择':'选择这位达人')+'</button>':'')
+    + '<button type="button" class="btn" data-similar="'+id+'">找相似达人</button></div>'
+    + '<div id="sim-box"></div>';
+  $('#drawer').hidden = false;
+  $('#sheet').querySelector('.x').focus();
+}
+function closeDrawer(){ $('#drawer').hidden = true; }
+function showSimilar(id){
+  const c = BY_ID[id];
+  const exclude = new Set(S.results.map(x=>x.id));
+  const list = similar(c, exclude);
+  $('#sim-box').innerHTML = '<div class="stack" style="gap:8px"><span class="lbl-s">与 '+esc(c.name)+' 相似</span>'
+    + (list.length ? list.map(({d,s})=>'<div class="row" style="justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:8px 10px">'
+      +'<div class="who">'+avatar(d)+'<div class="who-main"><div class="who-name">'+esc(d.name)+' <span class="handle">'+esc(d.handle)+'</span></div>'
+      +'<div class="meta">'+d.platform+' · '+ctry(d)+' · '+fmtK(d.followers)+' 粉 · 相似度 '+Math.round(s*100)+'%</div></div></div>'
+      +'<button type="button" class="btn sm" data-addsim="'+d.id+'">加入候选</button></div>').join('') : '<div class="empty">没有更多相似达人了。</div>')
+    + '<p class="why" style="margin:0">相似度 = 品类 40% + 内容风格 20% + 地区 20% + 粉丝量级 20%。已排除假粉和长期不更新的账号。</p></div>';
+}
+function addSimilar(id){
+  if(S.results.some(x=>x.id===id)) return;
+  const x = Object.assign({id, src:'similar'}, scoreOf(BY_ID[id], S.brief));
+  x.reason = '相似推荐：'+x.reason;
+  x.rank = S.results.length+1;
+  S.results.push(x); S.selected.add(id); S.lookalikeIds.add(id);
+  toast('已加入候选并勾选：'+BY_ID[id].name);
+  render();
+}
+
+/* ---------- step 4 ---------- */
+function v4(){
+  const sel = selectedList();
+  const bad = sel.filter(c=>riskOf(c,S.brief).some(r=>r.lv==='bad'));
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>审核已选达人</h2><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/3</span></div>'
+  +(bad.length?'<div class="callout ask"><b>'+bad.length+' 位达人有高风险标签</b>：'+bad.map(c=>esc(c.name)).join('、')+'。建议移除或人工复核后再邀约。</div>':'')
+  +(sel.length?'<div class="cards">'+sel.map(c=>'<div class="card"><div class="row">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · '+c.platform+' · '+ctry(c)+'</div></div><span class="spacer"></span>'
+      +'<button type="button" class="btn sm" data-remove="'+c.id+'">移除</button></div>'+detailHTML(c, true)+'<div class="row"><button type="button" class="btn sm" data-detail="'+c.id+'">找相似 / 更多</button></div></div>').join('')+'</div>'
+    :'<div class="empty">还没有选择达人。回到上一步勾选。</div>')
+  +'<div class="sticky-bar">'+budgetBar()+'<span class="spacer"></span><button type="button" class="btn" data-go="3">返回调整</button>'
+    +'<button type="button" class="btn primary" data-act="toMail"'+(sel.length?'':' disabled')+'>确认这 '+sel.length+' 位，生成邀约</button></div>'
+  +'</div>';
+}
+
+/* ---------- step 5 ---------- */
+function templateMail(c){
+  const b = S.brief, s = S.sender;
+  const post = c.posts[0];
+  const style = STYLE_EN[c.styles[0]] || 'videos';
+  const prod = s.productEn || CATS[b.category].en;
+  return {
+    subject: 'Collab idea: '+s.brand+' x '+c.handle,
+    body: 'Hi '+c.first+',\n\n'
+      +'I’m '+s.name+' from '+s.brand+'. I watched your recent video "'+post+'" and really liked your '+style+'. '
+      +(c.real ? 'Your channel feels like a great fit for our '+prod+' launch in '+(COUNTRY_EN[b.countries[0]]||'our target market')+'.\n\n'
+               : 'A lot of your audience is in '+COUNTRY_EN[c.country]+', which is exactly where we’re launching our '+prod+'.\n\n')
+      +'We’d love to send you a free unit and talk about a paid collaboration. Our budget for one video is around $'+c.price.lo+'–$'+c.price.hi+', and we’re happy to look at your rate card.\n\n'
+      +'If this sounds interesting, just reply and I’ll share the product details and a short brief.\n\n'
+      +'Best,\n'+s.name+'\n'+s.brand
+  };
+}
+function numberCheck(c, body){
+  const allowed = new Set([String(c.price.lo), String(c.price.hi)]);
+  (c.posts.join(' ')+' '+S.sender.brand+' '+S.sender.name+' '+S.sender.productEn).replace(/\d[\d,]*(?:\.\d+)?/g, m=>{ allowed.add(m.replace(/,/g,'')); return m; });
+  const bad = [];
+  body.replace(/\d[\d,]*(?:\.\d+)?/g, m=>{ const v=m.replace(/,/g,''); if(!allowed.has(v) && bad.indexOf(m)<0) bad.push(m); return m; });
+  return bad;
+}
+function v5(){
+  const sel = selectedList();
+  const has = sel.length && sel.every(c=>S.emails[c.id]);
+  const allChecked = has && sel.every(c=>S.checked.has(c.id));
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>个性化邀约</h2><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/3</span></div>'
+  +'<div class="panel"><div class="grid2">'
+    +'<label class="f" for="s-brand">品牌名（英文）<input id="s-brand" type="text" value="'+esc(S.sender.brand)+'"></label>'
+    +'<label class="f" for="s-name">署名<input id="s-name" type="text" value="'+esc(S.sender.name)+'"></label>'
+    +'<label class="f full" for="s-prod">商品英文名<input id="s-prod" type="text" value="'+esc(S.sender.productEn)+'"></label>'
+  +'</div><div class="row" style="margin-top:14px"><button type="button" class="btn '+(has?'':'primary')+'" data-act="genMail"'+(S.busy?' disabled':'')+'>'+(has?'重新生成':'生成邀约')+'</button>'
+    +(S.busy==='mail'?thinking(aiName()+' 正在逐个写邀约…'):(has?srcTag(S.mailSrc):''))+'</div></div>'
+  +(has?'<div class="cards">'+sel.map(c=>{
+      const m = S.emails[c.id], bad = numberCheck(c, m.body);
+      return '<div class="mail"><div class="mail-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">To '+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · 报价区间 $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real?'<div class="meta">收件人：'+(c.email?'<code style="user-select:all">'+esc(c.email)+'</code>':'未公开邮箱，需到频道“关于”页查看')+'</div>':'')+'</div></div>'
+        +'<div class="mail-body"><label class="f" for="sub-'+c.id+'">主题<input id="sub-'+c.id+'" data-subj="'+c.id+'" type="text" value="'+esc(m.subject)+'"></label>'
+        +'<label class="f" for="body-'+c.id+'">正文<textarea id="body-'+c.id+'" data-body="'+c.id+'">'+esc(m.body)+'</textarea></label>'
+        +'<div class="risks" id="chk-'+c.id+'">'+checkTags(bad)+'</div></div>'
+        +'<div class="mail-foot"><label><input type="checkbox" data-check="'+c.id+'"'+(S.checked.has(c.id)?' checked':'')+'> 已核对内容</label></div></div>';
+    }).join('')+'</div>':'')
+  +(has?'<div class="sticky-bar"><span class="meta">'+(allChecked?'全部核对完成':'还有 '+sel.filter(c=>!S.checked.has(c.id)).length+' 封未核对')+'。Demo 不会真的发出邮件。</span><span class="spacer"></span>'
+    +'<button type="button" class="btn primary" id="send-btn" data-act="send"'+(allChecked?'':' disabled')+'>确认发送 '+sel.length+' 封（模拟）</button></div>':'')
+  +'<p class="why"><b>兜底规则：</b>邮件只能引用库里已有的作品和报价；正文里出现数据中没有的数字会被标出来让人核对，防止 AI 编造达人数据或乱许诺价格。</p>'
+  +'</div>';
+}
+function checkTags(bad){ return bad.length ? '<span class="tag warn">出现数据里没有的数字：'+esc(bad.join(', '))+'，请核对</span>' : '<span class="tag good">数字校验通过</span>'; }
+async function doGenMail(){
+  S.sender.brand = $('#s-brand').value.trim() || 'Your Brand';
+  S.sender.name = $('#s-name').value.trim() || 'Alex';
+  S.sender.productEn = $('#s-prod').value.trim() || CATS[S.brief.category].en;
+  const sel = selectedList();
+  const out = {}; sel.forEach(c=>{ out[c.id] = templateMail(c); });
+  let src = 'rule';
+  if(S.mode==='ai'){
+    S.busy='mail'; render();
+    const data = sel.map(c=>({id:c.id, first_name:c.first, handle:c.handle, platform:c.platform, country:COUNTRY_EN[c.country], content_styles:c.styles.map(s=>STYLE_EN[s]), recent_posts:c.posts, price_low:c.price.lo, price_high:c.price.hi}));
+    const prompt = 'Write one short, personal outreach email per creator for an influencer collaboration.\n'
+      +'Rules:\n- English, friendly and specific, body under 120 words.\n- Mention exactly one of the creator’s recent_posts by its exact title in double quotes.\n'
+      +'- Do not invent any numbers, stats, follower counts or claims. The only prices allowed are "$price_low–$price_high" for one video, and say we are open to their rate card.\n'
+      +'- Offer a free product sample. No exclusivity, no guarantees. If country is missing, do not mention where their audience is.\n- Sign off with the sender name and brand on separate lines.\n'
+      +'Sender: '+S.sender.name+', brand: '+S.sender.brand+', product: '+S.sender.productEn+', collaboration: '+S.brief.format+'.\n'
+      +'Reply with only a JSON array: [{"id":"c001","subject":"...","body":"..."}]\n\nCreators:\n'+data.map(d=>JSON.stringify(d)).join('\n');
+    const j = await aiJson(prompt);
+    S.busy='';
+    if(Array.isArray(j)){
+      let n=0; j.forEach(x=>{ if(x && out[x.id] && x.body){ out[x.id] = {subject:String(x.subject||out[x.id].subject).slice(0,140), body:String(x.body).slice(0,1500)}; n++; } });
+      if(n) src='ai';
+    }
+  }
+  S.emails = out; S.mailSrc = src; S.checked = new Set();
+  render();
+}
+function doSend(){
+  const sel = selectedList();
+  sel.forEach(c=>{ S.board[c.id] = 'invited'; });
+  S.tSend = Date.now();
+  S.max = 6;
+  toast('已模拟发送 '+sel.length+' 封邀约');
+  go(6);
+}
+
+/* ---------- step 6 ---------- */
+const COLS = [['invited','已邀约'],['replied','已回复'],['deal','合作中']];
+function v6(){
+  const ids = Object.keys(S.board);
+  const secs = S.t0 && S.tSend ? Math.round((S.tSend-S.t0)/1000) : 0;
+  const ranks = ids.map(id=>S.results.find(x=>x.id===id)).filter(x=>x && x.src!=='similar').map(x=>x.rank);
+  const avgRank = ranks.length ? (sum(ranks)/ranks.length).toFixed(1) : '–';
+  const sel = ids.map(id=>BY_ID[id]);
+  const lo = sum(sel.map(c=>c.price.lo)), hi = sum(sel.map(c=>c.price.hi));
+  const card = c => {
+    const st = S.board[c.id];
+    return '<div class="bcard"><div class="row" style="gap:8px">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+'</div><div class="meta">'+c.platform+' · '+ctry(c)+' · $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real&&c.email?'<div class="meta">'+esc(c.email)+'</div>':'')+'</div></div>'
+      +'<div class="row" style="gap:6px">'
+      +(st==='invited'?'<button type="button" class="btn sm" data-move="'+c.id+':replied">标记已回复</button>':'')
+      +(st==='replied'?'<button type="button" class="btn sm" data-move="'+c.id+':deal">进入合作</button><button type="button" class="btn sm" data-move="'+c.id+':invited">退回</button>':'')
+      +(st==='deal'?'<span class="tag good">待寄样 · 待签约</span>':'')
+      +'</div></div>';
+  };
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>合作看板</h2><p class="lead">邀约发出之后进入跟进。真实产品里这里接邮箱回复、合同、寄样物流和内容追踪，Demo 只演示状态流转。</p></div></div>'
+  +'<div class="stats">'
+    +'<div class="stat"><span>需求到发出邀约</span><b>'+Math.floor(secs/60)+' 分 '+(secs%60)+' 秒</b><small>竞品宣传：8 小时 → 8 分钟</small></div>'
+    +'<div class="stat"><span>发出邀约</span><b>'+ids.length+' 封</b><small>其中相似推荐 '+ids.filter(id=>S.lookalikeIds.has(id)).length+' 位</small></div>'
+    +'<div class="stat"><span>选中达人的平均推荐名次</span><b>'+avgRank+'</b><small>越靠前说明排序越准</small></div>'
+    +'<div class="stat"><span>预计总费用</span><b>'+money(lo)+'–'+money(hi)+'</b><small>'+(S.brief.budgetUsd?'预算 '+money(S.brief.budgetUsd):'未设预算')+'</small></div>'
+  +'</div>'
+  +'<div class="board">'+COLS.map(([k,l])=>{ const cs = sel.filter(c=>S.board[c.id]===k); return '<div class="col"><h3>'+l+' <span>'+cs.length+'</span></h3>'+(cs.length?cs.map(card).join(''):'<div class="empty">暂无</div>')+'</div>'; }).join('')+'</div>'
+  +'<div class="row"><button type="button" class="btn dark" data-act="restart">换一个需求重新演示</button></div>'
+  +'<p class="why"><b>可以讲的指标：</b>匹配质量看“选中达人的平均推荐名次”和“前 10 采纳率”；效率看“需求到发出邀约用时”；业务看邀约回复率、成交率和单次合作 ROI。</p>'
+  +'</div>';
+}
+
+/* ---------- save / restore demo progress (per browser) ---------- */
+const SAVE_KEY = 'influencer_demo_state_v1';
+let saveTimer = null;
+function persistSoon(){ clearTimeout(saveTimer); saveTimer = setTimeout(persist, 300); }
+function slimCreator(c){
+  const o = Object.assign({}, c);
+  o.desc = String(c.desc||'').slice(0, 600);
+  delete o.cmts;
+  o.recent = (c.recent||[]).map(v=>({id:v.id, title:v.title, at:v.at, s:v.s, dur:v.dur, spon:v.spon, aff:v.aff, cat:v.cat, lang:v.lang, brands:v.brands}));
+  return o;
+}
+function persist(){
+  if(S.busy) return;
+  try {
+    const keep = new Set(S.pool.map(c=>c.id).concat(S.results.map(x=>x.id)));
+    const real = Object.keys(BY_ID).map(id=>BY_ID[id]).filter(c=>c.real && keep.has(c.id));
+    localStorage.setItem(SAVE_KEY, JSON.stringify({
+      v:1, savedAt:Date.now(), step:S.step, max:S.max, mode:S.mode, source:S.source, input:S.input,
+      brief:S.brief, briefSrc:S.briefSrc, notes:S.notes, questions:S.questions,
+      poolIds:S.pool.map(c=>c.id), relax:S.relax, results:S.results, rankSrc:S.rankSrc,
+      selected:Array.from(S.selected), lookalikeIds:Array.from(S.lookalikeIds),
+      sender:S.sender, emails:S.emails, mailSrc:S.mailSrc, checked:Array.from(S.checked), board:S.board,
+      t0:S.t0, tSend:S.tSend, realStats:S.realStats, trending:S.trending, real:real.map(slimCreator)
+    }));
+  } catch(e){}
+}
+function restore(){
+  try {
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+    if(!d || d.v!==1) return false;
+    if(d.source==='youtube' && IN_ARTIFACT) return false;
+    (d.real||[]).forEach(c=>{ BY_ID[c.id] = c; });
+    Object.assign(S, {
+      step:d.step||1, max:d.max||1, source:d.source||'sample', input:d.input||S.input,
+      brief:d.brief||null, briefSrc:d.briefSrc||'', notes:d.notes||[], questions:d.questions||[],
+      pool:(d.poolIds||[]).map(id=>BY_ID[id]).filter(Boolean), relax:d.relax||[],
+      results:(d.results||[]).filter(x=>BY_ID[x.id]), rankSrc:d.rankSrc||'',
+      selected:new Set((d.selected||[]).filter(id=>BY_ID[id])), lookalikeIds:new Set(d.lookalikeIds||[]),
+      sender:d.sender||S.sender, emails:d.emails||{}, mailSrc:d.mailSrc||'', checked:new Set(d.checked||[]),
+      board:d.board||{}, t0:d.t0||null, tSend:d.tSend||null, realStats:d.realStats||null, trending:d.trending||null,
+      savedMode:d.mode
+    });
+    if(!S.brief){ S.step = 1; S.max = 1; }
+    return S.step>1;
+  } catch(e){ return false; }
+}
+
+/* ---------- main render & events ---------- */
+function render(){
+  renderSteps(); renderMode();
+  const v = [null,v1,v2,v3,v4,v5,v6][S.step];
+  $('#view').innerHTML = v();
+  persistSoon();
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,input[type=checkbox]');
+  if(e.target.id==='drawer'){ closeDrawer(); return; }
+  if(!t) return;
+  const d = t.dataset;
+  if(t.id==='mode-ai'){
+    if(S.aiAvailable){ S.mode='ai'; render(); return; }
+    if(!IN_ARTIFACT){
+      S.step = 1; render();
+      const el = $('#ds-key'); if(el){ el.scrollIntoView({block:'center'}); el.focus(); }
+      toast(S.dsStatus && S.dsStatus.lv==='bad' ? 'AI 模式不可用：'+S.dsStatus.t : '先在第 1 步填 DeepSeek API Key，再点“测试连接”');
+    }
+    return;
+  }
+  if(t.id==='mode-rule'){ S.mode='rule'; render(); return; }
+  if((t.id==='src-sample' || t.id==='src-yt') && !t.disabled){
+    const src = t.id==='src-yt' ? 'youtube' : 'sample';
+    if(src!==S.source){ Object.assign(S,{source:src,step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),board:{},t0:null,tSend:null,ytError:'',realStats:null,trending:null}); render(); }
+    return;
+  }
+  if(d.go){ go(parseInt(d.go,10)); return; }
+  if(d.preset){ S.input = PRESETS[+d.preset].text; $('#need').value = S.input; return; }
+  if(d.k && t.closest('[data-group]')){ t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed')!=='true')); return; }
+  if(d.sel){ if(t.checked) S.selected.add(d.sel); else S.selected.delete(d.sel); render(); return; }
+  if(d.detail){ openDrawer(d.detail); return; }
+  if(d.toggle){ if(S.selected.has(d.toggle)) S.selected.delete(d.toggle); else S.selected.add(d.toggle); render(); openDrawer(d.toggle); return; }
+  if(d.similar){ showSimilar(d.similar); return; }
+  if(d.addsim){ const from = $('#sheet [data-similar]'); addSimilar(d.addsim); if(from) showSimilar(from.dataset.similar); return; }
+  if(d.remove){ S.selected.delete(d.remove); render(); return; }
+  if(d.check){ if(t.checked) S.checked.add(d.check); else S.checked.delete(d.check); render(); return; }
+  if(d.move){ const [id,st] = d.move.split(':'); S.board[id]=st; render(); return; }
+  if(d.copy){ const v = d.copy; try { navigator.clipboard.writeText(v).then(()=>toast('已复制'), ()=>toast('复制失败，请手动选中复制')); } catch(e){ toast('复制失败，请手动选中复制'); } return; }
+  switch(d.act){
+    case 'close': closeDrawer(); break;
+    case 'saveKey': { const k = $('#yt-key').value.trim(); if(!k){ toast('先粘贴 API Key'); break; } S.ytKey = k; saveKey(k); toast('Key 已保存在这台电脑的浏览器里'); render(); break; }
+    case 'clearKey': S.ytKey=''; saveKey(''); toast('Key 已清除'); render(); break;
+    case 'saveDs': { const k = $('#ds-key').value.trim(); if(!k){ toast('先粘贴 DeepSeek API Key'); break; } S.dsKey = k; saveDsKey(k); S.aiAvailable = true; S.mode = 'ai'; S.dsStatus = null; toast('DeepSeek Key 已保存，建议点“测试连接”确认一下'); render(); break; }
+    case 'testDs': {
+      const k = $('#ds-key').value.trim(); if(!k){ toast('先粘贴 DeepSeek API Key'); break; }
+      S.dsKey = k; saveDsKey(k); S.dsStatus = {lv:'neutral', t:'正在测试…'}; render();
+      dsPing().then(st => { S.dsStatus = st; if(st.lv==='good'){ S.aiAvailable = true; S.mode = 'ai'; } else { S.aiAvailable = false; S.mode = 'rule'; } render(); });
+      break;
+    }
+    case 'clearDs': S.dsKey=''; S.dsStatus=null; saveDsKey(''); if(!IN_ARTIFACT){ S.aiAvailable=false; S.mode='rule'; } toast('DeepSeek Key 已清除'); render(); break;
+    case 'parse': doParse(); break;
+    case 'match': doMatch(); break;
+    case 'rerank': S.step=2; doMatch(true); break;
+    case 'toReview': S.max=Math.max(S.max,4); go(4); break;
+    case 'toMail': S.max=Math.max(S.max,5); go(5); break;
+    case 'genMail': doGenMail(); break;
+    case 'send': doSend(); break;
+    case 'restart': Object.assign(S,{step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),board:{},t0:null,tSend:null,ytError:'',realStats:null,trending:null}); render(); break;
+  }
+});
+document.addEventListener('input', e => {
+  const d = e.target.dataset;
+  if(e.target.id==='need') S.input = e.target.value;
+  if(d.subj && S.emails[d.subj]) S.emails[d.subj].subject = e.target.value;
+  if(d.body && S.emails[d.body]){
+    S.emails[d.body].body = e.target.value;
+    const box = document.getElementById('chk-'+d.body);
+    if(box) box.innerHTML = checkTags(numberCheck(BY_ID[d.body], e.target.value));
+    if(S.checked.has(d.body)){ S.checked.delete(d.body); const cb=document.querySelector('[data-check="'+d.body+'"]'); if(cb) cb.checked=false; const sb=$('#send-btn'); if(sb) sb.disabled=true; }
+  }
+  if(e.target.id==='s-brand') S.sender.brand = e.target.value;
+  if(e.target.id==='s-name') S.sender.name = e.target.value;
+  if(e.target.id==='s-prod') S.sender.productEn = e.target.value;
+});
+document.addEventListener('keydown', e => { if(e.key==='Escape' && !$('#drawer').hidden) closeDrawer(); });
+
+const restored = restore();
+render();
+if(restored) toast('已恢复上次的演示进度。想从头开始，点左下角“重新开始”。');
+(async function(){
+  try { if(window.claude && typeof window.claude.use==='function'){ sampleFn = await window.claude.use('sample'); } } catch(e){ sampleFn = null; }
+  if(sampleFn){ S.aiAvailable = true; S.mode = 'ai'; render(); }
+})();
+if(!IN_ARTIFACT && S.dsKey){ S.aiAvailable = true; S.mode = S.savedMode==='rule' ? 'rule' : 'ai'; render(); }
+})();
+</script>
+
+</body></html>
