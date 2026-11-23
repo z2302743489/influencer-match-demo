@@ -200,6 +200,14 @@ a.ext{color:var(--focus);text-decoration:none}
 .wt{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .wt-row{display:grid;grid-template-columns:92px 118px 62px minmax(0,1fr);gap:8px;align-items:center;padding:7px 10px;border-top:1px solid var(--line);font-size:12.5px}
 .wt-row:first-child{border-top:0}
+#creator{position:fixed;inset:0;z-index:40;overflow:auto;background:var(--bg);padding:calc(env(safe-area-inset-top,0px) + 16px) max(16px,env(safe-area-inset-right,0px)) calc(env(safe-area-inset-bottom,0px) + 32px) max(16px,env(safe-area-inset-left,0px))}
+.cp{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+.cp-brand{display:flex;align-items:center;gap:10px;font-weight:700;font-family:var(--display)}
+.cp-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:var(--shadow)}
+.cp-card h2{font-size:20px}
+.cp .btn{justify-content:center;padding:11px 14px}
+.cp-plats{display:grid;grid-template-columns:1fr;gap:8px}
+.cp-ok{width:56px;height:56px;border-radius:50%;background:var(--good-soft);color:var(--good);display:grid;place-items:center;font-size:28px;font-weight:700}
 .mock{border:1.5px dashed var(--warn);background:var(--warn-soft);color:var(--warn);border-radius:10px;padding:8px 12px;font-size:12.5px;font-weight:600}
 .phone{border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--bg);display:flex;flex-direction:column;gap:12px}
 .phone h3{font-size:16px}
@@ -1315,22 +1323,26 @@ function authFlow(id, step, plat, note){
   const steps = [['invite','邀请链接'],['landing','达人看到的说明页'],['consent','平台授权页'],['done','完成']];
   const head = '<div class="row">'+avatar(c)+'<div><h3>邀请 '+esc(c.name)+' 授权数据</h3><div class="meta">'+esc(c.handle)+'</div></div><button type="button" class="x" data-act="close" aria-label="关闭">×</button></div>'
     +'<div class="steps-mini">'+steps.map(([k,l])=>'<span'+(k===step?' class="on"':'')+'>'+l+'</span>').join('')+'</div>';
-  const link = 'youthpower-demo.example/authorize/'+hashStr(c.id).toString(36);
+  const link = creatorLink(c);
   let body = '';
   if(step==='invite'){
     body = '<div class="mock">演示流程：不会联系达人，也不会调用任何平台的授权接口。</div>'
       +'<p class="lead" style="margin:0">商务或达人运营把专属邀请链接发给达人，达人用手机打开。</p>'
-      +'<div class="row" style="gap:8px"><code class="num" style="user-select:all">'+esc(link)+'</code><span class="tag neutral">示例链接</span></div>'
-      +'<div class="row"><button type="button" class="btn primary" data-authgo="'+id+':landing">以达人身份打开（模拟）</button><button type="button" class="btn" data-detail="'+id+'">返回详情</button></div>';
+      +(IN_ARTIFACT
+        ? '<div class="row"><button type="button" class="btn primary" data-authgo="'+id+':landing">以达人身份打开（模拟）</button><button type="button" class="btn" data-detail="'+id+'">返回详情</button></div>'
+        : '<div class="row" style="gap:8px"><code class="num" style="user-select:all;word-break:break-all">'+esc(link)+'</code></div>'
+          +'<div class="row"><a class="btn primary" href="'+esc(link)+'" target="_blank" rel="noopener">在新标签页打开达人邀请页</a><button type="button" class="btn" data-copy="'+esc(link)+'">复制链接</button></div>'
+          +'<div class="meta">在新标签页里以达人身份完成授权后，回到这个页面，这位达人会自动显示“已认证”。需要在同一个浏览器里打开；手机上打开只能看页面效果，结果不会同步回来。</div>'
+          +'<div class="row"><button type="button" class="btn" data-authgo="'+id+':landing">在这里直接模拟</button><button type="button" class="btn" data-detail="'+id+'">返回详情</button></div>');
   } else if(step==='landing'){
     body = '<div class="phone"><h3>授权你的数据，获得更多品牌合作</h3>'
-      +'<div class="meta">青年力量会用这些数据，把你推荐给更合适的品牌，并免费给你一份商业价值报告。</div>'
+      +'<div class="meta">平台会用这些数据，把你推荐给更合适的品牌，并免费给你一份商业价值报告。</div>'
       +'<div class="perm"><div><b>✓</b><span>只读取受众分布和作品表现数据</span></div><div><b>✓</b><span>不会获取你的密码、私信，也不会替你发内容</span></div><div><b>✓</b><span>随时可以在平台设置里取消授权</span></div><div><b>✓</b><span>给品牌展示数据前会征得你同意</span></div></div>'
       +(note?'<div class="callout ask">'+esc(note)+'</div>':'')
       +'<div class="lbl-s">选择要连接的平台</div><div class="row">'+AUTH_PLATS.map(p=>'<button type="button" class="btn'+(p===c.platform?' primary':'')+'" data-authgo="'+id+':consent:'+p+'">'+p+'</button>').join('')+'</div></div>';
   } else if(step==='consent'){
     body = '<div class="mock">模拟的平台授权页。真实流程会跳转到 '+esc(plat)+' 官方登录页，达人在平台自己的页面上登录并同意，我们拿不到密码。</div>'
-      +'<div class="phone"><h3>“青年力量”请求访问你的 '+esc(plat)+' 数据</h3>'
+      +'<div class="phone"><h3>“达人合作平台（演示）”请求访问你的 '+esc(plat)+' 数据</h3>'
       +'<div class="perm">'+AUTH_PERMS[plat].map(x=>'<div><b>✓</b><span>'+x+'</span></div>').join('')+'</div>'
       +'<div class="meta">这些权限只能读取数据。你可以随时在 '+esc(plat)+' 的账号设置里撤销。</div>'
       +'<div class="row"><button type="button" class="btn primary" data-authgo="'+id+':done:'+plat+'">允许</button><button type="button" class="btn" data-authgo="'+id+':landing::deny">拒绝</button></div></div>';
@@ -1522,7 +1534,7 @@ function slimCreator(c){
   return o;
 }
 function persist(){
-  if(S.busy) return;
+  if(S.busy || CREATOR_MODE) return;
   try {
     const keep = new Set(S.pool.map(c=>c.id).concat(S.results.map(x=>x.id)));
     const real = Object.keys(BY_ID).map(id=>BY_ID[id]).filter(c=>c.real && keep.has(c.id));
@@ -1641,8 +1653,80 @@ document.addEventListener('input', e => {
 });
 document.addEventListener('keydown', e => { if(e.key==='Escape' && !$('#drawer').hidden) closeDrawer(); });
 
-const restored = restore();
+/* ---------- creator-facing invite page (opened from the invite link) ---------- */
+const AUTH_QS = new URLSearchParams(location.search);
+const CREATOR_MODE = !IN_ARTIFACT && AUTH_QS.get('authorize')==='1';
+const INBOX_KEY = 'influencer_demo_auth_inbox';
+function creatorLink(c){
+  const base = location.href.split('#')[0].split('?')[0];
+  const q = new URLSearchParams({authorize:'1', c:c.id, n:c.name, h:c.handle, p:c.platform});
+  return base + '?' + q.toString();
+}
+function pushInbox(item){
+  try { const a = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); a.push(item); localStorage.setItem(INBOX_KEY, JSON.stringify(a)); } catch(e){}
+}
+function drainInbox(){
+  let a = [];
+  try { a = JSON.parse(localStorage.getItem(INBOX_KEY) || '[]'); } catch(e){ return; }
+  if(!a.length) return;
+  const keep = [], done = [];
+  a.forEach(it => {
+    const c = BY_ID[it.id];
+    if(!c){ keep.push(it); return; }
+    if(it.action==='revoke'){ delete S.auth[it.id]; }
+    else { S.auth[it.id] = makeAuthData(c, it.platform); }
+    refreshResult(it.id); done.push(c.name + (it.action==='revoke' ? ' 取消了授权' : ' 完成了 '+it.platform+' 授权'));
+  });
+  try { localStorage.setItem(INBOX_KEY, JSON.stringify(keep)); } catch(e){}
+  if(done.length){ render(); toast('达人端更新：' + done.join('；')); }
+}
+function creatorPage(step, plat, note){
+  const id = AUTH_QS.get('c') || '', name = AUTH_QS.get('n') || '达人', handle = AUTH_QS.get('h') || '', defPlat = AUTH_QS.get('p') || 'YouTube';
+  let el = document.getElementById('creator');
+  if(!el){ el = document.createElement('div'); el.id = 'creator'; document.body.appendChild(el); document.querySelector('.wrap').hidden = true; document.title = '达人数据授权邀请'; }
+  const ini = name.trim().slice(0,1).toUpperCase();
+  const brand = '<div class="cp-brand"><div class="logo" aria-hidden="true" style="width:30px;height:30px;border-radius:8px"><svg viewBox="0 0 24 24" fill="none" style="width:18px;height:18px"><circle cx="12" cy="12" r="5" stroke="var(--bg)" stroke-width="1.8"/><circle cx="16.5" cy="8.2" r="1.8" fill="var(--accent)"/></svg></div>达人合作平台<span class="tag warn">演示</span></div>';
+  const mock = '<div class="mock">演示页面：不会读取你的任何真实数据，也不会跳转到平台登录。</div>';
+  const who = '<div class="row" style="gap:10px"><div class="av" style="background:var(--accent)">'+esc(ini)+'</div><div><div style="font-weight:600">'+esc(name)+'</div><div class="meta">'+esc(handle)+'</div></div></div>';
+  let card = '';
+  if(step==='landing'){
+    card = '<div class="cp-card">'+who+'<h2>授权你的数据，获得更多品牌合作</h2>'
+      +'<div class="meta">我们会用这些数据，把你推荐给更合适的品牌，并免费给你一份商业价值报告：适合接哪些品类、报价大概在什么区间。</div>'
+      +'<div class="perm"><div><b>✓</b><span>只读取受众分布和作品表现数据</span></div><div><b>✓</b><span>不会获取你的密码、私信，也不会替你发内容</span></div><div><b>✓</b><span>给品牌展示你的数据前，会先征得你同意</span></div><div><b>✓</b><span>随时可以在平台设置里取消授权</span></div></div>'
+      +(note ? '<div class="callout ask">'+esc(note)+'</div>' : '')
+      +'<div class="lbl-s">选择要连接的平台</div><div class="cp-plats">'+AUTH_PLATS.map(p=>'<button type="button" class="btn'+(p===defPlat?' primary':'')+'" data-cp="consent:'+p+'">连接 '+p+'</button>').join('')+'</div></div>';
+  } else if(step==='consent'){
+    card = '<div class="mock">模拟的平台授权页。真实流程会跳转到 '+esc(plat)+' 官方登录页，你在平台自己的页面上登录并同意，我们拿不到你的密码。</div>'
+      +'<div class="cp-card"><h2>“达人合作平台（演示）”请求访问你的 '+esc(plat)+' 数据</h2>'
+      +'<div class="perm">'+AUTH_PERMS[plat].map(x=>'<div><b>✓</b><span>'+x+'</span></div>').join('')+'</div>'
+      +'<div class="meta">这些权限只能读取数据。你可以随时在 '+esc(plat)+' 的账号设置里撤销。</div>'
+      +'<button type="button" class="btn primary" data-cp="done:'+plat+'">允许</button><button type="button" class="btn" data-cp="landing::deny">拒绝</button></div>';
+  } else if(step==='done'){
+    card = '<div class="cp-card" style="align-items:center;text-align:center"><div class="cp-ok">✓</div><h2>已连接 '+esc(plat)+'</h2>'
+      +'<div class="meta">谢谢！数据会每天自动更新。品牌合作机会和你的商业价值报告，会通过合作平台发给你。</div>'
+      +'<div class="meta">演示说明：授权结果已同步给同一浏览器里打开的 Demo 页面，回到那个标签页就能看到“已认证”。</div>'
+      +'<button type="button" class="btn" data-cp="revoke:'+plat+'">取消授权</button></div>';
+  } else if(step==='revoked'){
+    card = '<div class="cp-card"><h2>已取消授权</h2><div class="meta">我们已停止同步，并删除了读取过的数据。</div><button type="button" class="btn primary" data-cp="landing">重新授权</button></div>';
+  }
+  el.innerHTML = '<div class="cp">'+brand+mock+card+'<div class="meta" style="text-align:center">AI 达人匹配 Demo · 达人端页面</div></div>';
+  el.scrollTop = 0;
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-cp]'); if(!t || !CREATOR_MODE) return;
+  const [step, plat, flag] = t.dataset.cp.split(':');
+  const id = AUTH_QS.get('c') || '';
+  if(step==='done') pushInbox({id, platform:plat, action:'grant', at:Date.now()});
+  if(step==='revoke'){ pushInbox({id, platform:plat, action:'revoke', at:Date.now()}); creatorPage('revoked'); return; }
+  creatorPage(step, plat, flag==='deny' ? '你选择了拒绝，没有读取任何数据。可以稍后再授权。' : '');
+});
+window.addEventListener('storage', e => { if(e.key===INBOX_KEY && !CREATOR_MODE) drainInbox(); });
+document.addEventListener('visibilitychange', () => { if(!document.hidden && !CREATOR_MODE) drainInbox(); });
+
+const restored = CREATOR_MODE ? false : restore();
 render();
+if(CREATOR_MODE) creatorPage('landing');
+else drainInbox();
 if(restored) toast('已恢复上次的演示进度。想从头开始，点左下角“重新开始”。');
 (async function(){
   try { if(window.claude && typeof window.claude.use==='function'){ sampleFn = await window.claude.use('sample'); } } catch(e){ sampleFn = null; }
