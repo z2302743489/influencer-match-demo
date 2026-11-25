@@ -253,6 +253,18 @@ label.inline{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-
 .lib{display:flex;flex-direction:column;margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .lib-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:13px}
 .lib-row:first-child{border-top:0}
+.basis{border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:13px}
+.basis summary{cursor:pointer;padding:8px 12px;font-weight:600;color:var(--ink)}
+.b-rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.b-row{display:grid;grid-template-columns:120px 110px minmax(0,1fr);gap:10px;align-items:baseline;padding:6px 12px;border-top:1px dashed var(--line)}
+.b-row:first-child{border-top:0}
+.b-row span{color:var(--muted)}
+.b-row b{font-family:var(--mono);font-size:13px}
+.b-row em{font-style:normal;color:var(--muted);font-size:12px}
+@media (max-width:620px){.b-row{grid-template-columns:minmax(0,1fr) auto}.b-row em{grid-column:1/-1}}
+.neglog{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.neglog ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.neglog li{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--focus);background:var(--panel);border:1px dashed var(--focus);border-radius:999px;padding:2px 9px;cursor:help;white-space:nowrap;vertical-align:middle}
 .guard:focus{outline:none}
 .guard:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -1554,8 +1566,10 @@ function newDeal(c){
     terms:{deliverable:c.platform==='YouTube'?'1 条 YouTube 视频（60–90 秒）':'1 条 '+c.platform+' 短视频（30–60 秒）', date:due, usage:'none'}, termsOk:false,
     brief:'', briefSrc:'', ship:{carrier:'DHL', no:''},
     draft:'', review:null, reviewSrc:'', rounds:0, feedback:'', feedbackOpen:false,
-    url:'', video:null, videoErr:'', sales:{clicks:'', orders:'', revenue:''}};
+    url:'', video:null, videoErr:'', sales:{clicks:'', orders:'', revenue:''},
+    round:1, awaitReply:false, firstAsk:null, sentOffer:null, log:[]};
 }
+function logPush(d, who, what, amount, model){ (d.log || (d.log = [])).push({at:Date.now(), round:d.round||1, who, what, amount:amount==null?null:+amount, model:model||''}); }
 function dealList(stages){
   return Object.keys(S.deals).map(id=>({c:BY_ID[id], d:S.deals[id]})).filter(x=>x.c && (!stages || stages.indexOf(x.d.stage)>=0));
 }
@@ -1576,6 +1590,7 @@ const G = {
     '写邮件：出现约定以外的数字会标黄；改了正文要重新勾“已核对”',
     '签约：必须人勾选核对才能签；签约前显示预算占用，超预算会提醒',
     'AI 不会自动答应价格，也不会自动发邮件，Demo 里的发送都是模拟',
+    '每轮开价和还价都记进谈判记录；签约后写回，用来校准下一次的估价和还价幅度',
     '~超出合理价一定比例要主管审批；付款走财务流程'
   ], 'AI 负责读、算、写，涉及钱的决定必须由人点头。', true),
   parse: () => guard('金额来源校验', '回复解析的护栏', [
@@ -1587,7 +1602,9 @@ const G = {
     '合理价 = 近期平均播放 ÷ 1000 × 平台 CPM × 市场系数；下限按 ×0.8，上限按 ×1.25，最低 $150',
     '平台 CPM：TikTok $25、Instagram $35、YouTube $45；市场系数：东南亚 0.4、拉美 0.5、中东 0.8、日本 0.9，其他 1。这些是 Demo 的假设值',
     '报价在区间内 → 接受；超出上限 30% 以内 → 还价到上限；超出 30% 以上 → 改成“固定费 + 佣金”；超出剩余预算 → 先暂缓',
+    '第 2 轮起：达人让步到估算上限 10% 以内就建议接受；谈到第 3 轮还差得多，建议报最终价或放弃',
     '建议由规则算出，不是 AI 拍脑袋；最终报多少由人定，可以直接改“我方报价”',
+    '点开“报价依据”能看到每一步的计算，以及这位达人和同平台的历史成交',
     '~用公司自己的历史成交价校准 CPM 和市场系数'
   ], '先有合理价才谈得上砍价。差距小就还价，差距大就换合作方式，用带货效果补差价。'),
   mail: () => guard('邮件护栏', '回复邮件的护栏', [
@@ -1616,6 +1633,14 @@ function r10(x){ return Math.round(x/10)*10; }
 /* --- creator replies --- */
 function sampleReply(c, i){
   const s = S.sender, prod = prodEn();
+  const dl = S.deals[c.id];
+  if(dl && dl.round>1){
+    const prev = (dl.parsed && dl.parsed.ask) || r10(c.price.hi*1.2), sent = dl.sentOffer || c.price.hi;
+    if(dl.round>=3) return 'Hi '+s.name+',\n\nI really like the product. $'+r10(prev*.95)+((dl.model==='hybrid')?' as the fixed fee, plus the commission,':'')+' is the lowest I can go for a dedicated video.\n\n'+c.first;
+    const mid = r10((prev+sent)/2);
+    if(dl.model==='hybrid' || dl.model==='commission') return 'Hi '+s.name+',\n\nI like the commission idea! Could we do $'+mid+' as the fixed fee plus the '+dl.rate+'%? Then I can start as soon as the sample arrives.\n\n'+c.first;
+    return 'Hi '+s.name+',\n\nThanks for the offer. Could we meet in the middle at $'+mid+'? That would work for me.\n\n'+c.first;
+  }
   // One of each across the first five: counter-offer, in range, questions, far too high, declined.
   const kind = [0,1,2,4,3][i%5];
   if(kind===3) return 'Hi '+s.name+',\n\nThanks so much for thinking of me! I\'m fully booked with sponsorships this month, so I\'ll have to pass for now. Maybe next quarter?\n\n'+c.first;
@@ -1656,11 +1681,56 @@ async function doParseReply(id){
       } else toast('AI 提取的金额在原文里找不到，已改用规则结果');
     }
   }
-  d.parsed = p; d.parseSrc = src; d.stage = 'talk';
+  d.parsed = p; d.parseSrc = src; d.stage = 'talk'; d.awaitReply = false;
+  if(p.intent==='declined') logPush(d, '达人', '婉拒');
+  else if(p.ask){ if(d.firstAsk==null) d.firstAsk = p.ask; logPush(d, '达人', d.round>1 ? '再次报价' : '首次报价', p.ask); }
+  else logPush(d, '达人', '回复了，没报价');
   d.sug = suggestDeal(c, d);
   d.model = d.sug.model || 'fixed'; d.offer = d.sug.offer || c.price.hi;
   d.counter = null; d.counterOk = false; d.counterSent = false; d.agreed = false;
   render();
+}
+const NEG_KEY = 'influencer_demo_neg_v1';
+const MKT_NAME = {SEA:'东南亚', LATAM:'拉美', ME:'中东', JP:'日本'};
+function loadNeg(){ try { return JSON.parse(localStorage.getItem(NEG_KEY)||'{}') || {}; } catch(e){ return {}; } }
+function saveNeg(c, d){
+  if(!d.firstAsk || !d.final) return;
+  const all = loadNeg();
+  (all[c.id] || (all[c.id] = [])).push({name:c.name, platform:c.platform, at:Date.now(), lo:c.price.lo, hi:c.price.hi, firstAsk:d.firstAsk, final:d.final, model:d.model, rounds:d.round||1});
+  try { localStorage.setItem(NEG_KEY, JSON.stringify(all)); } catch(e){}
+}
+function negStats(platform, exceptId){
+  const all = loadNeg(), rows = [];
+  Object.keys(all).forEach(id=>{ if(id!==exceptId) all[id].forEach(r=>{ if(r.platform===platform) rows.push(r); }); });
+  if(!rows.length) return null;
+  const avg = a => sum(a)/a.length;
+  // Price comparisons only make sense for fixed-fee deals; a fee with commission on top is not the same price.
+  const fx = rows.filter(r=>r.model==='fixed');
+  if(!fx.length) return null;
+  return {n:fx.length, vsHi:avg(fx.map(r=>r.final/r.hi)), cut:avg(fx.map(r=>1-r.final/r.firstAsk)), rounds:avg(rows.map(r=>r.rounds))};
+}
+// How the estimated range was worked out, step by step, plus what we paid before.
+function basisPanel(c){
+  const cpm = CPM[c.platform], reg = REGION_OF[c.country], mk = {SEA:.4,LATAM:.5,ME:.8,JP:.9}[reg] || 1;
+  const raw = c.avgViews/1000*cpm*mk, base = Math.max(150, raw);
+  const mine = (loadNeg()[c.id]||[]).slice(-1)[0], peers = negStats(c.platform, c.id);
+  const row = (k, v, note) => '<div class="b-row"><span>'+k+'</span><b>'+v+'</b>'+(note?'<em>'+note+'</em>':'')+'</div>';
+  return '<details class="basis"><summary>报价依据：估算区间 '+money(c.price.lo)+'–'+money(c.price.hi)+' 怎么算出来的</summary><div class="b-rows">'
+    +row('近期平均播放', fmtK(c.avgViews), c.real?'最近 10 条视频的平均播放':'示例数据')
+    +row('平台 CPM', '$'+cpm, c.platform+' 每千次播放的价格，Demo 假设值')
+    +row('市场系数', '× '+mk, (MKT_NAME[reg]||'欧美、澳洲等')+(mk<1?'，达人报价普遍更低':''))
+    +row('基准价', money(base), fmtK(c.avgViews)+' ÷ 1000 × $'+cpm+' × '+mk+' = '+money(raw)+(raw<150?'，低于 $150 按 $150 算':''))
+    +row('估算区间', money(c.price.lo)+'–'+money(c.price.hi), '基准价 × 0.8 到 × 1.25，取整到 10 美元')
+    +row('这位达人的历史', mine ? money(mine.firstAsk)+' → '+money(mine.final) : '没有', mine ? (mine.model==='fixed' ? '上次首次报价到成交，砍了 '+Math.round((1-mine.final/mine.firstAsk)*100)+'%' : '上次改成了'+MODEL[mine.model])+'，谈了 '+mine.rounds+' 轮' : '签约后会记下来')
+    +row('同平台历史成交', peers ? peers.n+' 单' : '没有', peers ? '成交价平均是估算上限的 '+Math.round(peers.vsHi*100)+'%，从首次报价平均砍了 '+Math.round(peers.cut*100)+'%，平均 '+peers.rounds.toFixed(1)+' 轮' : '积累后用来校准 CPM 和还价幅度')
+    +'</div></details>';
+}
+function negLog(d){
+  const log = d.log || [];
+  if(!log.length) return '';
+  return '<div class="neglog"><div class="row" style="gap:6px"><b>谈判记录</b><span class="tag neutral">第 '+(d.round||1)+' 轮</span></div><ol>'
+    + log.map(x=>'<li><span class="tag '+(x.who==='我方'?'ai':x.who==='达人'?'neutral':'good')+'">'+esc(x.who)+'</span>'+esc(x.what)+(x.amount!=null?' <b class="num">'+money(x.amount)+'</b>':'')+(x.model&&x.model!=='fixed'?' <span class="meta">'+esc(MODEL[x.model])+'</span>':'')+'</li>').join('')
+    + '</ol></div>';
 }
 function suggestDeal(c, d){
   const p = d.parsed, lo = c.price.lo, hi = c.price.hi, left = budgetLeft();
@@ -1668,6 +1738,16 @@ function suggestDeal(c, d){
   const ask = p.ask;
   if(!ask) return {kind:'ask', offer:hi, model:'fixed', t:'回复里没有报价。先回答达人的问题，再请对方给出一条视频的报价。'};
   const over = Math.round((ask/hi-1)*100);
+  if(d.round>=2 && d.model==='hybrid'){
+    // With commission on top, the fixed fee should sit below a fixed-only deal: judge it against the middle of the range.
+    const mid = r10((lo+hi)/2);
+    if(ask<=mid) return {kind:'accept', offer:ask, model:'hybrid', t:'第 '+d.round+' 轮，达人接受了佣金模式，固定费要 '+money(ask)+'，不超过区间中位 '+money(mid)+'。建议接受。'};
+    if(d.round>=3) return {kind:'final', offer:mid, model:'hybrid', t:'已经谈了 '+d.round+' 轮，固定费还差 '+money(ask-mid)+'。建议报最终价：固定费 '+money(mid)+' + '+d.rate+'% 佣金，不行就放弃，换下一位达人。'};
+    if(ask<=hi) return {kind:'counter', offer:mid, model:'hybrid', t:'达人接受了佣金模式，但固定费 '+money(ask)+' 偏高。有佣金兜底，固定费应低于纯固定合作，建议还到区间中位 '+money(mid)+'，佣金 '+d.rate+'% 不变。'};
+    return {kind:'final', offer:mid, model:'hybrid', t:'固定费 '+money(ask)+' 再加佣金，比纯固定合作的上限 '+money(hi)+' 还贵，不划算。建议报最终价：固定费 '+money(mid)+' + '+d.rate+'% 佣金，不行就放弃。'};
+  }
+  if(d.round>=2 && ask<=hi*1.1) return {kind:'accept', offer:ask, model:d.model, t:'第 '+d.round+' 轮，达人让步到 '+money(ask)+'，'+(over>0?'只比估算上限高 '+over+'%':'已在估算区间内')+'。建议接受，再谈容易谈崩。'};
+  if(d.round>=3) return {kind:'final', offer:hi, model:d.model, t:'已经谈了 '+d.round+' 轮，报价 '+money(ask)+' 仍比估算上限高 '+over+'%。建议报最终价 '+money(hi)+'，不行就放弃，换下一位达人，别拖慢上线。'};
   if(left!=null && Math.min(ask, hi) > left) return {kind:'over', offer:Math.min(ask, hi), model:'fixed', t:'剩余预算只有 '+money(Math.max(0,left))+'，不够这次合作。建议先暂缓，或者把预算从别的达人那里挪过来。'};
   if(ask<=hi) return {kind:'accept', offer:ask, model:'fixed', t:'报价 '+money(ask)+' 在估算区间 '+money(lo)+'–'+money(hi)+' 内，建议直接接受。'};
   if(ask<=hi*1.3) return {kind:'counter', offer:hi, model:'fixed', t:'报价 '+money(ask)+'，比估算上限高 '+over+'%。建议还价到 '+money(hi)+'，并表达长期合作的意愿。'};
@@ -1677,7 +1757,10 @@ function templateCounter(c, d){
   const s = S.sender, p = d.parsed || {}, k = d.sug ? d.sug.kind : 'counter';
   let mid = '';
   if(k==='lost') return {subject:'Re: Collab idea: '+s.brand+' x '+c.handle, body:'Hi '+c.first+',\n\nNo worries at all, thanks for letting us know! We\'d love to reach out again for our next launch.\n\nBest,\n'+s.name+'\n'+s.brand};
-  if(k==='ask') mid = 'Happy to share more. The '+prodEn()+' is our new launch and we\'d love an honest review in your own style. Could you let us know your rate for one video?';
+  if(k==='accept' && d.round>1) mid = 'Deal! $'+d.offer+((d.model==='hybrid'||d.model==='commission')?' plus '+d.rate+'% commission':'')+' works for us.';
+  else if(k==='final') mid = 'We really want to work with you, and $'+d.offer+(d.model==='hybrid'?' plus '+d.rate+'% commission':'')+' is the best we can do for this launch.';
+  else if(k==='counter' && d.model==='hybrid' && d.round>1) mid = 'Great that you\'re open to the commission. Since you\'ll also earn '+d.rate+'% on every sale, could we do $'+d.offer+' as the fixed fee?';
+  else if(k==='ask') mid = 'Happy to share more. The '+prodEn()+' is our new launch and we\'d love an honest review in your own style. Could you let us know your rate for one video?';
   else if(d.model==='hybrid') mid = 'Your rate is a bit above our budget for a single video. Would you be open to $'+d.offer+' plus a '+d.rate+'% commission on every sale through your link? If the video performs well, you\'d earn more than your usual rate.';
   else if(d.model==='commission') mid = 'Would you be open to a commission-only deal at '+d.rate+'% of every sale through your link, plus a free unit to keep?';
   else if(d.model==='gifted') mid = 'For this launch we can offer a free unit to keep, with no obligation to post. If you like it, we\'d love to talk about a paid video next time.';
@@ -2004,15 +2087,21 @@ function dealPanel(c, d){
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
       +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'<span class="meta">'+(S.mode==='ai'?aiName()+' 提取报价和问题，金额必须在原文里出现':'规则提取：金额、意向、问题')+'</span>')+'</div>';
+  } else if(d.stage==='talk' && d.awaitReply){
+    body = negLog(d)+'<label class="f">达人第 '+d.round+' 轮回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, could we meet in the middle…">'+esc(d.reply)+'</textarea></label>'
+      +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
+      +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
+      +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'')+'</div>';
   } else if(d.stage==='talk'){
     const p = d.parsed, sg = d.sug || {};
-    body = '<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+G.parse()+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
+    body = negLog(d)+'<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+G.parse()+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
       +'<div class="kv">'
         +'<div><span>达人报价</span><b>'+(p.ask?money(p.ask):'未报价')+'</b></div>'
         +'<div><span>我们的估算</span><b>'+money(c.price.lo)+'–'+money(c.price.hi)+'</b></div>'
         +'<div><span>剩余预算</span><b>'+(budgetLeft()==null?'未设':money(budgetLeft()))+'</b></div>'
       +'</div>'
       +(p.usageFee||p.days||p.exclusivity||(p.questions&&p.questions.length)?'<ul class="posts">'+(p.usageFee?'<li>广告授权另收 '+money(p.usageFee)+'</li>':'')+(p.days?'<li>收到样品后约 '+p.days+' 天发布</li>':'')+(p.exclusivity?'<li>问到是否需要独家</li>':'')+(p.questions||[]).map(q=>'<li>问题：'+esc(q)+'</li>').join('')+'</ul>':'')
+      +basisPanel(c)
       +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+' '+G.suggest()+'</div></div>';
     if(sg.kind==='lost'){
       body += '<div class="row">'+(d.counter?'':'<button type="button" class="btn sm" data-da="'+c.id+':counter">写一封礼貌的回复</button>')
@@ -2027,7 +2116,7 @@ function dealPanel(c, d){
       +'<div class="row"><button type="button" class="btn sm'+(d.counter?'':' primary')+'" data-da="'+c.id+':counter"'+(S.busy?' disabled':'')+'>'+(d.counter?'按新条件重写':'生成回复邮件')+'</button>'
       +(busyOn(c.id,'counter')?thinking(aiName()+' 正在写回复…'):'')+'</div>'
       +(d.counter?mailBox(c,d):'')
-      +(d.counterSent?'<div class="row"><span class="meta">达人怎么说？</span><button type="button" class="btn primary sm" data-da="'+c.id+':agree">达人接受了</button><button type="button" class="btn sm" data-da="'+c.id+':again">还要再谈</button></div>':'');
+      +(d.counterSent?'<div class="row"><span class="meta">达人怎么说？</span><button type="button" class="btn primary sm" data-da="'+c.id+':agree">达人接受了</button><button type="button" class="btn sm" data-da="'+c.id+':reply2">达人又报了价</button></div>':'');
     } else {
       const left = budgetLeft(), over = left!=null && d.offer>left;
       body += '<div class="terms"><div class="row" style="gap:8px"><b>确认合作条款</b>'+G.sign()+'</div>'
@@ -2045,7 +2134,8 @@ function dealPanel(c, d){
         +'<button type="button" class="btn primary sm" data-da="'+c.id+':sign"'+(d.termsOk?'':' disabled')+'>确认签约（模拟）</button></div></div>';
     }
   } else if(d.stage==='signed'){
-    body = '<div class="row"><b>拍摄要点</b>'+(d.brief?srcTag(d.briefSrc):'')+'<span class="spacer"></span><button type="button" class="btn sm'+(d.brief?'':' primary')+'" data-da="'+c.id+':brief"'+(S.busy?' disabled':'')+'>'+(d.brief?'重新生成':'生成拍摄要点')+'</button>'+(busyOn(c.id,'brief')?thinking(aiName()+' 正在写要点…'):'')+'</div>'
+    body = ((d.log||[]).length?'<details class="basis"><summary>谈判记录：'+(d.firstAsk?money(d.firstAsk)+' → ':'')+money(d.final)+'，谈了 '+(d.round||1)+' 轮</summary><div style="padding:8px 12px">'+negLog(d)+'</div></details>':'')
+      +'<div class="row"><b>拍摄要点</b>'+(d.brief?srcTag(d.briefSrc):'')+'<span class="spacer"></span><button type="button" class="btn sm'+(d.brief?'':' primary')+'" data-da="'+c.id+':brief"'+(S.busy?' disabled':'')+'>'+(d.brief?'重新生成':'生成拍摄要点')+'</button>'+(busyOn(c.id,'brief')?thinking(aiName()+' 正在写要点…'):'')+'</div>'
       +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>':'<p class="meta">要点里的卖点和禁用说法来自第 7 步的审核标准，审核时会按同一套标准检查。</p>')
       +'<div class="grid3"><label class="f">物流<select data-df="'+c.id+':ship.carrier">'+['DHL','FedEx','UPS','USPS','Royal Mail','J&T'].map(x=>'<option'+(d.ship.carrier===x?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'
       +'<label class="f">运单号<input type="text" data-df="'+c.id+':ship.no" value="'+esc(d.ship.no)+'" placeholder="寄出后填写"></label>'
@@ -2074,6 +2164,11 @@ function v6(){
     +'<div class="stat"><span>已签约</span><b>'+signed+' 位</b><small>未合作 '+all.filter(x=>x.d.stage==='lost').length+' 位</small></div>'
     +'<div class="stat"><span>已承诺费用</span><b>'+money(committed())+'</b><small>'+(S.brief.budgetUsd?'预算 '+money(S.brief.budgetUsd)+'，剩 '+money(budgetLeft()):'未设预算')+'</small></div>'
   +'</div>'
+  +(()=>{ const signedAll = all.filter(x=>SIGNED.indexOf(x.d.stage)>=0 && x.d.firstAsk && x.d.final);
+      const won = signedAll.filter(x=>x.d.model==='fixed'), other = signedAll.length - won.length;
+      if(!won.length) return other ? '<p class="meta" style="margin:0">本次已签 '+other+' 单佣金模式，固定费和达人原报价不能直接比，不算砍价幅度。</p>' : '';
+      const cut = sum(won.map(x=>1-x.d.final/x.d.firstAsk))/won.length, rounds = sum(won.map(x=>x.d.round||1))/won.length, saved = sum(won.map(x=>x.d.firstAsk-x.d.final));
+      return '<p class="meta" style="margin:0">本次固定费用签了 '+won.length+' 单'+(other?'（另有 '+other+' 单改成了佣金模式，不计入）':'')+'：从首次报价平均砍了 <b class="num">'+Math.round(cut*100)+'%</b>，共省下 <b class="num">'+money(saved)+'</b>，平均谈 <b class="num">'+rounds.toFixed(1)+'</b> 轮。</p>'; })()
   +'<div class="board">'+BOARD_COLS.map(([l,st])=>{ const cs = all.filter(x=>st.indexOf(x.d.stage)>=0); return '<div class="col"><h3>'+l+' <span>'+cs.length+'</span></h3>'+(cs.length?cs.map(bcard).join(''):'<div class="empty">暂无</div>')+'</div>'; }).join('')+'</div>'
   +(active.length?'<h3>待处理 '+active.length+'</h3><div class="deals">'+active.map(x=>dealPanel(x.c, x.d)).join('')+'</div>':'<div class="callout">没有需要跟进的达人了。</div>')
   +(toReview?'<div class="row"><button type="button" class="btn dark" data-go="7">去审核 '+toReview+' 份稿件 →</button></div>':'')
@@ -2182,11 +2277,12 @@ function dealAction(id, act){
     case 'sample': d.reply = sampleReply(c, Object.keys(S.deals).indexOf(id)); render(); break;
     case 'parse': doParseReply(id); break;
     case 'counter': doCounter(id); break;
-    case 'sendCounter': d.counterSent = true; toast('已模拟发送给 '+c.first); render(); break;
+    case 'sendCounter': d.counterSent = true; d.sentOffer = +d.offer||0; logPush(d, '我方', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '接受报价' : (d.sug && d.sug.kind==='final' ? '最终报价' : '还价'), d.model==='commission' ? null : d.sentOffer, d.model); toast('已模拟发送给 '+c.first); render(); break;
+    case 'reply2': d.round = (d.round||1) + 1; d.awaitReply = true; d.reply = ''; d.counter = null; d.counterSent = false; d.counterOk = false; render(); break;
     case 'again': d.agreed = false; d.counterSent = false; d.counterOk = false; d.termsOk = false; render(); break;
-    case 'agree': d.agreed = true; d.termsOk = false; render(); break;
+    case 'agree': d.agreed = true; d.termsOk = false; logPush(d, '达人', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '确认成交' : '接受', d.sentOffer!=null ? d.sentOffer : d.offer, d.model); render(); break;
     case 'lost': d.stage = 'lost'; toast(c.name+' 已标记为未合作'); render(); break;
-    case 'sign': d.final = Math.max(0, +d.offer||0); d.stage = 'signed'; d.signedAt = Date.now(); toast('已签约 '+c.name+'（模拟），下一步写拍摄要点、寄样'); render(); break;
+    case 'sign': d.final = Math.max(0, +d.offer||0); d.stage = 'signed'; d.signedAt = Date.now(); logPush(d, '双方', '签约', d.final, d.model); saveNeg(c, d); toast('已签约 '+c.name+'（模拟），下一步写拍摄要点、寄样'); render(); break;
     case 'brief': doBrief(id); break;
     case 'track': d.ship.no = (d.ship.carrier==='USPS'?'9400':'JD')+String(1e9+hashStr(id)%9e9).slice(0,10); render(); break;
     case 'ship': d.stage = 'shipped'; toast('已模拟寄出样品，并把拍摄要点发给 '+c.first); render(); break;
@@ -2328,7 +2424,7 @@ document.addEventListener('click', e => {
     case 'copyReport': try { navigator.clipboard.writeText(S.report.text).then(()=>toast('已复制'), ()=>toast('复制失败，请手动选中复制')); } catch(e){ toast('复制失败，请手动选中复制'); } break;
     case 'dlReport': download('达人营销复盘.txt', S.report.text); break;
     case 'writeBack': doWriteBack(); break;
-    case 'clearPerf': if(confirm('清空私有达人库里的合作记录？')){ savePerf({}); render(); } break;
+    case 'clearPerf': if(confirm('清空私有达人库里的合作记录和谈判记录？')){ savePerf({}); try { localStorage.removeItem(NEG_KEY); } catch(e){} render(); } break;
     case 'restart': Object.assign(S,{step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),deals:{},rc:null,report:null,t0:null,tSend:null,ytError:'',realStats:null,trending:null,auth:{}}); render(); break;
   }
 });
