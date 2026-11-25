@@ -50,7 +50,8 @@ h1{font-family:var(--display);font-size:19px;margin:0;letter-spacing:-.01em;line
 .seg button:disabled{opacity:.45;cursor:not-allowed}
 
 .layout{display:grid;grid-template-columns:200px minmax(0,1fr);gap:28px;padding-top:22px}
-nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+nav.steps{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);align-self:start}
+nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
 .step-btn{display:flex;gap:10px;align-items:center;width:100%;text-align:left;border:0;background:transparent;padding:8px 10px;border-radius:8px;color:var(--muted);cursor:pointer}
 .step-btn .n{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:11px;flex:none}
 .step-btn[aria-current="step"]{background:var(--panel);color:var(--ink);box-shadow:0 0 0 1px var(--line)}
@@ -62,7 +63,8 @@ nav.steps ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:colu
 .rail-note b{color:var(--ink);font-weight:600}
 @media (max-width:820px){
   .layout{grid-template-columns:minmax(0,1fr);gap:16px}
-  nav.steps ol{flex-direction:row;flex-wrap:wrap;position:static}
+  nav.steps{position:static}
+  nav.steps ol{flex-direction:row;flex-wrap:wrap}
   .step-btn{width:auto;padding:6px 8px}
   .step-btn .lbl{display:none}
   .step-btn[aria-current="step"] .lbl{display:inline}
@@ -220,6 +222,37 @@ a.ext{color:var(--focus);text-decoration:none}
 .wt-row em{font-style:normal;color:var(--muted);font-size:12px}
 @media (max-width:620px){.wt-row{grid-template-columns:minmax(0,1fr) auto auto}.wt-row em{grid-column:1/-1}}
 a.ext:hover{text-decoration:underline}
+.deals{display:flex;flex-direction:column;gap:14px}
+.deal{border:1px solid var(--line);border-radius:12px;background:var(--panel);min-width:0;scroll-margin-top:16px}
+.deal-head{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+.deal-head .btn{margin-left:auto}
+.deal-body{padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.deal-body textarea{background:var(--bg);font-size:13px}
+.parsed,.terms,.review{display:flex;flex-direction:column;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px 12px}
+.grid3 .full{grid-column:1/-1}
+@media (max-width:620px){.grid3{grid-template-columns:minmax(0,1fr)}}
+label.inline{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-weight:500;font-size:13px}
+.bmini{display:flex;gap:8px;align-items:center;width:100%;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer}
+.bmini:hover{border-color:var(--muted)}
+.bmini .av{width:30px;height:30px;font-size:11px}
+.bmini span{display:flex;flex-direction:column;min-width:0}
+.bmini b{font-weight:600;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bmini small{color:var(--muted);font-size:11.5px}
+.board{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media (max-width:900px){.board{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.board{grid-template-columns:minmax(0,1fr)}}
+.draft-view{white-space:pre-wrap;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;line-height:1.65}
+.draft-view mark{background:var(--bad-soft);color:var(--bad);border-radius:3px;padding:0 2px}
+.issues{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.issue{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;padding:8px 10px;border-top:1px solid var(--line);font-size:13px}
+.issue:first-child{border-top:0}
+.issue code{font-family:var(--mono);font-size:12px;background:var(--chip);padding:1px 6px;border-radius:4px}
+.kv6{grid-template-columns:repeat(6,minmax(0,1fr))}
+@media (max-width:760px){.kv6{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.lib{display:flex;flex-direction:column;margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.lib-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:13px}
+.lib-row:first-child{border-top:0}
 .posts a{color:var(--ink)}
 </style>
 
@@ -231,7 +264,7 @@ a.ext:hover{text-decoration:underline}
       </div>
       <div>
         <h1>出海达人匹配助手</h1>
-        <div class="sub">从一句话需求到第一封邀约：需求解析 → 匹配排序 → 审核 → 邀约 → 看板 · <span class="num">版本 11-22 · DeepSeek</span></div>
+        <div class="sub">从一句话需求到第一封邀约：需求 → 匹配 → 邀约 → 谈价签约 → 内容审核 → 效果复盘 · <span class="num">版本 11-24 · DeepSeek</span></div>
       </div>
     </div>
     <div class="top-right">
@@ -250,7 +283,7 @@ a.ext:hover{text-decoration:underline}
   <div class="layout">
     <nav class="steps" aria-label="流程">
       <ol id="steps"></ol>
-      <div class="rail-note"><b>人工接管点</b><br>需求确认、达人选择、邀约发送三处必须由人点头。AI 只做理解、排序和起草。</div>
+      <div class="rail-note"><b>人工接管点</b><br>需求确认、达人选择、邀约发送、报价签约、内容放行五处必须由人点头。AI 只做理解、排序、起草和检查。</div>
       <div class="rail-note">进度会自动保存，刷新或重新打开页面会回到原来那一步。<br><button type="button" class="btn sm" data-act="restart" style="margin-top:8px">重新开始</button></div>
     </nav>
     <section id="view" aria-live="polite"></section>
@@ -936,14 +969,15 @@ const S = {
   input:PRESETS[0].text, brief:null, briefSrc:'', notes:[], questions:[],
   pool:[], relax:[], results:[], rankSrc:'', selected:new Set(), lookalikeIds:new Set(),
   sender:{brand:'Your Brand', name:'Alex', productEn:''}, emails:{}, mailSrc:'', checked:new Set(),
-  board:{}, t0:null, tSend:null, busy:'', busyMsg:'',
+  deals:{}, rc:null, report:null, t0:null, tSend:null, busy:'', busyMsg:'',
   source:'sample', ytKey:loadKey(), ytError:'', realStats:null, trending:null, dsKey:loadDsKey(), dsStatus:null, auth:{}
 };
 
 /* ---------- rendering helpers ---------- */
 const STEPS = [
   {n:1, t:'输入需求'}, {n:2, t:'确认需求', h:true}, {n:3, t:'匹配排序'},
-  {n:4, t:'审核确认', h:true}, {n:5, t:'生成邀约', h:true}, {n:6, t:'合作看板'}
+  {n:4, t:'审核确认', h:true}, {n:5, t:'生成邀约', h:true},
+  {n:6, t:'跟进签约', h:true}, {n:7, t:'内容审核', h:true}, {n:8, t:'效果复盘'}
 ];
 function renderSteps(){
   $('#steps').innerHTML = STEPS.map(s => {
@@ -1052,7 +1086,7 @@ async function doParse(){
   }
   S.brief=b; S.notes=notes; S.questions=questions; S.briefSrc=src;
   S.sender.productEn = b.productEn;
-  S.results=[]; S.selected=new Set(); S.emails={}; S.checked=new Set(); S.board={}; S.tSend=null; S.max=2;
+  S.results=[]; S.selected=new Set(); S.emails={}; S.checked=new Set(); S.deals={}; S.report=null; S.tSend=null; S.max=2;
   go(2);
 }
 
@@ -1061,7 +1095,7 @@ function v2(){
   const b = S.brief;
   const chipSet = (name, items, active) => '<div class="chips" data-group="'+name+'">'+items.map(([k,l])=>'<button type="button" class="chip" data-k="'+k+'" aria-pressed="'+(active.indexOf(k)>=0)+'">'+esc(l)+'</button>').join('')+'</div>';
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>确认 AI 理解的需求</h2><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/3</span></div>'
+  +'<div class="step-head"><div><h2>确认 AI 理解的需求</h2><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/5</span></div>'
   +(S.questions.length?'<div class="callout ask"><b>需要向品牌追问</b><ul>'+S.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')
   +'<div class="panel stack">'
     +'<div class="row"><h3>需求卡</h3><span class="spacer"></span>'+srcTag(S.briefSrc)+'</div>'
@@ -1124,14 +1158,15 @@ async function doMatch(skipRead){
   } else {
     const f = hardFilter(b); S.pool = f.pool; S.relax = f.notes; S.realStats = null;
   }
-  scored = S.pool.map(c=>Object.assign({id:c.id, src:'rule'}, scoreOf(c,b))).sort((x,y)=>y.score-x.score);
+  PERF_CACHE = loadPerf();
+  scored = S.pool.map(c=>Object.assign({id:c.id, src:'rule'}, withHistory(c, scoreOf(c,b)))).sort((x,y)=>y.score-x.score);
   let top = scored.slice(0,10);
   S.rankSrc='rule';
   if(S.mode==='ai' && scored.length){
     S.busy='rank'; render();
-    const cands = scored.slice(0,20).map(x=>candJson(BY_ID[x.id], x.score));
+    const cands = scored.slice(0,20).map(x=>Object.assign(candJson(BY_ID[x.id], x.score), histJson(x.id)));
     const prompt = '你是出海品牌的达人营销助手。根据品牌需求，从候选达人里选出最合适的 10 位，按合适程度从高到低排序。\n'
-      +'规则：\n- 只能使用下面给出的数据，不要编造任何数字或事实。\n- reason 用中文一句话，不超过 45 字，必须引用具体数据（如目标国家受众占比、互动率、内容方向、某条近期作品）。\n- score 为 0-100 的整数。\n- fake_pct 高、互动率远高于 er_bench、或 views_per_sub 很低的达人要降分。\n- 数据里没有的字段（比如真实频道没有受众画像）不要推测；comment_languages 只是评论语言分布，不等于受众国家。\n'
+      +'规则：\n- 只能使用下面给出的数据，不要编造任何数字或事实。\n- reason 用中文一句话，不超过 45 字，必须引用具体数据（如目标国家受众占比、互动率、内容方向、某条近期作品）。\n- score 为 0-100 的整数。\n- fake_pct 高、互动率远高于 er_bench、或 views_per_sub 很低的达人要降分。\n- past_campaign 是我们和这位达人合作的真实结果：rating 为“优先复投”的加分，“不建议复投”的降分，reason 里要提到。\n- 数据里没有的字段（比如真实频道没有受众画像）不要推测；comment_languages 只是评论语言分布，不等于受众国家。\n'
       +'只回复 JSON 数组，例如：[{"id":"c012","score":88,"reason":"……"}]\n\n'
       +'品牌需求：'+JSON.stringify({product:b.product, category:CATS[b.category].zh, countries:b.countries, platforms:b.platforms, followers:[b.followersMin,b.followersMax], budget_usd:b.budgetUsd, styles:b.styles.map(s=>STYLES[s]), gender:b.gender})+'\n\n'
       +'候选达人：\n'+cands.map(c=>JSON.stringify(c)).join('\n');
@@ -1395,7 +1430,7 @@ function v4(){
   const sel = selectedList();
   const bad = sel.filter(c=>riskOf(c,S.brief).some(r=>r.lv==='bad'));
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>审核已选达人</h2><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/3</span></div>'
+  +'<div class="step-head"><div><h2>审核已选达人</h2><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/5</span></div>'
   +(bad.length?'<div class="callout ask"><b>'+bad.length+' 位达人有高风险标签</b>：'+bad.map(c=>esc(c.name)).join('、')+'。建议移除或人工复核后再邀约。</div>':'')
   +(sel.length?'<div class="cards">'+sel.map(c=>'<div class="card"><div class="row">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · '+c.platform+' · '+ctry(c)+'</div></div><span class="spacer"></span>'
       +'<button type="button" class="btn sm" data-remove="'+c.id+'">移除</button></div>'+detailHTML(c, true)+'<div class="row"><button type="button" class="btn sm" data-detail="'+c.id+'">找相似 / 更多</button></div></div>').join('')+'</div>'
@@ -1434,7 +1469,7 @@ function v5(){
   const has = sel.length && sel.every(c=>S.emails[c.id]);
   const allChecked = has && sel.every(c=>S.checked.has(c.id));
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>个性化邀约</h2><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/3</span></div>'
+  +'<div class="step-head"><div><h2>个性化邀约</h2><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/5</span></div>'
   +'<div class="panel"><div class="grid2">'
     +'<label class="f" for="s-brand">品牌名（英文）<input id="s-brand" type="text" value="'+esc(S.sender.brand)+'"></label>'
     +'<label class="f" for="s-name">署名<input id="s-name" type="text" value="'+esc(S.sender.name)+'"></label>'
@@ -1483,43 +1518,630 @@ async function doGenMail(){
 }
 function doSend(){
   const sel = selectedList();
-  sel.forEach(c=>{ S.board[c.id] = 'invited'; });
+  sel.forEach(c=>{ if(!S.deals[c.id]) S.deals[c.id] = newDeal(c); });
   S.tSend = Date.now();
-  S.max = 6;
+  S.max = Math.max(S.max, 6);
   toast('已模拟发送 '+sel.length+' 封邀约');
   go(6);
 }
 
-/* ---------- step 6 ---------- */
-const COLS = [['invited','已邀约'],['replied','已回复'],['deal','合作中']];
+/* ---------- steps 6–8: follow-up & signing, content review, results ---------- */
+const STAGE = {invited:'已邀约', talk:'沟通谈价', signed:'已签约', shipped:'已寄样', review:'内容审核', approved:'待发布', live:'已发布', done:'已复盘', lost:'未合作'};
+const STAGE_LV = {invited:'neutral', talk:'warn', signed:'good', shipped:'good', review:'ai', approved:'good', live:'good', done:'good', lost:'bad'};
+const BOARD_COLS = [['跟进中',['invited','talk']],['执行中',['signed','shipped']],['内容审核',['review']],['发布与复盘',['approved','live','done']]];
+const MODEL = {fixed:'固定费用', hybrid:'固定费用 + 销售佣金', commission:'纯佣金（联盟带货）', gifted:'仅寄样置换'};
+const SIGNED = ['signed','shipped','review','approved','live','done'];
+const PERF_KEY = 'influencer_demo_perf_v1';
+const AOV = 39;
+
+function newDeal(c){
+  const due = new Date(Date.now()+21*86400000).toISOString().slice(0,10);
+  return {stage:'invited', sentAt:Date.now(), reply:'', parsed:null, parseSrc:'', sug:null, model:'fixed', offer:c.price.hi, rate:10,
+    counter:null, counterSrc:'', counterOk:false, counterSent:false, agreed:false, final:null,
+    terms:{deliverable:c.platform==='YouTube'?'1 条 YouTube 视频（60–90 秒）':'1 条 '+c.platform+' 短视频（30–60 秒）', date:due, usage:'none'}, termsOk:false,
+    brief:'', briefSrc:'', ship:{carrier:'DHL', no:''},
+    draft:'', review:null, reviewSrc:'', rounds:0, feedback:'', feedbackOpen:false,
+    url:'', video:null, videoErr:'', sales:{clicks:'', orders:'', revenue:''}};
+}
+function dealList(stages){
+  return Object.keys(S.deals).map(id=>({c:BY_ID[id], d:S.deals[id]})).filter(x=>x.c && (!stages || stages.indexOf(x.d.stage)>=0));
+}
+function committed(){ return sum(dealList(SIGNED).map(x=>+x.d.final||0)); }
+function budgetLeft(){ return S.brief && S.brief.budgetUsd ? S.brief.budgetUsd - committed() : null; }
+function prodEn(){ return S.sender.productEn || CATS[S.brief.category].en; }
+function stageTag(d){ return '<span class="tag '+STAGE_LV[d.stage]+'">'+STAGE[d.stage]+'</span>'; }
+function busyOn(id, what){ return S.busy==='deal:'+id+':'+what; }
+function r10(x){ return Math.round(x/10)*10; }
+
+/* --- creator replies --- */
+function sampleReply(c, i){
+  const s = S.sender, prod = prodEn();
+  // One of each across the first five: counter-offer, in range, questions, far too high, declined.
+  const kind = [0,1,2,4,3][i%5];
+  if(kind===3) return 'Hi '+s.name+',\n\nThanks so much for thinking of me! I\'m fully booked with sponsorships this month, so I\'ll have to pass for now. Maybe next quarter?\n\n'+c.first;
+  if(kind===4) return 'Hi '+s.name+',\n\nThanks for the message! I only take a few brand deals each month, and my rate for a dedicated video is $'+r10(c.price.hi*1.7)+'. Happy to chat if that works for your budget.\n\n'+c.first;
+  if(kind===0) return 'Hi '+s.name+',\n\nThanks for reaching out, the '+prod+' looks cool and I\'d be happy to test it. My rate for one dedicated video is $'+r10(c.price.hi*1.2)+'. I can post within 2 weeks of receiving the product.\n\nLet me know!\n'+c.first;
+  if(kind===1) return 'Hey '+s.name+'!\n\nSounds like a good fit. My usual rate is $'+r10((c.price.lo+c.price.hi)/2)+' for one video, and I can film it within 10 days after the sample arrives.\n\nBest,\n'+c.first;
+  return 'Hi '+s.name+',\n\nCould you share a bit more about the '+prod+' and what you want me to highlight? My rate is $'+r10(c.price.hi)+' for an organic post, plus $'+r10(c.price.hi*.3)+' if you want 30-day usage rights for ads. Do you need exclusivity?\n\nThanks,\n'+c.first;
+}
+function moneyIn(text){ const a = []; String(text).replace(/\$\s?(\d[\d,]*)/g, (m,x)=>{ a.push(+x.replace(/,/g,'')); return m; }); return a; }
+function parseReplyRule(text){
+  const nums = moneyIn(text);
+  const declined = /(fully booked|not taking|have to pass|i'?ll pass|not a fit|no thanks|not interested|decline)/i.test(text);
+  const questions = (text.match(/[^.!?\n]*\?/g)||[]).map(x=>x.trim()).filter(Boolean);
+  const usage = /usage|whitelist|\bads\b/i.test(text);
+  const m = /within (\d+) (day|week)s?/i.exec(text);
+  return {
+    intent: declined ? 'declined' : questions.length ? 'question' : 'interested',
+    ask: declined ? null : (nums[0] || null), usageFee: usage && nums[1] ? nums[1] : null,
+    days: m ? (+m[1])*(m[2].toLowerCase()==='week'?7:1) : null, exclusivity: /exclusiv/i.test(text), questions
+  };
+}
+const INTENT = {interested:'有意向', question:'有意向，但有问题要回答', declined:'婉拒'};
+async function doParseReply(id){
+  const c = BY_ID[id], d = S.deals[id];
+  if(!d.reply.trim()){ toast('先粘贴达人的回复，或点“载入示例回复”'); return; }
+  let p = parseReplyRule(d.reply), src = 'rule';
+  if(S.mode==='ai'){
+    S.busy = 'deal:'+id+':parse'; render();
+    const j = await aiJson('从达人回复的邮件里提取合作信息。只能根据原文提取，原文没有的信息填 null，不要推测。\n'
+      +'返回 JSON 对象：{"intent":"interested|question|declined","ask_usd":数字或null（一条视频的报价）,"usage_fee_usd":数字或null（广告授权的额外费用）,"timeline_days":数字或null,"exclusivity_asked":true/false,"questions":["达人提出的问题，原文英文"]}\n\n达人回复：\n'+d.reply);
+    S.busy = '';
+    if(j && typeof j==='object' && !Array.isArray(j)){
+      const nums = moneyIn(d.reply), ok = v => v==null || nums.indexOf(+v)>=0;
+      if(['interested','question','declined'].indexOf(j.intent)>=0 && ok(j.ask_usd) && ok(j.usage_fee_usd)){
+        p = {intent:j.intent, ask:j.ask_usd==null?null:+j.ask_usd, usageFee:j.usage_fee_usd==null?null:+j.usage_fee_usd,
+          days:j.timeline_days==null?null:+j.timeline_days, exclusivity:!!j.exclusivity_asked, questions:Array.isArray(j.questions)?j.questions.map(String).slice(0,4):p.questions};
+        src = 'ai';
+      } else toast('AI 提取的金额在原文里找不到，已改用规则结果');
+    }
+  }
+  d.parsed = p; d.parseSrc = src; d.stage = 'talk';
+  d.sug = suggestDeal(c, d);
+  d.model = d.sug.model || 'fixed'; d.offer = d.sug.offer || c.price.hi;
+  d.counter = null; d.counterOk = false; d.counterSent = false; d.agreed = false;
+  render();
+}
+function suggestDeal(c, d){
+  const p = d.parsed, lo = c.price.lo, hi = c.price.hi, left = budgetLeft();
+  if(p.intent==='declined') return {kind:'lost', t:'达人婉拒了。建议礼貌回复、标记为“未合作”，回到第 3 步补一位相似达人。'};
+  const ask = p.ask;
+  if(!ask) return {kind:'ask', offer:hi, model:'fixed', t:'回复里没有报价。先回答达人的问题，再请对方给出一条视频的报价。'};
+  const over = Math.round((ask/hi-1)*100);
+  if(left!=null && Math.min(ask, hi) > left) return {kind:'over', offer:Math.min(ask, hi), model:'fixed', t:'剩余预算只有 '+money(Math.max(0,left))+'，不够这次合作。建议先暂缓，或者把预算从别的达人那里挪过来。'};
+  if(ask<=hi) return {kind:'accept', offer:ask, model:'fixed', t:'报价 '+money(ask)+' 在估算区间 '+money(lo)+'–'+money(hi)+' 内，建议直接接受。'};
+  if(ask<=hi*1.3) return {kind:'counter', offer:hi, model:'fixed', t:'报价 '+money(ask)+'，比估算上限高 '+over+'%。建议还价到 '+money(hi)+'，并表达长期合作的意愿。'};
+  return {kind:'hybrid', offer:lo, model:'hybrid', t:'报价 '+money(ask)+'，比估算上限高 '+over+'%，差距较大。建议改成“固定费 '+money(lo)+' + '+d.rate+'% 销售佣金”，用带货效果来补差价。'};
+}
+function templateCounter(c, d){
+  const s = S.sender, p = d.parsed || {}, k = d.sug ? d.sug.kind : 'counter';
+  let mid = '';
+  if(k==='lost') return {subject:'Re: Collab idea: '+s.brand+' x '+c.handle, body:'Hi '+c.first+',\n\nNo worries at all, thanks for letting us know! We\'d love to reach out again for our next launch.\n\nBest,\n'+s.name+'\n'+s.brand};
+  if(k==='ask') mid = 'Happy to share more. The '+prodEn()+' is our new launch and we\'d love an honest review in your own style. Could you let us know your rate for one video?';
+  else if(d.model==='hybrid') mid = 'Your rate is a bit above our budget for a single video. Would you be open to $'+d.offer+' plus a '+d.rate+'% commission on every sale through your link? If the video performs well, you\'d earn more than your usual rate.';
+  else if(d.model==='commission') mid = 'Would you be open to a commission-only deal at '+d.rate+'% of every sale through your link, plus a free unit to keep?';
+  else if(d.model==='gifted') mid = 'For this launch we can offer a free unit to keep, with no obligation to post. If you like it, we\'d love to talk about a paid video next time.';
+  else if(p.ask && d.offer>=p.ask) mid = 'Your rate of $'+p.ask+' works for us.';
+  else mid = 'Our budget for this launch is a little tighter. Could we do $'+d.offer+' for one video? We\'d love to keep working with you on future launches too.';
+  const extra = [];
+  if(p.usageFee) extra.push('We don\'t need ad usage rights for now, just the organic post.');
+  if(p.exclusivity) extra.push('No exclusivity needed.');
+  return {subject:'Re: Collab idea: '+s.brand+' x '+c.handle,
+    body:'Hi '+c.first+',\n\nThanks for getting back to us! '+mid+(extra.length?' '+extra.join(' '):'')+'\n\nIf that works, we\'ll send a short agreement and ship the sample right away.\n\nBest,\n'+s.name+'\n'+s.brand};
+}
+function dealNumberCheck(c, d, body){
+  const allowed = new Set([c.price.lo, c.price.hi, d.offer, d.rate, d.parsed&&d.parsed.ask, d.parsed&&d.parsed.usageFee, d.parsed&&d.parsed.days].filter(x=>x!=null).map(String));
+  (S.sender.brand+' '+S.sender.name+' '+S.sender.productEn+' '+(d.terms.date||'')).replace(/\d[\d,]*(?:\.\d+)?/g, m=>{ allowed.add(m.replace(/,/g,'')); return m; });
+  const bad = [];
+  String(body).replace(/\d[\d,]*(?:\.\d+)?/g, m=>{ const v = m.replace(/,/g,''); if(!allowed.has(v) && bad.indexOf(m)<0) bad.push(m); return m; });
+  return bad;
+}
+async function doCounter(id){
+  const c = BY_ID[id], d = S.deals[id];
+  let m = templateCounter(c, d), src = 'rule';
+  if(S.mode==='ai' && d.sug && d.sug.kind!=='lost'){
+    S.busy = 'deal:'+id+':counter'; render();
+    const j = await aiJson('Write a short reply email to an influencer who answered our collaboration invite.\n'
+      +'Rules:\n- English, warm and direct, body under 110 words.\n- Our offer: '+MODEL[d.model]+(d.model==='commission'?'':', $'+d.offer+' for one video')+((d.model==='hybrid'||d.model==='commission')?', plus '+d.rate+'% commission on sales through their link':'')+'.\n'
+      +'- The only numbers you may use are: '+[d.offer, d.rate, d.parsed&&d.parsed.ask].filter(x=>x!=null).join(', ')+'. Do not invent any other numbers, dates or product facts.\n'
+      +'- Answer their questions only with these facts: we do not need ad usage rights, no exclusivity, product is "'+prodEn()+'". If you cannot answer something, say we will follow up.\n'
+      +'- Sign off with "'+S.sender.name+'" and "'+S.sender.brand+'" on separate lines.\n'
+      +'Reply with only JSON: {"subject":"...","body":"..."}\n\nTheir email:\n'+d.reply);
+    S.busy = '';
+    if(j && j.body){ m = {subject:String(j.subject||m.subject).slice(0,140), body:String(j.body).slice(0,1500)}; src = 'ai'; }
+  }
+  d.counter = m; d.counterSrc = src; d.counterOk = false; d.counterSent = false;
+  render();
+}
+
+/* --- shooting brief --- */
+function templateBrief(c, d){
+  const s = S.sender, pts = S.rc.points.filter(Boolean);
+  return 'Hi '+c.first+', here is the brief for the '+s.brand+' '+prodEn()+' video.\n\n'
+    +'Deliverable: '+(c.platform==='YouTube'?'1 YouTube video, 60–90 seconds':'1 '+c.platform+' video, 30–60 seconds')+'\n'
+    +'Post by: '+d.terms.date+'\n\n'
+    +'Please mention:\n'+pts.map(p=>'- '+p).join('\n')+'\n\n'
+    +'Please avoid:\n- Claims like "best ever", "100%", "guaranteed" or anything we can\'t prove\n- Naming other brands\n\n'
+    +'Disclosure: start the caption with #ad and turn on the paid partnership label.\n'
+    +'Send us the script or a rough cut before posting, we\'ll reply within 24 hours.\n\nThanks!\n'+s.name;
+}
+async function doBrief(id){
+  const c = BY_ID[id], d = S.deals[id];
+  let t = templateBrief(c, d), src = 'rule';
+  if(S.mode==='ai'){
+    S.busy = 'deal:'+id+':brief'; render();
+    const j = await aiJson('为达人写一份英文拍摄要点（brief），简洁、可执行，150 词以内。\n必须包含：交付物、发布日期 '+d.terms.date+'、必须提到的卖点（只能用下面给的，不要新增产品功能）、不能说的话、#ad 标注要求、发布前先交稿审核。\n'
+      +'返回 JSON：{"brief":"..."}\n\n达人：'+c.first+'（'+c.platform+'，常做 '+c.styles.map(x=>STYLE_EN[x]).join(', ')+'）\n品牌：'+S.sender.brand+'，商品：'+prodEn()+'\n卖点：'+S.rc.points.join(' / ')+'\n禁用说法：'+S.rc.banned.join(' / '));
+    S.busy = '';
+    if(j && j.brief){ t = String(j.brief).slice(0,2000); src = 'ai'; }
+  }
+  d.brief = t; d.briefSrc = src;
+  render();
+}
+
+/* --- content review --- */
+const POINTS = {
+  outdoor:['3 brightness modes','USB-C rechargeable','lightweight and packable'],
+  pets:['ultra-quiet pump','filter lasts 30 days','easy to clean'],
+  beauty:['lightweight texture','no white cast','easy to reapply'],
+  home:['saves counter space','easy to clean','works in 10 minutes'],
+  tech:['USB-C fast charging','pocket-sized','pairs in one tap'],
+  fitness:['non-slip surface','easy to carry','quiet at home'],
+  fashion:['soft stretch fabric','true to size','machine washable'],
+  baby:['BPA-free materials','one-hand use','easy to clean']
+};
+const BANNED = ['best ever','ever made','#1','number one','guaranteed','100%','forever','miracle','risk-free','cure'];
+function defaultRC(){
+  const cat = S.brief ? S.brief.category : 'outdoor';
+  const extra = ['beauty','baby','pets'].indexOf(cat)>=0 ? ['clinically proven','treats','heals'] : [];
+  return {points:POINTS[cat].slice(), banned:BANNED.concat(extra), cat};
+}
+function competitors(c){
+  const own = S.sender.brand.toLowerCase();
+  return Array.from(new Set((BRANDS[S.brief.category]||[]).concat(c.brands||[]))).filter(b=>b && b.toLowerCase()!==own);
+}
+const STOP = new Set(['and','the','for','with','easy','use','one','your','you','are']);
+function covers(low, p){
+  const words = (p.toLowerCase().match(/[a-z0-9-]+/g)||[]).filter(w=>w.length>=3 && !STOP.has(w));
+  if(!words.length) return low.indexOf(p.toLowerCase())>=0;
+  return words.filter(w=>low.indexOf(w)>=0).length >= Math.ceil(words.length/2);
+}
+function sampleDraft(c, fixed){
+  const s = S.sender, prod = prodEn(), pts = S.rc.points.filter(Boolean), comp = competitors(c)[0] || 'my old one';
+  if(fixed) return '#ad I\'ve been using the '+s.brand+' '+prod+' for two weeks, here\'s my honest take.\n\n'
+    +'What I liked: '+pts.join(', ')+'. It replaced the one I used before and I haven\'t looked back.\n\n'
+    +'Link below if you want to try it. Thanks '+s.brand+' for sponsoring this video!';
+  return 'Okay, I\'ve tested a LOT of these and this is the best '+prod+' ever made.\n\n'
+    +'The '+s.brand+' '+prod+' is '+(pts[0]||'great')+'. Honestly it\'s 100% better than my old '+comp+' and it will last forever.\n\n'
+    +'Grab yours with my link below 👇';
+}
+function reviewRule(c, d){
+  const text = d.draft, low = text.toLowerCase(), out = [];
+  if(!/#ad\b|#sponsored|paid partnership|#partner\b|#advertisement/i.test(text))
+    out.push({lv:'bad', type:'没有标注广告', quote:'', fix:'在文案开头加 #ad，并打开平台的 Paid partnership 标签。美国 FTC 要求商业合作必须明确标注。', src:'rule'});
+  S.rc.banned.forEach(w=>{ if(w && low.indexOf(w.toLowerCase())>=0) out.push({lv:'bad', type:'禁用说法', quote:w, fix:'删掉，或改成能证明的说法，比如具体的使用时长或实测结果。', src:'rule'}); });
+  competitors(c).forEach(b=>{ if(low.indexOf(b.toLowerCase())>=0) out.push({lv:'warn', type:'点名其他品牌', quote:b, fix:'不要点名对比其他品牌，改成“我以前用的那款”这类泛指。', src:'rule'}); });
+  S.rc.points.forEach(p=>{ if(p && !covers(low, p)) out.push({lv:'warn', type:'漏了卖点', quote:p, fix:'补一句提到“'+p+'”。', src:'rule'}); });
+  return out;
+}
+async function doReview(id){
+  const c = BY_ID[id], d = S.deals[id];
+  if(!d.draft.trim()){ toast('先粘贴达人交来的脚本或文案，或点“载入示例稿”'); return; }
+  let items = reviewRule(c, d), src = 'rule';
+  if(S.mode==='ai'){
+    S.busy = 'deal:'+id+':review'; render();
+    const j = await aiJson('你是品牌方的内容审核助手。检查达人交来的英文视频脚本，找出规则检查之外的问题：夸大或无法证明的说法、和卖点不符的描述、可能引起误解或品牌安全风险的表达、缺少行动号召。\n'
+      +'规则：quote 必须是脚本里原样出现的一段文字；没有问题就返回空数组；不要重复“没有 #ad”“禁用词”“点名其他品牌”“漏了卖点”这四类，它们已由规则检查。fix 用中文一句话。\n'
+      +'返回 JSON 数组：[{"level":"bad|warn","type":"问题类型（中文，6 字以内）","quote":"原文片段","fix":"修改建议"}]\n\n'
+      +'卖点：'+S.rc.points.join(' / ')+'\n禁用说法：'+S.rc.banned.join(' / ')+'\n\n脚本：\n'+d.draft);
+    S.busy = '';
+    if(Array.isArray(j)){
+      const seen = new Set(items.map(x=>x.quote.toLowerCase()));
+      j.forEach(x=>{
+        const q = String(x && x.quote || '').trim();
+        if(!q || d.draft.indexOf(q)<0 || seen.has(q.toLowerCase())) return;
+        seen.add(q.toLowerCase());
+        items.push({lv:x.level==='bad'?'bad':'warn', type:String(x.type||'AI 提示').slice(0,10), quote:q, fix:String(x.fix||'').slice(0,80), src:'ai'});
+      });
+      src = 'ai';
+    }
+  }
+  d.review = {items, at:Date.now(), text:d.draft}; d.reviewSrc = src; d.feedbackOpen = false;
+  render();
+}
+function enFix(x){
+  if(x.type==='没有标注广告') return 'Please add #ad at the start of the caption and turn on the paid partnership label.';
+  if(x.type==='禁用说法') return 'Please remove "'+x.quote+'", we can\'t make that claim.';
+  if(x.type==='点名其他品牌') return 'Please don\'t mention '+x.quote+' by name.';
+  if(x.type==='漏了卖点') return 'Please mention: '+x.quote+'.';
+  return 'Please revise: "'+x.quote+'".';
+}
+function feedbackMail(c, d){
+  const items = (d.review && d.review.items) || [];
+  return 'Hi '+c.first+',\n\nThanks for the draft, it looks great! A few small changes before you post:\n\n'
+    +items.map((x,i)=>(i+1)+'. '+enFix(x)).join('\n')
+    +'\n\nOnce it\'s updated, send it over and we\'ll approve it right away.\n\nBest,\n'+S.sender.name;
+}
+function markQuotes(text, items){
+  const qs = items.map(x=>x.quote).filter(Boolean).sort((a,b)=>b.length-a.length);
+  if(!qs.length) return esc(text);
+  const low = text.toLowerCase(), marks = [];
+  qs.forEach(q=>{ let i = low.indexOf(q.toLowerCase()); while(i>=0){ if(!marks.some(m=>i<m[1] && i+q.length>m[0])) marks.push([i, i+q.length]); i = low.indexOf(q.toLowerCase(), i+q.length); } });
+  marks.sort((a,b)=>a[0]-b[0]);
+  let out = '', at = 0;
+  marks.forEach(([a,b])=>{ out += esc(text.slice(at,a))+'<mark>'+esc(text.slice(a,b))+'</mark>'; at = b; });
+  return out + esc(text.slice(at));
+}
+
+/* --- results --- */
+function videoId(url){
+  const m = /(?:youtu\.be\/|[?&]v=|\/shorts\/|\/embed\/|\/live\/)([A-Za-z0-9_-]{11})/.exec(String(url));
+  return m ? m[1] : (/^[A-Za-z0-9_-]{11}$/.test(String(url).trim()) ? String(url).trim() : null);
+}
+async function doFetchVideo(id){
+  const c = BY_ID[id], d = S.deals[id];
+  const vid = videoId(d.url);
+  d.videoErr = '';
+  if(!vid){ d.videoErr = '没认出 YouTube 视频链接。支持 youtube.com/watch?v=…、youtu.be/…、/shorts/… 这几种。'; render(); return; }
+  if(!S.ytKey){ d.videoErr = '还没有 YouTube API Key。回到第 1 步切到“YouTube 实时”填 Key，或者先用示例数据。'; render(); return; }
+  S.busy = 'deal:'+id+':video'; render();
+  try {
+    const r = await yt('videos', {part:'snippet,statistics', id:vid});
+    const v = (r.items||[])[0];
+    if(!v) throw new Error('找不到这条视频，可能是私密视频或链接有误。');
+    const st = v.statistics||{}, sn = v.snippet||{};
+    d.video = {vid, title:decodeHtml(sn.title||''), channel:sn.channelTitle||'', channelId:sn.channelId||'', at:sn.publishedAt||'',
+      views:+st.viewCount||0, likes:+st.likeCount||0, comments:+st.commentCount||0, src:'youtube', fetched:Date.now()};
+    d.stage = d.stage==='done' ? 'done' : 'live';
+  } catch(e){ d.videoErr = (e && e.message) || String(e); }
+  S.busy = '';
+  render();
+}
+function sampleVideo(c){
+  const h = hashStr(c.id+'v');
+  const views = Math.max(800, Math.round(c.avgViews*(.55+(h%95)/100)));
+  const er = (c.er||3)/100;
+  return {vid:'', title:'I tried the '+S.sender.brand+' '+prodEn()+' for 2 weeks (#ad)', channel:c.name, channelId:c.id, at:new Date().toISOString(),
+    views, likes:Math.round(views*er*.86), comments:Math.round(views*er*.14), src:'sample', fetched:Date.now()};
+}
+function sampleSales(c, d){
+  const v = d.video; if(!v) return;
+  const h = hashStr(c.id+'s');
+  const clicks = Math.round(v.views*(.01+(h%11)/1000));
+  const orders = Math.round(clicks*(.03+(h%5)/100));
+  d.sales = {clicks:String(clicks), orders:String(orders), revenue:String(orders*AOV)};
+}
+function metricsOf(c, d){
+  const v = d.video; if(!v) return null;
+  const eng = v.likes + v.comments;
+  const rev = parseFloat(d.sales.revenue)||0, orders = parseFloat(d.sales.orders)||0, clicks = parseFloat(d.sales.clicks)||0;
+  const fee = +d.final||0;
+  const comm = (d.model==='hybrid'||d.model==='commission') ? rev*d.rate/100 : 0;
+  const cost = fee + comm;
+  return {views:v.views, eng, er: v.views ? eng/v.views*100 : 0, cost, fee, comm,
+    cpm: v.views ? cost/v.views*1000 : 0, cpe: eng ? cost/eng : 0, idx: c.avgViews ? v.views/c.avgViews : 1,
+    clicks, orders, rev, roi: cost && rev ? rev/cost : null, cpa: orders ? cost/orders : null};
+}
+// Reach against the creator's usual views decides first, then cost against the rest of the campaign.
+// ROI is shown but not used here: one seeding video rarely pays back on its own.
+function ratingOf(m, medCpm){
+  if(m.idx<.6) return '不建议复投';
+  if(m.idx>=.9 && m.cpm<=medCpm) return '优先复投';
+  return '可以再合作';
+}
+function medianOf(a){ if(!a.length) return 0; const s = a.slice().sort((x,y)=>x-y), i = Math.floor(s.length/2); return s.length%2 ? s[i] : (s[i-1]+s[i])/2; }
+function resultRows(){
+  const rows = dealList(['approved','live','done']).map(x=>Object.assign(x, {m:metricsOf(x.c, x.d)}));
+  const med = medianOf(rows.filter(x=>x.m).map(x=>x.m.cpm));
+  rows.forEach(x=>{ if(x.m) x.rating = ratingOf(x.m, med); });
+  return rows;
+}
+const usd2 = n => '$'+(Math.round(n*100)/100).toFixed(2);
+function reportText(rows, summary){
+  const done = rows.filter(x=>x.m), b = S.brief;
+  const tc = sum(done.map(x=>x.m.cost)), tv = sum(done.map(x=>x.m.views)), te = sum(done.map(x=>x.m.eng)), tr = sum(done.map(x=>x.m.rev));
+  const lines = ['达人营销复盘：'+S.sender.brand+' '+prodEn(), '市场：'+b.countries.map(x=>COUNTRIES[x]).join('、')+' · 平台：'+b.platforms.join('、'), ''];
+  lines.push('总花费 '+money(tc)+' · 总播放 '+tv.toLocaleString('en-US')+' · 总互动 '+te.toLocaleString('en-US'));
+  lines.push('综合 CPM '+usd2(tv?tc/tv*1000:0)+' · 综合 CPE '+usd2(te?tc/te:0)+(tr?' · 销售额 '+money(tr)+' · ROI '+(tc?(tr/tc).toFixed(2):'–'):''));
+  lines.push('');
+  done.sort((x,y)=>x.m.cpm-y.m.cpm).forEach((x,i)=>{
+    lines.push((i+1)+'. '+x.c.name+'（'+x.c.platform+'）'+x.rating);
+    lines.push('   花费 '+money(x.m.cost)+'，播放 '+x.m.views.toLocaleString('en-US')+'（达预期 '+Math.round(x.m.idx*100)+'%），互动率 '+x.m.er.toFixed(1)+'%，CPM '+usd2(x.m.cpm)+'，CPE '+usd2(x.m.cpe)+(x.m.rev?'，销售额 '+money(x.m.rev)+'，ROI '+(x.m.roi||0).toFixed(2):''));
+    if(x.d.video && x.d.video.src==='sample') lines.push('   （示例数据）');
+  });
+  lines.push('', '结论和下一步：', summary || ruleSummary(rows));
+  return lines.join('\n');
+}
+function ruleSummary(rows){
+  const done = rows.filter(x=>x.m);
+  if(!done.length) return '还没有发布数据。';
+  const out = [];
+  const top = done.filter(x=>x.rating==='优先复投').sort((x,y)=>x.m.cpm-y.m.cpm), weak = done.filter(x=>x.rating==='不建议复投');
+  const best = top[0] || done.slice().sort((x,y)=>x.m.cpm-y.m.cpm)[0];
+  out.push('成本最低的是 '+best.c.name+'：CPM '+usd2(best.m.cpm)+'，播放达到平时的 '+Math.round(best.m.idx*100)+'%'+(top.length?'，下次优先复投'+(top.length>1?'，同样优先的还有 '+top.slice(1).map(x=>x.c.name).join('、'):'')+'。':'。'));
+  if(weak.length) out.push(weak.map(x=>x.c.name+'（'+Math.round(x.m.idx*100)+'%）').join('、')+' 播放不到平时的 60%，先不复投，可以看看是选题还是发布时间的问题。');
+  const withRoi = done.filter(x=>x.m.roi!=null).sort((x,y)=>y.m.roi-x.m.roi);
+  if(withRoi.length) out.push('带货 ROI 最高的是 '+withRoi[0].c.name+'（'+withRoi[0].m.roi.toFixed(2)+'），下一轮可以把这类达人的合作方式改成固定费 + 佣金。');
+  out.push('结果写回达人档案后，下次匹配会按历史表现调整排序。');
+  return out.map((x,i)=>(i+1)+'. '+x).join('\n');
+}
+async function doReport(){
+  const rows = resultRows(), done = rows.filter(x=>x.m);
+  if(!done.length){ toast('先给至少一位达人填上发布数据'); return; }
+  let summary = '', src = 'rule';
+  if(S.mode==='ai'){
+    S.busy = 'report'; render();
+    const data = done.map(x=>({creator:x.c.name, cost_usd:Math.round(x.m.cost), views:x.m.views, vs_usual_pct:Math.round(x.m.idx*100), er_pct:+x.m.er.toFixed(1), cpm_usd:+x.m.cpm.toFixed(2), revenue_usd:Math.round(x.m.rev), roi:x.m.roi==null?null:+x.m.roi.toFixed(2), rating:x.rating}));
+    const j = await aiJson('根据这次达人投放的数据，用中文写“结论和下一步”，3 条，每条一句话。只能引用下面数据里出现的数字，不要编造。\n返回 JSON：{"summary":["……","……","……"]}\n\n数据：\n'+JSON.stringify(data));
+    S.busy = '';
+    if(j && Array.isArray(j.summary)){
+      const allowed = JSON.stringify(data);
+      const text = j.summary.slice(0,4).map((s2,i)=>(i+1)+'. '+String(s2)).join('\n');
+      const bad = (text.replace(/^\d+\. /gm,'').match(/\d+(?:\.\d+)?/g)||[]).filter(n=>allowed.indexOf(n)<0);
+      if(!bad.length){ summary = text; src = 'ai'; } else toast('AI 结论里有数据之外的数字，已改用规则结论');
+    }
+  }
+  S.report = {text:reportText(rows, summary), src, at:Date.now()};
+  render();
+}
+function loadPerf(){ try { return JSON.parse(localStorage.getItem(PERF_KEY)||'{}') || {}; } catch(e){ return {}; } }
+function savePerf(p){ try { localStorage.setItem(PERF_KEY, JSON.stringify(p)); } catch(e){} }
+function doWriteBack(){
+  const rows = resultRows().filter(x=>x.m && x.d.stage!=='done');
+  if(!rows.length){ toast('没有新的发布数据需要写回'); return; }
+  const p = loadPerf();
+  rows.forEach(x=>{
+    const h = p[x.c.id] || (p[x.c.id] = {name:x.c.name, handle:x.c.handle, platform:x.c.platform, runs:[]});
+    h.runs.push({at:Date.now(), product:prodEn(), cost:Math.round(x.m.cost), views:x.m.views, cpm:+x.m.cpm.toFixed(2), er:+x.m.er.toFixed(1), idx:+x.m.idx.toFixed(2), roi:x.m.roi==null?null:+x.m.roi.toFixed(2), rating:x.rating, sample:x.d.video.src==='sample'});
+    x.d.stage = 'done';
+  });
+  savePerf(p);
+  toast('已写回 '+rows.length+' 位达人的合作结果，下次匹配会参考');
+  render();
+}
+function withHistory(c, r){
+  const h = PERF_CACHE && PERF_CACHE[c.id];
+  if(!h || !h.runs || !h.runs.length) return r;
+  const last = h.runs[h.runs.length-1];
+  const adj = last.rating==='优先复投' ? 8 : last.rating==='不建议复投' ? -12 : 2;
+  return Object.assign({}, r, {score:clamp(r.score+adj,0,100),
+    reason:r.reason+'；合作过 '+h.runs.length+' 次，上次播放达预期 '+Math.round(last.idx*100)+'%、CPM '+usd2(last.cpm),
+    risks:[{lv:last.rating==='不建议复投'?'warn':'good', t:'历史合作：'+last.rating}].concat(r.risks)});
+}
+let PERF_CACHE = null;
+function histJson(id){
+  const h = PERF_CACHE && PERF_CACHE[id];
+  if(!h || !h.runs || !h.runs.length) return {};
+  const last = h.runs[h.runs.length-1];
+  return {past_campaign:{times:h.runs.length, views_vs_usual_pct:Math.round(last.idx*100), cpm_usd:last.cpm, rating:last.rating}};
+}
+function download(name, text){
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], {type:'text/plain;charset=utf-8'}));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  } catch(e){ toast('下载失败，请用“复制”'); }
+}
+
+/* --- step 6 view --- */
+function mailBox(c, d){
+  const bad = dealNumberCheck(c, d, d.counter.body);
+  return '<div class="mail"><div class="mail-head"><b>回复 '+esc(c.first)+'</b>'+srcTag(d.counterSrc)+'</div>'
+    +'<div class="mail-body"><label class="f">主题<input type="text" data-df="'+c.id+':counter.subject" value="'+esc(d.counter.subject)+'"></label>'
+    +'<label class="f">正文<textarea data-df="'+c.id+':counter.body">'+esc(d.counter.body)+'</textarea></label>'
+    +'<div class="risks" id="dchk-'+c.id+'">'+checkTags(bad)+'</div></div>'
+    +'<div class="mail-foot"><label><input type="checkbox" data-dcheck="'+c.id+'"'+(d.counterOk?' checked':'')+'> 已核对金额和内容</label><span class="spacer"></span>'
+    +(d.counterSent?'<span class="tag good">已发送（模拟）</span>':'<button type="button" class="btn primary sm" data-da="'+c.id+':sendCounter"'+(d.counterOk?'':' disabled')+'>发送（模拟）</button>')+'</div></div>';
+}
+function dealPanel(c, d){
+  const head = '<div class="deal-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+stageTag(d)+'</div>'
+    +'<div class="meta">'+c.platform+' · '+ctry(c)+' · 估算报价 '+money(c.price.lo)+'–'+money(c.price.hi)+(d.final?' · 成交 '+money(d.final):'')+'</div></div>'
+    +'<button type="button" class="btn sm" data-detail="'+c.id+'">详情</button></div>';
+  let body = '';
+  if(d.stage==='invited'){
+    body = '<label class="f">达人的回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, thanks for reaching out…">'+esc(d.reply)+'</textarea></label>'
+      +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
+      +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
+      +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'<span class="meta">'+(S.mode==='ai'?aiName()+' 提取报价和问题，金额必须在原文里出现':'规则提取：金额、意向、问题')+'</span>')+'</div>';
+  } else if(d.stage==='talk'){
+    const p = d.parsed, sg = d.sug || {};
+    body = '<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
+      +'<div class="kv">'
+        +'<div><span>达人报价</span><b>'+(p.ask?money(p.ask):'未报价')+'</b></div>'
+        +'<div><span>我们的估算</span><b>'+money(c.price.lo)+'–'+money(c.price.hi)+'</b></div>'
+        +'<div><span>剩余预算</span><b>'+(budgetLeft()==null?'未设':money(budgetLeft()))+'</b></div>'
+      +'</div>'
+      +(p.usageFee||p.days||p.exclusivity||(p.questions&&p.questions.length)?'<ul class="posts">'+(p.usageFee?'<li>广告授权另收 '+money(p.usageFee)+'</li>':'')+(p.days?'<li>收到样品后约 '+p.days+' 天发布</li>':'')+(p.exclusivity?'<li>问到是否需要独家</li>':'')+(p.questions||[]).map(q=>'<li>问题：'+esc(q)+'</li>').join('')+'</ul>':'')
+      +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+'</div></div>';
+    if(sg.kind==='lost'){
+      body += '<div class="row">'+(d.counter?'':'<button type="button" class="btn sm" data-da="'+c.id+':counter">写一封礼貌的回复</button>')
+        +'<button type="button" class="btn sm" data-da="'+c.id+':lost">标记为未合作</button><button type="button" class="btn sm" data-go="3">回第 3 步补人</button></div>'
+        +(d.counter?mailBox(c,d):'');
+    } else if(!d.agreed){
+      body += '<div class="grid3">'
+        +'<label class="f">合作方式<select data-df="'+c.id+':model">'+Object.keys(MODEL).map(k=>'<option value="'+k+'"'+(d.model===k?' selected':'')+'>'+MODEL[k]+'</option>').join('')+'</select></label>'
+        +'<label class="f">我方报价（美元）<input type="number" min="0" step="10" data-df="'+c.id+':offer" value="'+esc(d.offer)+'"></label>'
+        +'<label class="f">佣金比例 %<input type="number" min="0" max="50" data-df="'+c.id+':rate" value="'+esc(d.rate)+'"'+(d.model==='hybrid'||d.model==='commission'?'':' disabled')+'></label>'
+      +'</div>'
+      +'<div class="row"><button type="button" class="btn sm'+(d.counter?'':' primary')+'" data-da="'+c.id+':counter"'+(S.busy?' disabled':'')+'>'+(d.counter?'按新条件重写':'生成回复邮件')+'</button>'
+      +(busyOn(c.id,'counter')?thinking(aiName()+' 正在写回复…'):'')+'</div>'
+      +(d.counter?mailBox(c,d):'')
+      +(d.counterSent?'<div class="row"><span class="meta">达人怎么说？</span><button type="button" class="btn primary sm" data-da="'+c.id+':agree">达人接受了</button><button type="button" class="btn sm" data-da="'+c.id+':again">还要再谈</button></div>':'');
+    } else {
+      const left = budgetLeft(), over = left!=null && d.offer>left;
+      body += '<div class="terms"><b>确认合作条款</b>'
+        +'<div class="grid3">'
+          +'<label class="f">合作方式<input type="text" value="'+esc(MODEL[d.model])+(d.model==='hybrid'||d.model==='commission'?' · 佣金 '+d.rate+'%':'')+'" disabled></label>'
+          +'<label class="f">固定费用（美元）<input type="number" min="0" step="10" data-df="'+c.id+':offer" value="'+esc(d.offer)+'"></label>'
+          +'<label class="f">发布日期<input type="date" data-df="'+c.id+':terms.date" value="'+esc(d.terms.date)+'"></label>'
+          +'<label class="f full">交付物<input type="text" data-df="'+c.id+':terms.deliverable" value="'+esc(d.terms.deliverable)+'"></label>'
+          +'<label class="f full">广告授权<select data-df="'+c.id+':terms.usage"><option value="none"'+(d.terms.usage==='none'?' selected':'')+'>不要，只做自然发布</option><option value="30d"'+(d.terms.usage==='30d'?' selected':'')+'>30 天广告投放授权</option></select></label>'
+        +'</div>'
+        +'<ul class="posts"><li>发布时必须带 #ad 并打开平台的 Paid partnership 标签</li><li>发布前先交脚本或初剪，品牌审核通过后才能发</li><li>付款：发布后 7 天内结清'+(d.model==='hybrid'||d.model==='commission'?'，佣金按月结算':'')+'</li></ul>'
+        +(over?'<div class="callout ask"><b>超预算：</b>签下这单后，已承诺费用 '+money(committed()+(+d.offer||0))+'，超过预算 '+money(S.brief.budgetUsd)+'。</div>':'')
+        +'<div class="row"><label class="inline"><input type="checkbox" data-dterms="'+c.id+'"'+(d.termsOk?' checked':'')+'> 金额和条款我已核对</label><span class="spacer"></span>'
+        +'<button type="button" class="btn sm" data-da="'+c.id+':again">返回修改</button>'
+        +'<button type="button" class="btn primary sm" data-da="'+c.id+':sign"'+(d.termsOk?'':' disabled')+'>确认签约（模拟）</button></div></div>';
+    }
+  } else if(d.stage==='signed'){
+    body = '<div class="row"><b>拍摄要点</b>'+(d.brief?srcTag(d.briefSrc):'')+'<span class="spacer"></span><button type="button" class="btn sm'+(d.brief?'':' primary')+'" data-da="'+c.id+':brief"'+(S.busy?' disabled':'')+'>'+(d.brief?'重新生成':'生成拍摄要点')+'</button>'+(busyOn(c.id,'brief')?thinking(aiName()+' 正在写要点…'):'')+'</div>'
+      +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>':'<p class="meta">要点里的卖点和禁用说法来自第 7 步的审核标准，审核时会按同一套标准检查。</p>')
+      +'<div class="grid3"><label class="f">物流<select data-df="'+c.id+':ship.carrier">'+['DHL','FedEx','UPS','USPS','Royal Mail','J&T'].map(x=>'<option'+(d.ship.carrier===x?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'
+      +'<label class="f">运单号<input type="text" data-df="'+c.id+':ship.no" value="'+esc(d.ship.no)+'" placeholder="寄出后填写"></label>'
+      +'<label class="f">&nbsp;<button type="button" class="btn sm" data-da="'+c.id+':track">填演示单号</button></label></div>'
+      +'<div class="row"><span class="spacer"></span><button type="button" class="btn primary sm" data-da="'+c.id+':ship"'+(d.brief&&d.ship.no.trim()?'':' disabled')+'>寄出样品并发送要点（模拟）</button></div>';
+  } else if(d.stage==='shipped'){
+    body = '<p class="meta">'+esc(d.ship.carrier)+' '+esc(d.ship.no)+' 已寄出。达人收货后按要点拍摄，发布前先交稿审核（约定发布日 '+esc(d.terms.date)+'）。</p>'
+      +'<div class="row"><span class="spacer"></span><button type="button" class="btn primary sm" data-da="'+c.id+':submitted">达人已交稿，去审核</button></div>';
+  }
+  return '<div class="deal" id="deal-'+c.id+'">'+head+(body?'<div class="deal-body">'+body+'</div>':'')+'</div>';
+}
 function v6(){
-  const ids = Object.keys(S.board);
+  if(!S.rc) S.rc = defaultRC();
+  const all = dealList(), n = all.length;
+  const replied = all.filter(x=>x.d.stage!=='invited').length;
+  const signed = all.filter(x=>SIGNED.indexOf(x.d.stage)>=0).length;
   const secs = S.t0 && S.tSend ? Math.round((S.tSend-S.t0)/1000) : 0;
-  const ranks = ids.map(id=>S.results.find(x=>x.id===id)).filter(x=>x && x.src!=='similar').map(x=>x.rank);
-  const avgRank = ranks.length ? (sum(ranks)/ranks.length).toFixed(1) : '–';
-  const sel = ids.map(id=>BY_ID[id]);
-  const lo = sum(sel.map(c=>c.price.lo)), hi = sum(sel.map(c=>c.price.hi));
-  const card = c => {
-    const st = S.board[c.id];
-    return '<div class="bcard"><div class="row" style="gap:8px">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+'</div><div class="meta">'+c.platform+' · '+ctry(c)+' · $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real&&c.email?'<div class="meta">'+esc(c.email)+'</div>':'')+'</div></div>'
-      +'<div class="row" style="gap:6px">'
-      +(st==='invited'?'<button type="button" class="btn sm" data-move="'+c.id+':replied">标记已回复</button>':'')
-      +(st==='replied'?'<button type="button" class="btn sm" data-move="'+c.id+':deal">进入合作</button><button type="button" class="btn sm" data-move="'+c.id+':invited">退回</button>':'')
-      +(st==='deal'?'<span class="tag good">待寄样 · 待签约</span>':'')
+  const active = all.filter(x=>['invited','talk','signed','shipped'].indexOf(x.d.stage)>=0);
+  const toReview = all.filter(x=>x.d.stage==='review').length;
+  const bcard = x => '<button type="button" class="bmini" data-jump="'+x.c.id+'">'+avatar(x.c)+'<span><b>'+esc(x.c.name)+'</b><small>'+STAGE[x.d.stage]+(x.d.final?' · '+money(x.d.final):'')+'</small></span></button>';
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>合作跟进</h2><p class="lead">读达人回复、谈价、签约、寄样。AI 负责读回复、给谈价建议和起草邮件；报价和签约由人拍板。</p></div><span class="takeover">人工接管点 4/5</span></div>'
+  +'<div class="stats">'
+    +'<div class="stat"><span>发出邀约</span><b>'+n+' 封</b><small>需求到发出用时 '+Math.floor(secs/60)+' 分 '+(secs%60)+' 秒</small></div>'
+    +'<div class="stat"><span>已回复</span><b>'+replied+' / '+n+'</b><small>回复率 '+(n?Math.round(replied/n*100):0)+'%</small></div>'
+    +'<div class="stat"><span>已签约</span><b>'+signed+' 位</b><small>未合作 '+all.filter(x=>x.d.stage==='lost').length+' 位</small></div>'
+    +'<div class="stat"><span>已承诺费用</span><b>'+money(committed())+'</b><small>'+(S.brief.budgetUsd?'预算 '+money(S.brief.budgetUsd)+'，剩 '+money(budgetLeft()):'未设预算')+'</small></div>'
+  +'</div>'
+  +'<div class="board">'+BOARD_COLS.map(([l,st])=>{ const cs = all.filter(x=>st.indexOf(x.d.stage)>=0); return '<div class="col"><h3>'+l+' <span>'+cs.length+'</span></h3>'+(cs.length?cs.map(bcard).join(''):'<div class="empty">暂无</div>')+'</div>'; }).join('')+'</div>'
+  +(active.length?'<h3>待处理 '+active.length+'</h3><div class="deals">'+active.map(x=>dealPanel(x.c, x.d)).join('')+'</div>':'<div class="callout">没有需要跟进的达人了。</div>')
+  +(toReview?'<div class="row"><button type="button" class="btn dark" data-go="7">去审核 '+toReview+' 份稿件 →</button></div>':'')
+  +'<p class="why"><b>兜底规则：</b>AI 提取的报价必须在达人原文里出现；回复邮件里出现估算和报价以外的数字会被标出来；签约前显示预算占用，超预算会提醒。</p>'
+  +'</div>';
+}
+
+/* --- step 7 view --- */
+function v7(){
+  if(!S.rc) S.rc = defaultRC();
+  const list = dealList(['review']), passed = dealList(['approved','live','done']).length;
+  const card = ({c, d}) => {
+    const rv = d.review, stale = rv && rv.text!==d.draft;
+    const bad = rv ? rv.items.filter(x=>x.lv==='bad').length : 0;
+    return '<div class="deal" id="deal-'+c.id+'"><div class="deal-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+stageTag(d)+(d.rounds?'<span class="tag neutral">第 '+(d.rounds+1)+' 稿</span>':'')+'</div><div class="meta">'+esc(d.terms.deliverable)+' · 约定发布 '+esc(d.terms.date)+'</div></div></div>'
+      +'<div class="deal-body">'
+      +'<label class="f">达人交来的脚本或文案<textarea data-df="'+c.id+':draft" placeholder="粘贴脚本、字幕或视频文案">'+esc(d.draft)+'</textarea></label>'
+      +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':draftBad">载入示例稿</button>'+(d.rounds?'<button type="button" class="btn sm" data-da="'+c.id+':draftGood">载入修改后的稿件</button>':'')
+      +'<button type="button" class="btn primary sm" data-da="'+c.id+':review"'+(S.busy?' disabled':'')+'>审核</button>'
+      +(busyOn(c.id,'review')?thinking('规则检查完成，'+aiName()+' 正在找其他问题…'):'')+'</div>'
+      +(rv?'<div class="review">'
+        +'<div class="row" style="gap:6px"><b>审核结果</b>'+srcTag(d.reviewSrc==='ai'?'ai':'rule')+(rv.items.length?'<span class="tag '+(bad?'bad':'warn')+'">'+rv.items.length+' 个问题'+(bad?'，'+bad+' 个必须改':'')+'</span>':'<span class="tag good">没有发现问题</span>')+(stale?'<span class="tag warn">稿件改过了，请重新审核</span>':'')+'</div>'
+        +(rv.items.length?'<div class="draft-view">'+markQuotes(rv.text, rv.items)+'</div><div class="issues">'+rv.items.map(x=>'<div class="issue"><span class="tag '+x.lv+'">'+esc(x.type)+'</span>'+(x.quote?'<code>'+esc(x.quote)+'</code>':'')+'<span>'+esc(x.fix)+'</span>'+(x.src==='ai'?'<span class="tag ai">AI 提示，需人判断</span>':'')+'</div>').join('')+'</div>':'')
+        +(d.feedbackOpen?'<label class="f">修改意见（发给达人）<textarea data-df="'+c.id+':feedback">'+esc(d.feedback)+'</textarea></label>'
+          +'<div class="row"><span class="spacer"></span><button type="button" class="btn sm" data-da="'+c.id+':cancelFb">取消</button><button type="button" class="btn primary sm" data-da="'+c.id+':sendFb">发送修改意见（模拟）</button></div>'
+         :'<div class="row"><span class="spacer"></span><button type="button" class="btn sm" data-da="'+c.id+':reject"'+(rv.items.length?'':' disabled')+'>退回修改</button>'
+          +'<button type="button" class="btn '+(bad||stale?'':'primary ')+'sm" data-da="'+c.id+':approve"'+(stale?' disabled':'')+'>'+(bad?'仍然通过':'通过，允许发布')+'</button></div>')
+      +'</div>':'')
       +'</div></div>';
   };
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>合作看板</h2><p class="lead">邀约发出之后进入跟进。真实产品里这里接邮箱回复、合同、寄样物流和内容追踪，Demo 只演示状态流转。</p></div></div>'
-  +'<div class="stats">'
-    +'<div class="stat"><span>需求到发出邀约</span><b>'+Math.floor(secs/60)+' 分 '+(secs%60)+' 秒</b><small>竞品宣传：8 小时 → 8 分钟</small></div>'
-    +'<div class="stat"><span>发出邀约</span><b>'+ids.length+' 封</b><small>其中相似推荐 '+ids.filter(id=>S.lookalikeIds.has(id)).length+' 位</small></div>'
-    +'<div class="stat"><span>选中达人的平均推荐名次</span><b>'+avgRank+'</b><small>越靠前说明排序越准</small></div>'
-    +'<div class="stat"><span>预计总费用</span><b>'+money(lo)+'–'+money(hi)+'</b><small>'+(S.brief.budgetUsd?'预算 '+money(S.brief.budgetUsd):'未设预算')+'</small></div>'
-  +'</div>'
-  +'<div class="board">'+COLS.map(([k,l])=>{ const cs = sel.filter(c=>S.board[c.id]===k); return '<div class="col"><h3>'+l+' <span>'+cs.length+'</span></h3>'+(cs.length?cs.map(card).join(''):'<div class="empty">暂无</div>')+'</div>'; }).join('')+'</div>'
-  +'<div class="row"><button type="button" class="btn dark" data-act="restart">换一个需求重新演示</button></div>'
-  +'<p class="why"><b>可以讲的指标：</b>匹配质量看“选中达人的平均推荐名次”和“前 10 采纳率”；效率看“需求到发出邀约用时”；业务看邀约回复率、成交率和单次合作 ROI。</p>'
+  +'<div class="step-head"><div><h2>内容审核</h2><p class="lead">达人发布前先交稿。规则查广告标注、禁用说法、点名竞品和漏掉的卖点，AI 再找夸大和不合适的表达。通过还是退回，由人决定。</p></div><span class="takeover">人工接管点 5/5</span></div>'
+  +'<div class="panel"><div class="row" style="margin-bottom:10px"><b>审核标准</b><span class="meta">对所有达人生效，第 6 步的拍摄要点也用这一套。卖点是示例，按真实商品修改。</span></div><div class="grid2">'
+    +'<label class="f">必须提到的卖点（每行一条）<textarea data-rc="points" style="min-height:96px">'+esc(S.rc.points.join('\n'))+'</textarea></label>'
+    +'<label class="f">禁用说法（每行一条）<textarea data-rc="banned" style="min-height:96px">'+esc(S.rc.banned.join('\n'))+'</textarea></label>'
+  +'</div><p class="meta" style="margin:8px 0 0">固定检查：必须带 #ad 或 Paid partnership 标签（美国 FTC 要求）；不能点名其他品牌。</p></div>'
+  +(list.length?'<div class="deals">'+list.map(card).join('')+'</div>':'<div class="callout">'+(passed?'稿件都审完了。':'还没有达人交稿。在第 6 步签约、寄样后，点“达人已交稿”就会到这里。')+'</div>')
+  +(passed?'<div class="row"><button type="button" class="btn dark" data-go="8">去看效果复盘 →</button></div>':'')
+  +'<p class="why"><b>为什么不让 AI 直接放行：</b>是否合规、语气是否符合品牌，最终要由品牌方负责。AI 找出的问题都标了原文位置，人能马上判断是不是误报。</p>'
   +'</div>';
+}
+
+/* --- step 8 view --- */
+function v8(){
+  const rows = resultRows(), done = rows.filter(x=>x.m);
+  const tc = sum(done.map(x=>x.m.cost)), tv = sum(done.map(x=>x.m.views)), te = sum(done.map(x=>x.m.eng)), tr = sum(done.map(x=>x.m.rev));
+  const ytOk = !!S.ytKey;
+  const row = x => {
+    const c = x.c, d = x.d, m = x.m, v = d.video;
+    const mismatch = v && v.src==='youtube' && c.real && v.channelId && v.channelId!==c.id;
+    return '<div class="deal" id="deal-'+c.id+'"><div class="deal-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+stageTag(d)+(x.rating?'<span class="tag '+(x.rating==='不建议复投'?'warn':'good')+'">'+x.rating+'</span>':'')+'</div>'
+      +'<div class="meta">'+MODEL[d.model]+' · 固定费 '+money(d.final||0)+(d.model==='hybrid'||d.model==='commission'?' + 佣金 '+d.rate+'%':'')+' · 平时均播 '+fmtK(c.avgViews)+'</div></div></div>'
+      +'<div class="deal-body">'
+      +'<div class="row"><input type="text" data-df="'+c.id+':url" value="'+esc(d.url)+'" placeholder="发布链接，例如 https://www.youtube.com/watch?v=…" style="flex:1;min-width:220px">'
+      +'<button type="button" class="btn sm primary" data-da="'+c.id+':fetch"'+(S.busy||!ytOk?' disabled':'')+' title="'+(ytOk?'用 YouTube Data API 读取播放、点赞、评论':'需要先在第 1 步填 YouTube API Key')+'">抓取 YouTube 数据</button>'
+      +'<button type="button" class="btn sm" data-da="'+c.id+':sampleVideo">用示例数据</button>'
+      +(busyOn(c.id,'video')?thinking('正在读取视频数据…'):'')+'</div>'
+      +(d.videoErr?'<div class="callout ask">'+esc(d.videoErr)+'</div>':'')
+      +(v?'<div class="meta">'+(v.src==='youtube'?'<span class="tag good">YouTube 实时</span> ':'<span class="tag neutral">示例</span> ')+esc(v.title)+(v.channel?' · '+esc(v.channel):'')+'</div>':'')
+      +(mismatch?'<div class="callout ask"><b>频道不一致：</b>这条视频来自“'+esc(v.channel)+'”，不是签约达人的频道。请核对链接。</div>':'')
+      +(v?'<div class="grid3">'
+        +'<label class="f">链接点击<input type="number" min="0" data-df="'+c.id+':sales.clicks" value="'+esc(d.sales.clicks)+'"></label>'
+        +'<label class="f">订单数<input type="number" min="0" data-df="'+c.id+':sales.orders" value="'+esc(d.sales.orders)+'"></label>'
+        +'<label class="f">销售额（美元）<input type="number" min="0" data-df="'+c.id+':sales.revenue" value="'+esc(d.sales.revenue)+'"></label>'
+      +'</div><div class="row"><span class="meta">点击和销售来自联盟链接或专属折扣码的后台，这里手动填。</span><button type="button" class="btn sm" data-da="'+c.id+':sampleSales">填示例销售（客单价按 $'+AOV+'）</button></div>':'')
+      +(m?'<div class="kv kv6">'
+        +'<div><span>播放</span><b>'+fmtK(m.views)+'</b></div>'
+        +'<div><span>达预期</span><b>'+Math.round(m.idx*100)+'%</b></div>'
+        +'<div><span>互动率</span><b>'+m.er.toFixed(1)+'%</b></div>'
+        +'<div><span>CPM</span><b>'+usd2(m.cpm)+'</b></div>'
+        +'<div><span>CPE</span><b>'+usd2(m.cpe)+'</b></div>'
+        +'<div><span>ROI</span><b>'+(m.roi==null?'–':m.roi.toFixed(2))+'</b></div>'
+      +'</div>':'')
+      +'</div></div>';
+  };
+  const perf = loadPerf(), pk = Object.keys(perf);
+  return '<div class="stack">'
+  +'<div class="step-head"><div><h2>效果复盘</h2><p class="lead">填上发布链接，用 YouTube 接口读真实的播放、点赞和评论，算出 CPM、CPE 和 ROI。结果写回达人档案，下次匹配时排序会参考。</p></div></div>'
+  +'<div class="stats">'
+    +'<div class="stat"><span>总花费</span><b>'+money(tc)+'</b><small>固定费 + 佣金</small></div>'
+    +'<div class="stat"><span>总播放</span><b>'+fmtK(tv)+'</b><small>'+done.length+' 条视频</small></div>'
+    +'<div class="stat"><span>综合 CPM / CPE</span><b>'+usd2(tv?tc/tv*1000:0)+'</b><small>CPE '+usd2(te?tc/te:0)+'</small></div>'
+    +'<div class="stat"><span>销售额 / ROI</span><b>'+(tr?money(tr):'–')+'</b><small>'+(tr&&tc?'ROI '+(tr/tc).toFixed(2):'填了销售数据才有')+'</small></div>'
+  +'</div>'
+  +(rows.length?'<div class="deals">'+rows.map(row).join('')+'</div>':'<div class="callout">还没有审核通过的稿件。</div>')
+  +(rows.length?'<div class="panel"><div class="row"><b>复盘报告</b>'+(S.report?srcTag(S.report.src):'')+'<span class="spacer"></span>'
+    +'<button type="button" class="btn sm" data-act="report"'+(done.length&&!S.busy?'':' disabled')+'>'+(S.report?'重新生成':'生成复盘报告')+'</button>'
+    +(S.report?'<button type="button" class="btn sm" data-act="copyReport">复制</button><button type="button" class="btn sm" data-act="dlReport">下载 .txt</button>':'')
+    +'<button type="button" class="btn primary sm" data-act="writeBack"'+(rows.some(x=>x.m&&x.d.stage!=='done')?'':' disabled')+'>写回达人档案</button></div>'
+    +(S.busy==='report'?'<div style="margin-top:10px">'+thinking(aiName()+' 正在写结论…')+'</div>':'')
+    +(S.report?'<textarea data-report="1" style="min-height:240px;margin-top:12px;font-family:var(--mono);font-size:12.5px">'+esc(S.report.text)+'</textarea>':'')
+  +'</div>':'')
+  +'<div class="panel"><div class="row"><b>私有达人库</b><span class="meta">写回过的合作结果，保存在这台电脑的浏览器里。</span><span class="spacer"></span>'+(pk.length?'<button type="button" class="btn sm" data-act="clearPerf">清空</button>':'')+'</div>'
+    +(pk.length?'<div class="lib">'+pk.map(id=>{ const h = perf[id], l = h.runs[h.runs.length-1]; return '<div class="lib-row"><b>'+esc(h.name)+'</b><span class="meta">'+esc(h.platform)+' · 合作 '+h.runs.length+' 次</span><span class="num">CPM '+usd2(l.cpm)+'</span><span class="num">达预期 '+Math.round(l.idx*100)+'%</span><span class="tag '+(l.rating==='不建议复投'?'warn':'good')+'">'+l.rating+'</span>'+(l.sample?'<span class="tag neutral">示例</span>':'')+'</div>'; }).join('')+'</div>'
+      :'<p class="meta" style="margin:8px 0 0">还没有记录。写回后，回到第 1 步换个需求重新匹配，这些达人的排序和推荐理由会带上历史表现。</p>')
+  +'</div>'
+  +'<p class="why"><b>闭环：</b>多数工具停在“找到达人”。把真实投放效果写回档案，下一次匹配就能优先推荐性价比高的达人、避开表现差的，推荐会越用越准。</p>'
+  +'</div>';
+}
+
+/* --- deal actions --- */
+function setPath(o, path, v){ const k = path.split('.'); let t = o; for(let i=0;i<k.length-1;i++) t = t[k[i]]; t[k[k.length-1]] = v; }
+function dealAction(id, act){
+  const c = BY_ID[id], d = S.deals[id]; if(!c || !d) return;
+  switch(act){
+    case 'sample': d.reply = sampleReply(c, Object.keys(S.deals).indexOf(id)); render(); break;
+    case 'parse': doParseReply(id); break;
+    case 'counter': doCounter(id); break;
+    case 'sendCounter': d.counterSent = true; toast('已模拟发送给 '+c.first); render(); break;
+    case 'again': d.agreed = false; d.counterSent = false; d.counterOk = false; d.termsOk = false; render(); break;
+    case 'agree': d.agreed = true; d.termsOk = false; render(); break;
+    case 'lost': d.stage = 'lost'; toast(c.name+' 已标记为未合作'); render(); break;
+    case 'sign': d.final = Math.max(0, +d.offer||0); d.stage = 'signed'; d.signedAt = Date.now(); toast('已签约 '+c.name+'（模拟），下一步写拍摄要点、寄样'); render(); break;
+    case 'brief': doBrief(id); break;
+    case 'track': d.ship.no = (d.ship.carrier==='USPS'?'9400':'JD')+String(1e9+hashStr(id)%9e9).slice(0,10); render(); break;
+    case 'ship': d.stage = 'shipped'; toast('已模拟寄出样品，并把拍摄要点发给 '+c.first); render(); break;
+    case 'submitted': d.stage = 'review'; S.max = Math.max(S.max, 7); toast(c.first+' 交稿了'); go(7); break;
+    case 'draftBad': d.draft = sampleDraft(c, false); d.review = null; render(); break;
+    case 'draftGood': d.draft = sampleDraft(c, true); d.review = null; render(); break;
+    case 'review': doReview(id); break;
+    case 'reject': d.feedback = feedbackMail(c, d); d.feedbackOpen = true; render(); break;
+    case 'cancelFb': d.feedbackOpen = false; render(); break;
+    case 'sendFb': d.rounds += 1; d.feedbackOpen = false; d.review = null; toast('修改意见已发给 '+c.first+'（模拟），等对方交第 '+(d.rounds+1)+' 稿'); render(); break;
+    case 'approve': d.stage = 'approved'; S.max = Math.max(S.max, 8); toast(c.name+' 的稿件已通过，可以发布'); render(); break;
+    case 'fetch': doFetchVideo(id); break;
+    case 'sampleVideo': d.video = sampleVideo(c); d.videoErr = ''; if(d.stage==='approved') d.stage = 'live'; render(); break;
+    case 'sampleSales': sampleSales(c, d); render(); break;
+  }
 }
 
 /* ---------- save / restore demo progress (per browser) ---------- */
@@ -1543,10 +2165,15 @@ function persist(){
       brief:S.brief, briefSrc:S.briefSrc, notes:S.notes, questions:S.questions,
       poolIds:S.pool.map(c=>c.id), relax:S.relax, results:S.results, rankSrc:S.rankSrc,
       selected:Array.from(S.selected), lookalikeIds:Array.from(S.lookalikeIds),
-      sender:S.sender, emails:S.emails, mailSrc:S.mailSrc, checked:Array.from(S.checked), board:S.board,
+      sender:S.sender, emails:S.emails, mailSrc:S.mailSrc, checked:Array.from(S.checked), deals:S.deals, rc:S.rc, report:S.report,
       t0:S.t0, tSend:S.tSend, realStats:S.realStats, trending:S.trending, auth:S.auth, real:real.map(slimCreator)
     }));
   } catch(e){}
+}
+function migrateBoard(board){
+  const out = {};
+  Object.keys(board||{}).forEach(id=>{ const c = BY_ID[id]; if(c){ out[id] = newDeal(c); if(board[id]==='replied') out[id].reply = ''; } });
+  return out;
 }
 function restore(){
   try {
@@ -1561,7 +2188,7 @@ function restore(){
       results:(d.results||[]).filter(x=>BY_ID[x.id]), rankSrc:d.rankSrc||'',
       selected:new Set((d.selected||[]).filter(id=>BY_ID[id])), lookalikeIds:new Set(d.lookalikeIds||[]),
       sender:d.sender||S.sender, emails:d.emails||{}, mailSrc:d.mailSrc||'', checked:new Set(d.checked||[]),
-      board:d.board||{}, t0:d.t0||null, tSend:d.tSend||null, realStats:d.realStats||null, trending:d.trending||null, auth:d.auth||{},
+      deals:d.deals||migrateBoard(d.board), rc:d.rc||null, report:d.report||null, t0:d.t0||null, tSend:d.tSend||null, realStats:d.realStats||null, trending:d.trending||null, auth:d.auth||{},
       savedMode:d.mode
     });
     if(!S.brief){ S.step = 1; S.max = 1; }
@@ -1572,7 +2199,7 @@ function restore(){
 /* ---------- main render & events ---------- */
 function render(){
   renderSteps(); renderMode();
-  const v = [null,v1,v2,v3,v4,v5,v6][S.step];
+  const v = [null,v1,v2,v3,v4,v5,v6,v7,v8][S.step] || v1;
   $('#view').innerHTML = v();
   persistSoon();
 }
@@ -1593,7 +2220,7 @@ document.addEventListener('click', e => {
   if(t.id==='mode-rule'){ S.mode='rule'; render(); return; }
   if((t.id==='src-sample' || t.id==='src-yt') && !t.disabled){
     const src = t.id==='src-yt' ? 'youtube' : 'sample';
-    if(src!==S.source){ Object.assign(S,{source:src,step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),board:{},t0:null,tSend:null,ytError:'',realStats:null,trending:null,auth:{}}); render(); }
+    if(src!==S.source){ Object.assign(S,{source:src,step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),deals:{},rc:null,report:null,t0:null,tSend:null,ytError:'',realStats:null,trending:null,auth:{}}); render(); }
     return;
   }
   if(d.go){ go(parseInt(d.go,10)); return; }
@@ -1606,7 +2233,10 @@ document.addEventListener('click', e => {
   if(d.addsim){ const from = $('#sheet [data-similar]'); addSimilar(d.addsim); if(from) showSimilar(from.dataset.similar); return; }
   if(d.remove){ S.selected.delete(d.remove); render(); return; }
   if(d.check){ if(t.checked) S.checked.add(d.check); else S.checked.delete(d.check); render(); return; }
-  if(d.move){ const [id,st] = d.move.split(':'); S.board[id]=st; render(); return; }
+  if(d.da){ const i = d.da.indexOf(':'); dealAction(d.da.slice(0,i), d.da.slice(i+1)); return; }
+  if(d.dcheck){ const x = S.deals[d.dcheck]; if(x){ x.counterOk = t.checked; render(); } return; }
+  if(d.dterms){ const x = S.deals[d.dterms]; if(x){ x.termsOk = t.checked; render(); } return; }
+  if(d.jump){ const x = S.deals[d.jump]; if(!x) return; const st = x.stage==='review' ? 7 : ['approved','live','done'].indexOf(x.stage)>=0 ? 8 : 6; if(S.step!==st) go(st); setTimeout(()=>{ const el = document.getElementById('deal-'+d.jump); if(el) el.scrollIntoView({behavior:'smooth', block:'start'}); }, 60); return; }
   if(d.authgo){
     const [id, step, plat, flag] = d.authgo.split(':');
     if(step==='done'){ S.auth[id] = makeAuthData(BY_ID[id], plat); refreshResult(id); render(); }
@@ -1634,7 +2264,12 @@ document.addEventListener('click', e => {
     case 'toMail': S.max=Math.max(S.max,5); go(5); break;
     case 'genMail': doGenMail(); break;
     case 'send': doSend(); break;
-    case 'restart': Object.assign(S,{step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),board:{},t0:null,tSend:null,ytError:'',realStats:null,trending:null,auth:{}}); render(); break;
+    case 'report': doReport(); break;
+    case 'copyReport': try { navigator.clipboard.writeText(S.report.text).then(()=>toast('已复制'), ()=>toast('复制失败，请手动选中复制')); } catch(e){ toast('复制失败，请手动选中复制'); } break;
+    case 'dlReport': download('达人营销复盘.txt', S.report.text); break;
+    case 'writeBack': doWriteBack(); break;
+    case 'clearPerf': if(confirm('清空私有达人库里的合作记录？')){ savePerf({}); render(); } break;
+    case 'restart': Object.assign(S,{step:1,max:1,brief:null,results:[],pool:[],selected:new Set(),emails:{},checked:new Set(),deals:{},rc:null,report:null,t0:null,tSend:null,ytError:'',realStats:null,trending:null,auth:{}}); render(); break;
   }
 });
 document.addEventListener('input', e => {
@@ -1650,6 +2285,22 @@ document.addEventListener('input', e => {
   if(e.target.id==='s-brand') S.sender.brand = e.target.value;
   if(e.target.id==='s-name') S.sender.name = e.target.value;
   if(e.target.id==='s-prod') S.sender.productEn = e.target.value;
+  if(d.df){
+    const i = d.df.indexOf(':'), id = d.df.slice(0,i), path = d.df.slice(i+1), x = S.deals[id];
+    if(!x) return;
+    const num = e.target.type==='number';
+    setPath(x, path, num ? (e.target.value==='' ? '' : +e.target.value) : e.target.value);
+    if(path==='model'){ render(); return; }
+    if(path==='counter.body' || path==='counter.subject'){
+      const box = document.getElementById('dchk-'+id); if(box) box.innerHTML = checkTags(dealNumberCheck(BY_ID[id], x, x.counter.body));
+      if(x.counterOk && !x.counterSent){ x.counterOk = false; const cb = document.querySelector('[data-dcheck="'+id+'"]'); if(cb) cb.checked = false; const sb = document.querySelector('[data-da="'+id+':sendCounter"]'); if(sb) sb.disabled = true; }
+    }
+    if(path==='ship.no'){ const sb = document.querySelector('[data-da="'+id+':ship"]'); if(sb) sb.disabled = !(x.brief && x.ship.no.trim()); }
+    if(path==='draft' && x.review){ const st = document.querySelector('#deal-'+id+' [data-da="'+id+':approve"]'); if(st) st.disabled = x.review.text!==x.draft; }
+    persistSoon();
+  }
+  if(d.rc){ if(!S.rc) S.rc = defaultRC(); S.rc[d.rc] = e.target.value.split('\n').map(x=>x.trim()).filter(Boolean); persistSoon(); }
+  if(d.report && S.report){ S.report.text = e.target.value; persistSoon(); }
 });
 document.addEventListener('keydown', e => { if(e.key==='Escape' && !$('#drawer').hidden) closeDrawer(); });
 
