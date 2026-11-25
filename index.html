@@ -350,6 +350,95 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
 
 .zh-edit textarea{background:var(--panel);min-height:150px;font-size:13px;border-color:color-mix(in srgb,var(--good) 25%,var(--line))}
 .zh-dir.on{color:var(--warn);font-weight:600}
+/* ---------- v2 polish: icons, sidebar sections, table list, rings, workspace ---------- */
+.ic{flex:none;vertical-align:-3px}
+h3 .ic{color:var(--accent);margin-right:2px}
+.nav-sec{font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;padding:4px 12px 6px}
+.nav-sec:not(:first-child){margin-top:14px}
+.ws-nav{display:flex;flex-direction:column;gap:2px}
+.step-btn .n .ic{vertical-align:0}
+.step-btn[aria-current="step"] .n{color:var(--accent-ink)}
+.ws-btn .hand{background:var(--bad-soft);color:var(--bad)}
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted)}
+.btn.ghost:hover:not(:disabled){background:var(--chip);color:var(--bad);border-color:transparent}
+.btn.ghost span{font-size:12px}
+
+/* creator table */
+.tbl{border:1px solid var(--line);border-radius:14px;background:var(--panel);box-shadow:var(--shadow);overflow:hidden}
+.tr{display:grid;grid-template-columns:26px 26px minmax(260px,1fr) 62px 62px 62px 70px 96px 56px 132px;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line-2);transition:background .15s}
+.tr:first-child{border-top:0}
+.tr:not(.th):hover{background:var(--hover)}
+.tr.sel{background:color-mix(in srgb,var(--accent-soft) 38%,var(--panel));box-shadow:inset 3px 0 0 var(--accent)}
+.tr.th{padding:10px 16px;background:var(--hover);font-size:11px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.05em}
+.td{min-width:0}
+.c-rank{font-family:var(--mono);color:var(--faint);font-size:12.5px;font-weight:600;text-align:center}
+.c-who{display:flex;gap:12px;align-items:flex-start}
+.c-who .reason{font-size:12.5px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.c-num{font-family:var(--mono);font-size:13px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.tr.th .c-num{font-family:var(--body)}
+.c-price{font-size:12.5px}
+.c-price .muted{font-weight:500}
+.c-score{display:flex;justify-content:center}
+.c-act{display:flex;justify-content:flex-end;gap:4px}
+.muted{color:var(--faint)}
+.er.good{color:var(--good)} .er.bad{color:var(--bad)}
+.m-only{display:none}
+.ring{--c:var(--accent);width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--c) calc(var(--p)*1%),var(--chip) 0);position:relative}
+.ring::before{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--panel)}
+.ring b{position:relative;font-family:var(--display);font-size:14px;font-weight:700}
+.ring.good{--c:var(--good)} .ring.low{--c:#F5A524}
+@media (max-width:1180px){.tr{grid-template-columns:26px 26px minmax(220px,1fr) 62px 62px 70px 96px 56px 120px}.c-h1{display:none}}
+@media (max-width:900px){
+  .tr{grid-template-columns:24px minmax(0,1fr) 50px;grid-template-areas:"s w r" "s a a";gap:8px 12px}
+  .tr.th{display:none}
+  .c-rank,.c-num{display:none}
+  .c-sel{grid-area:s;align-self:start;padding-top:10px}
+  .c-who{grid-area:w}
+  .c-score{grid-area:r;align-self:start}
+  .c-act{grid-area:a;justify-content:flex-start}
+  .m-only{display:inline}
+}
+
+/* profile metric rows (bento) */
+.kv.kv-rows{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.kv.kv-rows div{display:flex;align-items:center;gap:9px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.kv.kv-rows .ic{color:var(--muted)}
+.kv.kv-rows span{flex:1;font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:0;display:inline}
+.kv.kv-rows b{font-size:14px;text-align:right;white-space:nowrap}
+.card .kv.kv-rows{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (max-width:520px){.kv.kv-rows{grid-template-columns:minmax(0,1fr)}}
+
+/* workspace */
+.grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:900px){.grid-2{grid-template-columns:minmax(0,1fr)}}
+.fn-row{display:grid;grid-template-columns:110px minmax(0,1fr) 44px;gap:10px;align-items:center;font-size:13px}
+.fn-row .bar{height:10px}
+.fn-row b{text-align:right}
+.mrow{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:4px 10px;align-items:center;padding:8px 0;border-top:1px solid var(--line-2);font-size:13px}
+.mrow:first-of-type{border-top:0}
+.mrow .ic{color:var(--muted)}
+.mrow b{font-family:var(--display);font-size:16px}
+.mrow em{grid-column:2/-1;font-style:normal;font-size:12px;color:var(--faint)}
+.evlog{display:flex;flex-direction:column;font-size:13px}
+.evlog div{display:flex;gap:12px;align-items:center;padding:6px 0;border-top:1px solid var(--line-2)}
+.evlog div:first-child{border-top:0}
+.evlog .num{width:72px}
+.eval-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.eval-sum>div{background:var(--field);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+.etbl{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}
+.etbl th{background:var(--hover);color:var(--faint);font-weight:700;font-size:11px;text-align:center;padding:7px 6px;border-bottom:1px solid var(--line-2)}
+.etbl th:nth-child(2){text-align:left}
+.etbl td{padding:8px 6px;border-top:1px solid var(--line-2);text-align:center;vertical-align:top}
+.etbl td:nth-child(2){text-align:left;max-width:360px}
+.etbl td.ok{color:var(--good);font-weight:700} .etbl td.no{color:var(--bad);font-weight:700;background:var(--bad-soft)}
+.eq{font-size:12.5px;line-height:1.5}
+.bclist{display:flex;flex-direction:column;gap:8px}
+.bc{border:1px solid var(--line);border-left:3px solid var(--warn);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.bc.fixed{border-left-color:var(--good);opacity:.75}
+.bc-snap{white-space:pre-wrap;background:var(--field);border-radius:8px;padding:6px 10px}
+.stat span .ic{vertical-align:-2px;color:var(--accent)}
+
 /* hover notes */
 .rail-restart{margin-top:14px}
 .guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:999px;padding:3px 10px;cursor:help;white-space:nowrap;vertical-align:middle;transition:background .15s}
@@ -392,7 +481,10 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
 
   <div class="layout">
     <nav class="steps" aria-label="流程">
+      <div class="nav-sec">活动流程</div>
       <ol id="steps"></ol>
+      <div class="nav-sec">工作台</div>
+      <div id="ws" class="ws-nav"></div>
             <button type="button" class="btn sm rail-restart" data-act="restart">重新开始</button>
     </nav>
     <section id="view" aria-live="polite"></section>
@@ -461,6 +553,7 @@ const BRANDS = {outdoor:['LumaTrail','Ridgefox','Campora','PeakNest'],pets:['Paw
 const FEMALE = {outdoor:40,pets:66,beauty:86,home:72,tech:24,fitness:55,fashion:78,baby:88};
 const AGE = {outdoor:{'25-34':5,'18-24':3,'35-44':2},pets:{'25-34':5,'18-24':3,'35-44':2},beauty:{'18-24':6,'25-34':4},home:{'25-34':5,'35-44':4,'18-24':1},tech:{'18-24':5,'25-34':5},fitness:{'18-24':4,'25-34':5,'35-44':1},fashion:{'18-24':6,'25-34':4},baby:{'25-34':7,'35-44':3}};
 const CW = {US:30,UK:10,DE:5,FR:4,CA:6,AU:6,JP:3,ID:8,TH:5,VN:5,PH:6,MY:4,BR:4,MX:4,SA:3,AE:3};
+const AV_GRADS = [['#6366F1','#A855F7'],['#0EA5E9','#6366F1'],['#10B981','#0EA5E9'],['#F59E0B','#EF4444'],['#EC4899','#8B5CF6'],['#14B8A6','#22C55E'],['#F97316','#EC4899'],['#3B82F6','#06B6D4'],['#8B5CF6','#EC4899'],['#22C55E','#84CC16']];
 const AV_COLORS = ['#3B6FD8','#1D8A6B','#B4529A','#C46A12','#6A55C8','#2A8DA8','#B24343','#5E7A1E'];
 
 function erBench(platform, followers){
@@ -1090,10 +1183,13 @@ const STEPS = [
 ];
 function renderSteps(){
   $('#steps').innerHTML = STEPS.map(s => {
-    const cur = s.n===S.step, done = s.n<S.max && !cur;
-    return '<li><button type="button" class="step-btn'+(done?' done':'')+'" data-go="'+s.n+'"'+(cur?' aria-current="step"':'')+(s.n>S.max?' disabled':'')+'>'
-      +'<span class="n">'+(done?'✓':s.n)+'</span><span class="lbl">'+s.t+'</span>'+(s.h?'<span class="hand">人工</span>':'')+'</button></li>';
+    const cur = !S.view && s.n===S.step, done = s.n<S.max && s.n!==S.step;
+    return '<li><button type="button" class="step-btn'+(done?' done':'')+'" data-go="'+s.n+'"'+(cur?' aria-current="step"':'')+(s.n>S.max?' disabled':'')+' title="第 '+s.n+' 步">'
+      +'<span class="n">'+(done?'✓':icon(STEP_ICON[s.n],13))+'</span><span class="lbl">'+s.t+'</span>'+(s.h?'<span class="hand">人工</span>':'')+'</button></li>';
   }).join('');
+  const ws = $('#ws'); if(ws) ws.innerHTML = [['dash','board','数据看板'],['eval','flask','评测与 Bad case']].map(([v,ic,t])=>
+    '<button type="button" class="step-btn ws-btn" data-view="'+v+'"'+(S.view===v?' aria-current="step"':'')+'><span class="n">'+icon(ic,13)+'</span><span class="lbl">'+t+'</span>'
+    +(v==='eval' && loadBad().filter(b=>b.status==='open').length ? '<span class="hand">'+loadBad().filter(b=>b.status==='open').length+'</span>' : '')+'</button>').join('');
 }
 function renderMode(){
   const a=$('#mode-ai'), r=$('#mode-rule');
@@ -1108,11 +1204,12 @@ function renderMode(){
   sy.setAttribute('aria-pressed', String(S.source==='youtube'));
   $('#demo-tag').textContent = S.source==='youtube' ? 'YouTube 实时数据 · 公开接口' : '示例数据 · 达人与品牌均为虚构';
 }
-function go(n){ S.step=n; S.max=Math.max(S.max,n); render(); window.scrollTo({top:0, behavior:'smooth'}); }
+function go(n){ S.view=null; S.step=n; S.max=Math.max(S.max,n); render(); window.scrollTo({top:0, behavior:'smooth'}); }
 function avatar(c){
   const w = String(c.name||'?').trim().split(/\s+/);
   const ini = (w[0]||'?').slice(0,1) + (w[1]||'').slice(0,1);
-  return '<div class="av" style="background:'+c.color+'">'+(c.thumb?'<img src="'+esc(c.thumb)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':esc(ini.toUpperCase()))+'</div>';
+  const g = AV_GRADS[hashStr(String(c.id))%AV_GRADS.length];
+  return '<div class="av" style="background:linear-gradient(135deg,'+g[0]+','+g[1]+')">'+(c.thumb?'<img src="'+esc(c.thumb)+'" alt="" loading="lazy" referrerpolicy="no-referrer">':esc(ini.toUpperCase()))+'</div>';
 }
 function dataTag(c){ return c.real ? '<span class="tag good">YouTube 实时</span>' : '<span class="tag neutral">示例</span>'; }
 function riskTags(risks){ return risks.map(x=>'<span class="tag '+x.lv+'">'+esc(x.t)+'</span>').join(''); }
@@ -1176,14 +1273,9 @@ function v1(){
     +'</div>':'')
   +'</div>';
 }
-async function doParse(){
-  S.input = $('#need').value.trim();
-  if(!S.input){ toast('先写一句需求'); return; }
-  if(!S.t0) S.t0 = Date.now();
-  const rule = parseRule(S.input);
-  let b = rule.b, notes = rule.notes, questions = rule.questions, src='rule';
-  if(S.mode==='ai'){
-    S.busy='parse'; render();
+// The AI reading of a requirement, checked against fixed lists; null when the AI gives nothing usable.
+async function parseWithAI(text, base, quiet){
+  let b = base, notes = [], questions = [], src = 'rule';
     const prompt = '把下面的出海品牌达人营销需求解析成 JSON。只回复一个 JSON 对象，字段如下：\n'
       +'category: 只能是 '+Object.keys(CATS).join('|')+' 之一\n'
       +'product: 商品一句话描述，中文，不超过 16 字\n'
@@ -1197,9 +1289,8 @@ async function doParse(){
       +'format: 合作形式，中文，不超过 12 字，没说填 "寄样 + 付费短视频"\n'
       +'notes: 你做的默认假设，中文数组，最多 3 条\n'
       +'questions: 信息不足、需要追问品牌的问题，中文数组，最多 2 条；信息够就填 []\n\n'
-      +'需求：'+S.input;
+      +'需求：'+text;
     const j = await aiJson(prompt);
-    S.busy='';
     if(j && typeof j==='object'){
       const okCat = Object.prototype.hasOwnProperty.call(CATS, j.category);
       const cs = Array.isArray(j.countries) ? j.countries.filter(c=>COUNTRIES[c]) : [];
@@ -1217,8 +1308,22 @@ async function doParse(){
       questions = Array.isArray(j.questions) ? j.questions.map(String).slice(0,2) : [];
       src='ai';
     }
+  if(src!=='ai') return null;
+  return quiet ? b : {b, notes, questions};
+}
+async function doParse(){
+  S.input = $('#need').value.trim();
+  if(!S.input){ toast('先写一句需求'); return; }
+  if(!S.t0) S.t0 = Date.now();
+  const rule = parseRule(S.input);
+  let b = rule.b, notes = rule.notes, questions = rule.questions, src='rule';
+  if(S.mode==='ai'){
+    S.busy='parse'; render();
+    const r = await parseWithAI(S.input, b, false);
+    S.busy='';
+    if(r){ b = r.b; notes = r.notes; questions = r.questions; src='ai'; }
   }
-  S.brief=b; S.notes=notes; S.questions=questions; S.briefSrc=src;
+  S.brief=b; S.notes=notes; S.questions=questions; S.briefSrc=src; track('parse', {src2:src});
   S.sender.productEn = b.productEn;
   S.results=[]; S.selected=new Set(); S.emails={}; S.checked=new Set(); S.deals={}; S.report=null; S.tSend=null; S.max=2;
   go(2);
@@ -1315,24 +1420,44 @@ async function doMatch(skipRead){
   S.lookalikeIds = new Set();
   S.selected = new Set();
   S.max = 3;
+  track('match', {rank:S.rankSrc, n:S.results.length});
   go(3);
 }
 
 /* ---------- step 3 ---------- */
+// Share of the creator's audience in the target market: from authorized data, the audience split
+// (sample data), or the language of comments (YouTube). Shown as a percent, or a dash.
+function audFit(c, b){
+  if(!b) return null;
+  const au = S.auth && S.auth[c.id]; if(au){ const x = authShare(au, b); if(x!=null) return x; }
+  if(!c.real) return targetShare(c, b);
+  const l = langShare(c, b); return l==null ? null : Math.round(l*100);
+}
+function scoreRing(score){
+  const cls = score>=75 ? 'good' : score>=55 ? 'mid' : 'low';
+  return '<div class="ring '+cls+'" style="--p:'+score+'"><b>'+score+'</b></div>';
+}
 function itemRow(x){
-  const c = BY_ID[x.id], sel = S.selected.has(c.id);
-  const cls = x.score>=75?'good':x.score>=55?'':'warn';
-  return '<div class="item'+(sel?' sel':'')+'">'
-    +'<input type="checkbox" data-sel="'+c.id+'" aria-label="选择 '+esc(c.name)+'"'+(sel?' checked':'')+'>'
-    +'<div class="rank">'+(x.src==='similar'?'≈':'#'+x.rank)+'</div>'
-    +'<div class="who">'+avatar(c)+'<div class="who-main">'
+  const c = BY_ID[x.id], sel = S.selected.has(c.id), b = S.brief;
+  const bench = c.real ? ytBench(c.followers) : erBench(c.platform, c.followers);
+  const af = audFit(c, b);
+  const erCls = c.er > bench*2.6 ? 'bad' : c.er >= bench ? 'good' : '';
+  return '<div class="tr'+(sel?' sel':'')+'">'
+    +'<div class="td c-sel"><input type="checkbox" data-sel="'+c.id+'" aria-label="选择 '+esc(c.name)+'"'+(sel?' checked':'')+'></div>'
+    +'<div class="td c-rank">'+(x.src==='similar'?'≈':x.rank)+'</div>'
+    +'<div class="td c-who">'+avatar(c)+'<div class="who-main">'
       +'<div class="who-name">'+esc(c.name)+' <span class="handle">'+esc(c.handle)+'</span>'+dataTag(c)+(x.src==='similar'?'<span class="tag ai">相似推荐</span>':'')+'</div>'
-      +'<div class="meta">'+c.platform+' · '+ctry(c)+' · <span class="num">'+fmtK(c.followers)+'</span> 粉 · 均播 <span class="num">'+fmtK(c.avgViews)+'</span> · 报价约 <span class="num">'+money(c.price.lo)+'–'+money(c.price.hi)+'</span></div>'
+      +'<div class="meta">'+c.platform+' · '+ctry(c)+'<span class="m-only"> · '+fmtK(c.followers)+' 粉 · 均播 '+fmtK(c.avgViews)+' · '+money(c.price.lo)+'–'+money(c.price.hi)+'</span></div>'
       +'<div class="reason">'+esc(x.reason)+'</div>'
       +(x.risks.length?'<div class="risks">'+riskTags(x.risks)+'</div>':'')
     +'</div></div>'
-    +'<div class="score"><span>匹配分 <b>'+x.score+'</b></span><div class="bar '+cls+'"><i style="width:'+x.score+'%"></i></div></div>'
-    +'<div class="act"><button type="button" class="btn sm" data-detail="'+c.id+'">详情</button></div>'
+    +'<div class="td c-num">'+fmtK(c.followers)+'</div>'
+    +'<div class="td c-num c-h1">'+fmtK(c.avgViews)+'</div>'
+    +'<div class="td c-num"><span class="er '+erCls+'">'+c.er+'%</span></div>'
+    +'<div class="td c-num c-h1">'+(af==null?'<span class="muted">–</span>':af+'%')+'</div>'
+    +'<div class="td c-num c-price">'+money(c.price.lo)+'<span class="muted">–'+money(c.price.hi)+'</span></div>'
+    +'<div class="td c-score">'+scoreRing(x.score)+'</div>'
+    +'<div class="td c-act"><button type="button" class="btn sm" data-detail="'+c.id+'">详情</button>'+badBtn('rank', c.id)+'</div>'
   +'</div>';
 }
 function v3(){
@@ -1353,7 +1478,7 @@ function v3(){
   +(S.realStats && S.trending && S.trending.items.length ? '<div class="panel stack" style="gap:8px;padding:14px 16px"><div class="row"><h3>'+esc(ctry({country:S.realStats.region}))+' YouTube 热门榜 · '+esc(S.trending.cat)+'</h3></div>'
     +'<ul class="posts" style="color:var(--ink)">'+S.trending.items.slice(0,5).map(v=>'<li><a class="ext" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">'+esc(v.title)+'</a> <span class="meta">· '+esc(v.channel)+' · 播放 '+fmtK(v.views)+'</span></li>').join('')+'</ul></div>' : '')
   +(S.relax.length?'<div class="callout ask"><b>结果太少，已自动放宽条件</b><ul>'+S.relax.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></div>':'')
-  +(S.results.length?'<div class="list">'+S.results.map(itemRow).join('')+'</div>':'<div class="empty">没有符合条件的达人。回到上一步换个搜索词，或放宽国家和粉丝量。</div>')
+  +(S.results.length?'<div class="tbl"><div class="tr th"><div class="td c-sel"></div><div class="td c-rank">#</div><div class="td c-who">达人</div><div class="td c-num">粉丝</div><div class="td c-num c-h1">均播</div><div class="td c-num" title="互动率，绿色为高于同量级参考值">互动率</div><div class="td c-num c-h1" title="目标市场受众占比">目标受众</div><div class="td c-num c-price">报价</div><div class="td c-score">匹配分</div><div class="td c-act"></div></div>'+S.results.map(itemRow).join('')+'</div>':'<div class="empty">没有符合条件的达人。回到上一步换个搜索词，或放宽国家和粉丝量。</div>')
   
   +'<div class="sticky-bar">'+budgetBar()+'<span class="spacer"></span>'
     +(S.aiAvailable&&S.mode==='ai'&&S.rankSrc!=='ai'?'<button type="button" class="btn" data-act="rerank">用 '+aiName()+' 重新排序</button>':'')
@@ -1370,13 +1495,13 @@ function detailHTML(c, compact){
   const rows = entries.map(([cc,p])=>'<div class="aud-row'+(b&&b.countries.indexOf(cc)>=0?' hit':'')+'"><span>'+COUNTRIES[cc]+'</span><div class="bar"><i style="width:'+p+'%"></i></div><em>'+p+'%</em></div>').join('')
     + (other>0?'<div class="aud-row"><span>其他</span><div class="bar"><i style="width:'+other+'%;opacity:.4"></i></div><em>'+other+'%</em></div>':'');
   const risks = riskOf(c, b);
-  return authBlock(c, compact) + '<div class="kv">'
-      +'<div><span>粉丝</span><b>'+fmtK(c.followers)+'</b></div>'
-      +'<div><span>平均播放</span><b>'+fmtK(c.avgViews)+'</b></div>'
-      +'<div><span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
-      +'<div><span>假粉比例</span><b style="color:var('+(c.fakePct>=20?'--bad':'--ink')+')">'+c.fakePct+'%</b></div>'
-      +'<div><span>回复率</span><b>'+c.responseRate+'%</b></div>'
-      +'<div><span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
+  return authBlock(c, compact) + '<div class="kv kv-rows">'
+      +'<div>'+icon('users',15)+'<span>粉丝</span><b>'+fmtK(c.followers)+'</b></div>'
+      +'<div>'+icon('play',15)+'<span>平均播放</span><b>'+fmtK(c.avgViews)+'</b></div>'
+      +'<div>'+icon('activity',15)+'<span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
+      +'<div>'+icon('userx',15)+'<span>假粉比例</span><b style="color:var('+(c.fakePct>=20?'--bad':'--ink')+')">'+c.fakePct+'%</b></div>'
+      +'<div>'+icon('message',15)+'<span>回复率</span><b>'+c.responseRate+'%</b></div>'
+      +'<div>'+icon('clock',15)+'<span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
     +'</div>'
     +benchBar(c.er, bench)
     +(risks.length?'<div class="risks">'+riskTags(risks)+'</div>':'<div class="risks"><span class="tag good">未发现数据风险</span></div>')
@@ -1406,16 +1531,16 @@ function detailReal(c, compact){
   const contact = c.email
     ? '<div class="row" style="gap:8px"><code class="num" style="user-select:all">'+esc(c.email)+'</code><button type="button" class="btn sm" data-copy="'+esc(c.email)+'">复制</button><span class="meta">来自'+c.emailSrc+'，是频道主自己公开写的</span></div>'
     : '<div class="meta">频道简介和近期视频描述里没有公开邮箱，需要到频道“关于”页手动查看。</div>';
-  return '<div class="kv">'
-      +'<div><span>订阅</span><b>'+fmtK(c.followers)+'</b></div>'
-      +'<div><span>近 10 条均播</span><b>'+fmtK(c.avgViews)+'</b></div>'
-      +'<div><span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
-      +'<div><span>播放 / 订阅</span><b>'+pct(c.vps)+'</b></div>'
-      +'<div><span>更新频率</span><b>'+c.perWeek+' 条/周</b></div>'
-      +'<div><span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
-      +'<div><span>Shorts 占比</span><b>'+pct(c.shortsRatio)+'</b></div>'
-      +'<div><span>Shorts / 长视频均播</span><b>'+fmtK(c.avgShorts)+' / '+fmtK(c.avgLong)+'</b></div>'
-      +'<div><span>总播放 / 视频数</span><b>'+fmtK(c.totalViews)+' / '+fmtK(c.videoCount)+'</b></div>'
+  return '<div class="kv kv-rows">'
+      +'<div>'+icon('users',15)+'<span>订阅</span><b>'+fmtK(c.followers)+'</b></div>'
+      +'<div>'+icon('play',15)+'<span>近 10 条均播</span><b>'+fmtK(c.avgViews)+'</b></div>'
+      +'<div>'+icon('activity',15)+'<span>互动率 / 参考</span><b>'+c.er+'% / '+bench+'%</b></div>'
+      +'<div>'+icon('eye',15)+'<span>播放 / 订阅</span><b>'+pct(c.vps)+'</b></div>'
+      +'<div>'+icon('clock',15)+'<span>更新频率</span><b>'+c.perWeek+' 条/周</b></div>'
+      +'<div>'+icon('clock',15)+'<span>最近更新</span><b>'+(c.lastActive===0?'今天':c.lastActive+' 天前')+'</b></div>'
+      +'<div>'+icon('layers',15)+'<span>Shorts 占比</span><b>'+pct(c.shortsRatio)+'</b></div>'
+      +'<div>'+icon('play',15)+'<span>Shorts / 长视频均播</span><b>'+fmtK(c.avgShorts)+' / '+fmtK(c.avgLong)+'</b></div>'
+      +'<div>'+icon('chart',15)+'<span>总播放 / 视频数</span><b>'+fmtK(c.totalViews)+' / '+fmtK(c.videoCount)+'</b></div>'
     +'</div>'
     +benchBar(c.er, bench)
     +'<div class="risks">'+riskTags(risks)+(hasIssue?'':'<span class="tag good">未发现数据风险</span>')+'</div>'
@@ -1609,7 +1734,7 @@ function v5(){
     +(S.busy==='mail'?thinking(aiName()+' 正在逐个写邀约…'):(has?srcTag(S.mailSrc):''))+'</div></div>'
   +(has?'<div class="cards">'+sel.map(c=>{
       const m = S.emails[c.id], bad = numberCheck(c, m.body);
-      return '<div class="mail"><div class="mail-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">To '+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · 报价区间 $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real?'<div class="meta">收件人：'+(c.email?'<code style="user-select:all">'+esc(c.email)+'</code>':'未公开邮箱，需到频道“关于”页查看')+'</div>':'')+'</div></div>'
+      return '<div class="mail"><div class="mail-head">'+avatar(c)+'<div style="min-width:0;flex:1"><div class="who-name">To '+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · 报价区间 $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real?'<div class="meta">收件人：'+(c.email?'<code style="user-select:all">'+esc(c.email)+'</code>':'未公开邮箱，需到频道“关于”页查看')+'</div>':'')+'</div>'+badBtn('mail', c.id)+'</div>'
         +'<div class="mail-body"><label class="f" for="sub-'+c.id+'">主题<input id="sub-'+c.id+'" data-subj="'+c.id+'" type="text" value="'+esc(m.subject)+'"></label>'
         +'<label class="f" for="body-'+c.id+'">正文<textarea id="body-'+c.id+'" data-body="'+c.id+'">'+esc(m.body)+'</textarea></label>'+zhBox('mail', c.id)
         +'<div class="risks" id="chk-'+c.id+'">'+checkTags(bad)+'</div></div>'
@@ -1644,13 +1769,15 @@ async function doGenMail(){
       if(n) src='ai';
     }
   }
-  S.emails = out; S.mailSrc = src; S.checked = new Set();
+  S.emails = out; S.mailSrc = src; S.checked = new Set(); S._ed = new Set(); S._gd = new Set();
+  track('mail_gen', {n:Object.keys(out).length, src2:src});
   render();
 }
 function doSend(){
   const sel = selectedList();
   sel.forEach(c=>{ if(!S.deals[c.id]) S.deals[c.id] = newDeal(c); });
   S.tSend = Date.now();
+  track('send', {n:sel.length, secs:S.t0 ? Math.round((S.tSend-S.t0)/1000) : 0});
   S.max = Math.max(S.max, 6);
   toast('已模拟发送 '+sel.length+' 封邀约');
   go(6);
@@ -1822,7 +1949,7 @@ async function doParseReply(id){
       if(j.reply_zh && (!d.replyZh || d.replyZh.for!==d.reply)) d.replyZh = zhPack(String(j.reply_zh).slice(0,3000), d.reply);
     }
   }
-  d.parsed = p; d.parseSrc = src; d.stage = 'talk'; d.awaitReply = false;
+  d.parsed = p; d.parseSrc = src; d.stage = 'talk'; d.awaitReply = false; track('reply', {src2:src, intent:p.intent});
   if(p.intent==='declined') logPush(d, '达人', '婉拒');
   else if(p.ask){ if(d.firstAsk==null) d.firstAsk = p.ask; logPush(d, '达人', d.round>1 ? '再次报价' : '首次报价', p.ask); }
   else logPush(d, '达人', '回复了，没报价');
@@ -2032,7 +2159,7 @@ async function doReview(id){
       src = 'ai';
     }
   }
-  d.review = {items, at:Date.now(), text:d.draft}; d.reviewSrc = src; d.feedbackOpen = false;
+  d.review = {items, at:Date.now(), text:d.draft}; d.reviewSrc = src; d.feedbackOpen = false; track('review', {issues:items.length, aiIssues:items.filter(x=>x.src==='ai').length});
   render();
 }
 function enFix(x){
@@ -2079,6 +2206,7 @@ async function doFetchVideo(id){
     d.video = {vid, title:decodeHtml(sn.title||''), channel:sn.channelTitle||'', channelId:sn.channelId||'', at:sn.publishedAt||'',
       views:+st.viewCount||0, likes:+st.likeCount||0, comments:+st.commentCount||0, src:'youtube', fetched:Date.now()};
     d.stage = d.stage==='done' ? 'done' : 'live';
+    track('publish', {src2:'youtube'});
   } catch(e){ d.videoErr = (e && e.message) || String(e); }
   S.busy = '';
   render();
@@ -2182,6 +2310,7 @@ function doWriteBack(){
     x.d.stage = 'done';
   });
   savePerf(p);
+  track('writeback', {n:rows.length});
   toast('已写回 '+rows.length+' 位达人的合作结果，下次匹配会参考');
   render();
 }
@@ -2245,7 +2374,7 @@ function dealPanel(c, d){
       +'</div>'
       +(p.usageFee||p.days||p.exclusivity||(p.questions&&p.questions.length)?'<ul class="posts">'+(p.usageFee?'<li>广告授权另收 '+money(p.usageFee)+'</li>':'')+(p.days?'<li>收到样品后约 '+p.days+' 天发布</li>':'')+(p.exclusivity?'<li>问到是否需要独家</li>':'')+(p.questions||[]).map(q=>'<li>问题：'+esc(q)+'</li>').join('')+'</ul>':'')
       +priceBar(c, p.ask, d.offer)+basisPanel(c)
-      +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+' '+G.suggest()+'</div></div>';
+      +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+' '+G.suggest()+' '+badBtn('suggest', c.id)+'</div></div>';
     if(sg.kind==='lost'){
       body += '<div class="row">'+(d.counter?'':'<button type="button" class="btn sm" data-da="'+c.id+':counter">写一封礼貌的回复</button>')
         +'<button type="button" class="btn sm" data-da="'+c.id+':lost">标记为未合作</button><button type="button" class="btn sm" data-go="3">回第 3 步补人</button></div>'
@@ -2332,7 +2461,7 @@ function v7(){
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':review"'+(S.busy?' disabled':'')+'>审核</button>'
       +(busyOn(c.id,'review')?thinking('规则检查完成，'+aiName()+' 正在找其他问题…'):'')+'</div>'
       +(rv?'<div class="review">'
-        +'<div class="row" style="gap:6px"><b>审核结果</b>'+srcTag(d.reviewSrc==='ai'?'ai':'rule')+(rv.items.length?'<span class="tag '+(bad?'bad':'warn')+'">'+rv.items.length+' 个问题'+(bad?'，'+bad+' 个必须改':'')+'</span>':'<span class="tag good">没有发现问题</span>')+(stale?'<span class="tag warn">稿件改过了，请重新审核</span>':'')+'</div>'
+        +'<div class="row" style="gap:6px"><b>审核结果</b>'+srcTag(d.reviewSrc==='ai'?'ai':'rule')+(rv.items.length?'<span class="tag '+(bad?'bad':'warn')+'">'+rv.items.length+' 个问题'+(bad?'，'+bad+' 个必须改':'')+'</span>':'<span class="tag good">没有发现问题</span>')+(stale?'<span class="tag warn">稿件改过了，请重新审核</span>':'')+'<span class="spacer"></span>'+badBtn('review', c.id)+'</div>'
         +(rv.items.length?'<div class="draft-view">'+markQuotes(rv.text, rv.items)+'</div><div class="issues">'+rv.items.map(x=>'<div class="issue"><span class="tag '+x.lv+'">'+esc(x.type)+'</span>'+(x.quote?'<code>'+esc(x.quote)+'</code>':'')+'<span>'+esc(x.fix)+'</span>'+(x.src==='ai'?'<span class="tag ai">AI 提示，需人判断</span>':'')+'</div>').join('')+'</div>':'')
         +(d.feedbackOpen?'<label class="f">修改意见（发给达人）<textarea data-df="'+c.id+':feedback">'+esc(d.feedback)+'</textarea></label>'+zhBox('feedback', c.id)
           +'<div class="row"><span class="spacer"></span><button type="button" class="btn sm" data-da="'+c.id+':cancelFb">取消</button><button type="button" class="btn primary sm" data-da="'+c.id+':sendFb">发送修改意见（模拟）</button></div>'
@@ -2417,12 +2546,12 @@ function dealAction(id, act){
     case 'sample': { const pr = sampleReplyPair(c, Object.keys(S.deals).indexOf(id)); d.reply = pr[0]; d.replyZh = zhPack(pr[1], pr[0]); render(); break; }
     case 'parse': doParseReply(id); break;
     case 'counter': doCounter(id); break;
-    case 'sendCounter': d.counterSent = true; d.sentOffer = +d.offer||0; logPush(d, '我方', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '接受报价' : (d.sug && d.sug.kind==='final' ? '最终报价' : '还价'), d.model==='commission' ? null : d.sentOffer, d.model); toast('已模拟发送给 '+c.first); render(); break;
+    case 'sendCounter': d.counterSent = true; d.sentOffer = +d.offer||0; track('counter_send', {offer:d.sentOffer, sug:d.sug && d.sug.offer!=null ? +d.sug.offer : null}); logPush(d, '我方', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '接受报价' : (d.sug && d.sug.kind==='final' ? '最终报价' : '还价'), d.model==='commission' ? null : d.sentOffer, d.model); toast('已模拟发送给 '+c.first); render(); break;
     case 'reply2': d.round = (d.round||1) + 1; d.awaitReply = true; d.reply = ''; d.replyZh = null; d.counter = null; d.counterSent = false; d.counterOk = false; render(); break;
     case 'again': d.agreed = false; d.counterSent = false; d.counterOk = false; d.termsOk = false; render(); break;
     case 'agree': d.agreed = true; d.termsOk = false; logPush(d, '达人', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '确认成交' : '接受', d.sentOffer!=null ? d.sentOffer : d.offer, d.model); render(); break;
     case 'lost': d.stage = 'lost'; toast(c.name+' 已标记为未合作'); render(); break;
-    case 'sign': d.final = Math.max(0, +d.offer||0); d.stage = 'signed'; d.signedAt = Date.now(); logPush(d, '双方', '签约', d.final, d.model); saveNeg(c, d); toast('已签约 '+c.name+'（模拟），下一步写拍摄要点、寄样'); render(); break;
+    case 'sign': d.final = Math.max(0, +d.offer||0); d.stage = 'signed'; d.signedAt = Date.now(); track('sign', {final:d.final}); logPush(d, '双方', '签约', d.final, d.model); saveNeg(c, d); toast('已签约 '+c.name+'（模拟），下一步写拍摄要点、寄样'); render(); break;
     case 'brief': doBrief(id); break;
     case 'track': d.ship.no = (d.ship.carrier==='USPS'?'9400':'JD')+String(1e9+hashStr(id)%9e9).slice(0,10); render(); break;
     case 'ship': d.stage = 'shipped'; toast('已模拟寄出样品，并把拍摄要点发给 '+c.first); render(); break;
@@ -2432,10 +2561,10 @@ function dealAction(id, act){
     case 'review': doReview(id); break;
     case 'reject': d.feedback = feedbackMail(c, d); d.feedbackZh = zhPack(feedbackMailZh(c, d), d.feedback); d.feedbackOpen = true; render(); break;
     case 'cancelFb': d.feedbackOpen = false; render(); break;
-    case 'sendFb': d.rounds += 1; d.feedbackOpen = false; d.review = null; toast('修改意见已发给 '+c.first+'（模拟），等对方交第 '+(d.rounds+1)+' 稿'); render(); break;
-    case 'approve': d.stage = 'approved'; S.max = Math.max(S.max, 8); toast(c.name+' 的稿件已通过，可以发布'); render(); break;
+    case 'sendFb': track('reject'); d.rounds += 1; d.feedbackOpen = false; d.review = null; toast('修改意见已发给 '+c.first+'（模拟），等对方交第 '+(d.rounds+1)+' 稿'); render(); break;
+    case 'approve': track('approve', {bad:d.review ? d.review.items.filter(x=>x.lv==='bad').length : 0}); d.stage = 'approved'; S.max = Math.max(S.max, 8); toast(c.name+' 的稿件已通过，可以发布'); render(); break;
     case 'fetch': doFetchVideo(id); break;
-    case 'sampleVideo': d.video = sampleVideo(c); d.videoErr = ''; if(d.stage==='approved') d.stage = 'live'; render(); break;
+    case 'sampleVideo': track('publish', {src2:'sample'}); d.video = sampleVideo(c); d.videoErr = ''; if(d.stage==='approved') d.stage = 'live'; render(); break;
     case 'sampleSales': sampleSales(c, d); render(); break;
   }
 }
@@ -2693,7 +2822,7 @@ async function doSync(kind, id){
   if(got){
     a.setEn(got.body.slice(0,3000), got.subj ? got.subj.slice(0,140) : null);
     a.set(zhPack(zh, ZH[kind](id).en));
-    toast('已按中文更新英文。数字已重新校验，请重新核对后再发送');
+    track('sync', {dir:'toEn'}); toast('已按中文更新英文。数字已重新校验，请重新核对后再发送');
   } else toast('同步失败：模型返回的不是英文，英文没有改动。请再点一次');
   render();
 }
@@ -2707,9 +2836,231 @@ async function syncToZh(kind, id){
   let t = pick(await aiJson(ask(false)));
   if(!t) t = pick(await aiJson(ask(true)));
   S.busy = '';
-  if(t){ a.set(zhPack(t.slice(0,4000), en)); toast('已按英文更新中文'); }
+  if(t){ a.set(zhPack(t.slice(0,4000), en)); track('sync', {dir:'toZh'}); toast('已按英文更新中文'); }
   else toast('同步失败：模型返回的不是中文，中文没有改动。请再点一次');
   render();
+}
+
+/* ---------- line icons (24px grid, stroke) ---------- */
+const ICONS = {
+  edit:['M12 20h9','M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z'],
+  check:['M9 11l3 3L22 4','M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+  search:['c:11,11,8','m21 21-4.3-4.3'],
+  users:['M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2','c:9,7,4','M22 21v-2a4 4 0 0 0-3-3.87','M16 3.13a4 4 0 0 1 0 7.75'],
+  mail:['M4 4h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z','m22 6-10 7L2 6'],
+  dollar:['M12 1v22','M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6'],
+  shield:['M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z','m9 12 2 2 4-4'],
+  chart:['M3 3v18h18','m19 9-5 5-4-4-3 3'],
+  board:['M3 3h7v9H3z','M14 3h7v5h-7z','M14 12h7v9h-7z','M3 16h7v5H3z'],
+  flask:['M9 3h6','M10 9V3','M14 9V3','M10 9 4.5 19a1.5 1.5 0 0 0 1.3 2.2h12.4a1.5 1.5 0 0 0 1.3-2.2L14 9'],
+  thumbsdown:['M17 14V2','M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z'],
+  eye:['M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z','c:12,12,3'],
+  activity:['M22 12h-4l-3 9L9 3l-3 9H2'],
+  alert:['M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z','M12 9v4','M12 17h.01'],
+  clock:['c:12,12,10','M12 6v6l4 2'],
+  message:['M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'],
+  globe:['c:12,12,10','M2 12h20','M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z'],
+  play:['M6 4l14 8-14 8V4z'],
+  userx:['c:9,7,4','M2 21v-2a4 4 0 0 1 4-4h6','m17 8 5 5','m22 8-5 5'],
+  refresh:['M3 12a9 9 0 1 0 3-6.7L3 8','M3 3v5h5'],
+  tag:['M20.59 13.41 13.42 20.58a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z','M7 7h.01'],
+  layers:['m12 2 10 5-10 5L2 7l10-5z','m2 17 10 5 10-5','m2 12 10 5 10-5']
+};
+function icon(name, size){
+  const d = ICONS[name]; if(!d) return '';
+  return '<svg class="ic" width="'+(size||16)+'" height="'+(size||16)+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+    + d.map(p => p.slice(0,2)==='c:' ? (()=>{ const [x,y,r] = p.slice(2).split(','); return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'"/>'; })() : '<path d="'+p+'"/>').join('') + '</svg>';
+}
+const STEP_ICON = {1:'edit', 2:'check', 3:'search', 4:'users', 5:'mail', 6:'dollar', 7:'shield', 8:'chart'};
+const KV_ICON = {'粉丝':'users','订阅':'users','平均播放':'play','近 10 条均播':'play','互动率 / 参考':'activity','假粉比例':'userx','回复率':'message','最近更新':'clock','播放 / 订阅':'eye','更新频率':'clock','Shorts 占比':'layers','Shorts / 长视频均播':'play','总播放 / 视频数':'chart'};
+
+/* ---------- event log: what really happened in this browser, for the dashboard ---------- */
+const EV_KEY = 'influencer_demo_events_v1';
+function loadEvents(){ try { return JSON.parse(localStorage.getItem(EV_KEY)||'[]') || []; } catch(e){ return []; } }
+function track(type, data){
+  try {
+    const a = loadEvents(); a.push(Object.assign({}, data||{}, {t:Date.now(), type, mode:S.mode, src:S.source}));
+    localStorage.setItem(EV_KEY, JSON.stringify(a.slice(-3000)));
+  } catch(e){}
+}
+const EV_NAME = {parse:'解析需求', match:'完成匹配', mail_gen:'生成邀约', mail_edit:'人工改邀约', send:'发出邀约', reply:'解析达人回复', counter_send:'发出还价/回复', sign:'签约', review:'内容审核', approve:'审核放行', reject:'退回修改', publish:'发布数据', writeback:'写回档案', sync:'中英同步', badcase:'标记 Bad case', guard_number:'数字校验拦截', eval_run:'跑评测集'};
+
+/* ---------- Bad cases: anything a person flags as wrong, kept for the next iteration ---------- */
+const BC_KEY = 'influencer_demo_badcases_v1';
+function loadBad(){ try { return JSON.parse(localStorage.getItem(BC_KEY)||'[]') || []; } catch(e){ return []; } }
+function saveBad(a){ try { localStorage.setItem(BC_KEY, JSON.stringify(a.slice(-300))); } catch(e){} }
+const BC_TYPES = {
+  rank:['排序不准','推荐理由不对','有风险没标出来','其他'],
+  mail:['语气不合适','内容和达人对不上','数字或承诺不对','其他'],
+  suggest:['建议的价格不合理','合作方式不合适','没读懂达人的回复','其他'],
+  review:['漏检','误报','修改建议不对','其他']
+};
+const BC_WHERE = {rank:'第 3 步 · 推荐', mail:'第 5 步 · 邀约邮件', suggest:'第 6 步 · 谈价建议', review:'第 7 步 · 内容审核'};
+function badBtn(where, id){ return '<button type="button" class="btn sm ghost" data-bad="'+where+':'+id+'" title="标记为 Bad case，进入评测与迭代">'+icon('thumbsdown',14)+'<span>Bad case</span></button>'; }
+function badSnapshot(where, id){
+  const c = BY_ID[id] || {}, d = S.deals[id] || {};
+  if(where==='rank'){ const r = S.results.find(x=>x.id===id) || {}; return '#'+(r.rank||'?')+' '+(c.name||'')+'，匹配分 '+(r.score||'')+'：'+(r.reason||''); }
+  if(where==='mail'){ const m = S.emails[id] || {}; return (c.name||'')+'：'+String(m.body||'').slice(0,220); }
+  if(where==='suggest') return (c.name||'')+'：'+((d.sug&&d.sug.t)||'');
+  if(where==='review') return (c.name||'')+'：'+((d.review&&d.review.items)||[]).map(x=>x.type+(x.quote?'“'+x.quote+'”':'')).join('；');
+  return '';
+}
+function openBadForm(where, id){
+  const c = BY_ID[id] || {};
+  $('#sheet').innerHTML = '<div class="row"><div><h3>标记 Bad case</h3><div class="meta">'+esc(BC_WHERE[where])+' · '+esc(c.name||'')+' · '+(S.mode==='ai'?aiName():'规则')+'</div></div><button type="button" class="x" data-act="close" aria-label="关闭">×</button></div>'
+    +'<div class="callout" style="white-space:pre-wrap">'+esc(badSnapshot(where, id))+'</div>'
+    +'<div class="stack" style="gap:8px"><span class="lbl-s">问题类型</span><div class="chips" data-group="bctype">'+BC_TYPES[where].map((t,i)=>'<button type="button" class="chip" data-k="'+esc(t)+'" aria-pressed="'+(i===0)+'">'+esc(t)+'</button>').join('')+'</div></div>'
+    +'<label class="f">说明（选填）<textarea id="bc-note" rows="3" placeholder="比如：受众其实在英国，不该排第一"></textarea></label>'
+    +'<div class="row"><span class="spacer"></span><button type="button" class="btn" data-act="close">取消</button><button type="button" class="btn primary" data-bcsave="'+where+':'+id+'">保存到 Bad case</button></div>';
+  $('#drawer').hidden = false;
+}
+function saveBadForm(where, id){
+  const type = Array.from(document.querySelectorAll('[data-group="bctype"] .chip[aria-pressed="true"]')).map(x=>x.dataset.k)[0] || '其他';
+  const note = ($('#bc-note')||{}).value || '';
+  const a = loadBad();
+  a.push({id:'b'+Date.now(), at:Date.now(), where, cid:id, name:(BY_ID[id]||{}).name||'', type, note:note.trim().slice(0,300), snap:badSnapshot(where, id).slice(0,400), mode:S.mode, status:'open'});
+  saveBad(a);
+  track('badcase', {where, btype:type});
+  closeDrawer(); toast('已记入 Bad case，可在“评测与 Bad case”里查看'); render();
+}
+
+/* ---------- evaluation set for requirement parsing ---------- */
+// Each case has the answer a person would give. Budgets are in USD; other currencies use
+// 1 EUR ≈ 1.08 USD, 1 USD ≈ 150 JPY, 1 USD ≈ 7.2 RMB. A budget passes within ±10%.
+const ALL3 = ['TikTok','Instagram','YouTube'];
+const EVAL_CASES = [
+  {q:'我们是做户外露营灯的，想打美国市场，预算 5000 美元，找 TikTok 和 Instagram 上的中小达人，最好是做测评或开箱的。', cat:'outdoor', cc:['US'], pf:['TikTok','Instagram'], bud:5000},
+  {q:'卖智能宠物饮水机，主攻英国和德国，Instagram 为主，1万到20万粉，女性受众多一点，预算3万人民币。', cat:'pets', cc:['UK','DE'], pf:['Instagram'], bud:4167, g:'female'},
+  {q:'新出了一款清爽防晒霜，想做东南亚市场，TikTok 达人，要会做护肤教程和好物推荐的。', cat:'beauty', cc:['ID','TH','VN','PH','MY'], pf:['TikTok'], bud:null},
+  {q:'蓝牙耳机，美国和加拿大，YouTube 测评博主，预算 $8k', cat:'tech', cc:['US','CA'], pf:['YouTube'], bud:8000},
+  {q:'瑜伽垫推广，澳洲，ins 和 tk 都可以，预算 2000 刀', cat:'fitness', cc:['AU'], pf:['Instagram','TikTok'], bud:2000},
+  {q:'母婴品牌，婴儿推车，想找美国宝妈博主，预算一万美元', cat:'baby', cc:['US'], pf:ALL3, bud:10000, g:'female'},
+  {q:'空气炸锅，德国法国，YouTube，预算 6000 欧元', cat:'home', cc:['DE','FR'], pf:['YouTube'], bud:6480},
+  {q:'Lipstick brand targeting the US, TikTok creators, budget $4,000', cat:'beauty', cc:['US'], pf:['TikTok'], bud:4000},
+  {q:'宠物猫砂，日本市场，预算 50 万日元，TikTok', cat:'pets', cc:['JP'], pf:['TikTok'], bud:3333},
+  {q:'便携投影仪，中东，沙特和阿联酋，TikTok 和 YouTube，预算 1.2 万美元', cat:'tech', cc:['SA','AE'], pf:['TikTok','YouTube'], bud:12000},
+  {q:'厨房收纳盒，北美，预算 3000 美元，找做家居好物的达人', cat:'home', cc:['US','CA'], pf:ALL3, bud:3000},
+  {q:'拉美市场推充电宝，巴西和墨西哥，TikTok，预算 2500 美金', cat:'tech', cc:['BR','MX'], pf:['TikTok'], bud:2500},
+  {q:'筋膜枪，英国，油管和 ins，头部达人，预算 2 万美元', cat:'fitness', cc:['UK'], pf:['YouTube','Instagram'], bud:20000},
+  {q:'做女装连衣裙的，欧洲市场，Instagram，预算 4000 美元', cat:'fashion', cc:['UK','DE','FR'], pf:['Instagram'], bud:4000, g:'female'},
+  {q:'露营帐篷，美国，预算五千美元', cat:'outdoor', cc:['US'], pf:ALL3, bud:5000},
+  {q:'猫狗自动喂食器，加拿大，TikTok，男性受众为主，预算 3500 美元', cat:'pets', cc:['CA'], pf:['TikTok'], bud:3500, g:'male'}
+];
+const sameSet = (a, b) => a.length===b.length && a.every(x=>b.indexOf(x)>=0);
+function gradeCase(k, b){
+  if(!b) return {ok:false, fields:{cat:false, cc:false, pf:false, bud:false, g:k.g?false:null}, error:'没有结果'};
+  const f = {
+    cat: b.category===k.cat,
+    cc: sameSet((b.countries||[]).slice().sort(), k.cc.slice().sort()),
+    pf: sameSet((b.platforms||[]).slice().sort(), k.pf.slice().sort()),
+    bud: k.bud==null ? b.budgetUsd==null : (b.budgetUsd!=null && Math.abs(b.budgetUsd-k.bud) <= k.bud*.1),
+    g: k.g ? b.gender===k.g : null
+  };
+  return {ok:Object.values(f).every(v=>v!==false), fields:f, got:b};
+}
+const EVAL_KEY = 'influencer_demo_eval_v1';
+function loadEval(){ try { return JSON.parse(localStorage.getItem(EVAL_KEY)||'{}') || {}; } catch(e){ return {}; } }
+function saveEval(v){ try { localStorage.setItem(EVAL_KEY, JSON.stringify(v)); } catch(e){} }
+function runEvalRule(){
+  const rows = EVAL_CASES.map(k=>gradeCase(k, parseRule(k.q).b));
+  const v = loadEval(); v.rule = {at:Date.now(), rows:rows.map(r=>({ok:r.ok, fields:r.fields, got:r.got&&{category:r.got.category, countries:r.got.countries, platforms:r.got.platforms, budgetUsd:r.got.budgetUsd, gender:r.got.gender}}))};
+  saveEval(v); track('eval_run', {engine:'rule', pass:rows.filter(r=>r.ok).length, total:rows.length});
+  render();
+}
+async function runEvalAI(){
+  if(S.mode!=='ai'){ toast('先打开右上角“AI 模式”'); return; }
+  const out = [];
+  for(let i=0;i<EVAL_CASES.length;i++){
+    S.busy = 'eval'; S.busyMsg = aiName()+' 正在跑第 '+(i+1)+' / '+EVAL_CASES.length+' 条…'; render();
+    const b = await parseWithAI(EVAL_CASES[i].q, parseRule(EVAL_CASES[i].q).b, true);
+    out.push(gradeCase(EVAL_CASES[i], b));
+  }
+  S.busy = ''; S.busyMsg = '';
+  const v = loadEval(); v.ai = {at:Date.now(), rows:out.map(r=>({ok:r.ok, fields:r.fields, got:r.got&&{category:r.got.category, countries:r.got.countries, platforms:r.got.platforms, budgetUsd:r.got.budgetUsd, gender:r.got.gender}}))};
+  saveEval(v); track('eval_run', {engine:'ai', pass:out.filter(r=>r.ok).length, total:out.length});
+  render();
+}
+
+/* ---------- workspace views ---------- */
+function vEval(){
+  const v = loadEval(), bad = loadBad().slice().reverse();
+  const head = run => run ? '<b class="num">'+run.rows.filter(r=>r.ok).length+' / '+run.rows.length+'</b> 通过 · '+new Date(run.at).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}) : '还没跑';
+  const cell = (run, i, key) => { if(!run) return '<td class="muted">–</td>'; const f = run.rows[i].fields[key]; return f===null ? '<td class="muted">–</td>' : '<td class="'+(f?'ok':'no')+'">'+(f?'✓':'✗')+'</td>'; };
+  const gotTxt = (run, i) => { if(!run || !run.rows[i].got) return ''; const g = run.rows[i].got; return (CATS[g.category]?CATS[g.category].zh:g.category)+' · '+(g.countries||[]).join('/')+' · '+(g.platforms||[]).map(p=>p[0]).join('')+' · '+(g.budgetUsd==null?'无预算':'$'+g.budgetUsd)+(g.gender&&g.gender!=='any'?' · '+(g.gender==='female'?'女':'男'):''); };
+  const keys = [['cat','品类'],['cc','国家'],['pf','平台'],['bud','预算'],['g','性别']];
+  return '<div class="stack">'
+  +'<div class="step-head"><div class="title-row"><h2>评测与 Bad case</h2>'+guard('怎么用', '评测与 Bad case', [
+      '评测集：16 条真实写法的需求，每条有人工写好的标准答案（品类、国家、平台、预算、性别），预算误差 10% 内算对',
+      '规则和 AI 分别跑一遍，看通过率，再看哪几条、哪个字段错了',
+      '每次改规则、改提示词或换模型，先跑评测集，通过率不降才上线',
+      'Bad case：推荐、邮件、谈价建议、审核结果旁都能一键标记，写明问题类型，这里集中处理',
+      '修好的 Bad case 可以补进评测集，防止以后再犯'
+    ], '我不是做完就完了：有评测集兜住质量，有 Bad case 驱动下一轮迭代。')+'</div></div>'
+  +'<div class="panel stack" style="gap:14px">'
+    +'<div class="row"><h3>'+icon('flask')+' 需求解析评测集</h3><span class="tag neutral">'+EVAL_CASES.length+' 条</span><span class="spacer"></span>'
+    +'<button type="button" class="btn sm" data-act="evalRule">跑规则</button>'
+    +'<button type="button" class="btn sm primary" data-act="evalAI"'+(S.busy?' disabled':'')+'>跑 '+aiName()+'</button></div>'
+    +(S.busy==='eval'?thinking(S.busyMsg):'')
+    +'<div class="eval-sum"><div><span class="lbl-s">规则</span><div>'+head(v.rule)+'</div>'+(v.rule?'<div class="bar"><i style="width:'+(v.rule.rows.filter(r=>r.ok).length/v.rule.rows.length*100)+'%"></i></div>':'')+'</div>'
+      +'<div><span class="lbl-s">'+aiName()+'</span><div>'+head(v.ai)+'</div>'+(v.ai?'<div class="bar"><i style="width:'+(v.ai.rows.filter(r=>r.ok).length/v.ai.rows.length*100)+'%"></i></div>':'')+'</div></div>'
+    +'<div class="tbl-wrap"><table class="etbl"><thead><tr><th>#</th><th>需求</th><th colspan="5">规则</th><th colspan="5">'+aiName()+'</th></tr><tr><th></th><th></th>'+keys.map(k=>'<th>'+k[1]+'</th>').join('')+keys.map(k=>'<th>'+k[1]+'</th>').join('')+'</tr></thead><tbody>'
+    +EVAL_CASES.map((k,i)=>'<tr><td class="muted">'+(i+1)+'</td><td><div class="eq">'+esc(k.q)+'</div>'
+      +(v.rule&&!v.rule.rows[i].ok?'<div class="meta">规则得到：'+esc(gotTxt(v.rule,i))+'</div>':'')
+      +(v.ai&&!v.ai.rows[i].ok?'<div class="meta">'+aiName()+' 得到：'+esc(gotTxt(v.ai,i))+'</div>':'')+'</td>'
+      +keys.map(x=>cell(v.rule,i,x[0])).join('')+keys.map(x=>cell(v.ai,i,x[0])).join('')+'</tr>').join('')
+    +'</tbody></table></div>'
+  +'</div>'
+  +'<div class="panel stack" style="gap:12px"><div class="row"><h3>'+icon('thumbsdown')+' Bad case</h3><span class="tag '+(bad.filter(b=>b.status==='open').length?'warn':'neutral')+'">待处理 '+bad.filter(b=>b.status==='open').length+'</span><span class="spacer"></span>'
+    +(bad.length?'<button type="button" class="btn sm" data-act="clearBad">清空</button>':'')+'</div>'
+    +(bad.length?'<div class="bclist">'+bad.map(b=>'<div class="bc'+(b.status==='fixed'?' fixed':'')+'"><div class="row" style="gap:6px"><span class="tag '+(b.status==='fixed'?'good':'warn')+'">'+(b.status==='fixed'?'已修复':'待处理')+'</span><b>'+esc(b.type)+'</b><span class="meta">'+esc(BC_WHERE[b.where]||b.where)+' · '+esc(b.name)+' · '+(b.mode==='ai'?aiName():'规则')+' · '+new Date(b.at).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+'</span><span class="spacer"></span>'
+        +'<button type="button" class="btn sm" data-bcfix="'+b.id+'">'+(b.status==='fixed'?'重新打开':'标为已修复')+'</button></div>'
+        +(b.note?'<div>'+esc(b.note)+'</div>':'')+'<div class="meta bc-snap">'+esc(b.snap)+'</div></div>').join('')+'</div>'
+      :'<p class="meta" style="margin:0">还没有 Bad case。在推荐、邮件、谈价建议、审核结果旁点“Bad case”就会出现在这里。</p>')
+  +'</div></div>';
+}
+function vDash(){
+  const ev = loadEvents(), n = t => ev.filter(e=>e.type===t).length, sumOf = (t,k) => sum(ev.filter(e=>e.type===t).map(e=>+e[k]||0));
+  const sends = ev.filter(e=>e.type==='send');
+  const mailsSent = sumOf('send','n'), mailsEdited = n('mail_edit');
+  const aiParse = ev.filter(e=>e.type==='parse' && e.mode==='ai'), aiParseOk = aiParse.filter(e=>e.src2==='ai').length;
+  const counters = ev.filter(e=>e.type==='counter_send' && e.sug!=null), adopted = counters.filter(e=>e.offer===e.sug).length;
+  const reviews = ev.filter(e=>e.type==='review'), issues = sum(reviews.map(e=>+e.issues||0)), aiIssues = sum(reviews.map(e=>+e.aiIssues||0));
+  const overrides = ev.filter(e=>e.type==='approve' && (+e.bad||0)>0).length;
+  const secs = sends.map(e=>+e.secs||0).filter(x=>x>0);
+  const pct = (a,b) => b ? Math.round(a/b*100)+'%' : '–';
+  const funnel = [['解析需求',n('parse')],['完成匹配',n('match')],['发出邀约（封）',mailsSent],['收到回复',n('reply')],['签约',n('sign')],['审核放行',n('approve')],['发布复盘',n('publish')]];
+  const maxF = Math.max(1, ...funnel.map(f=>f[1]));
+  const tile = (ic, label, val, sub) => '<div class="stat"><span>'+icon(ic,14)+' '+label+'</span><b>'+val+'</b><small>'+sub+'</small></div>';
+  return '<div class="stack">'
+  +'<div class="step-head"><div class="title-row"><h2>数据看板</h2>'+guard('指标怎么来的', '数据看板', [
+      '所有数字都来自这台浏览器里真实发生的操作（页面埋点），不是预设数据',
+      '漏斗：从解析需求到发布复盘，每一步做了多少次',
+      'AI 指标：AI 解析成功率、谈价建议被采纳的比例、邀约邮件被人改动的比例',
+      '护栏：数字校验拦截了几次、审核时人工推翻了几次（有必须改的问题仍放行）',
+      '~真实产品按账号和活动维度统计，接入后端埋点和 BI'
+    ], '我看的不只是用了多少次，而是 AI 给的结果人到底采不采纳，这决定下一步优化哪里。')+'</div><span class="spacer"></span>'
+    +(ev.length?'<button type="button" class="btn sm" data-act="clearEvents">清空埋点</button>':'')+'</div>'
+  +(!ev.length?'<div class="callout">还没有数据。走一遍流程（解析、匹配、邀约、谈价、审核）后再回来看。</div>':'')
+  +'<div class="stats">'
+    +tile('mail','发出邀约', mailsSent+' 封', '平均需求到发出 '+(secs.length?Math.round(sum(secs)/secs.length)+' 秒':'–'))
+    +tile('edit','邀约人工改动率', pct(mailsEdited, mailsSent), '改过 '+mailsEdited+' 封')
+    +tile('dollar','谈价建议采纳率', pct(adopted, counters.length), '采纳 '+adopted+' / '+counters.length+' 次')
+    +tile('shield','审核查出问题', issues+' 个', 'AI 补充 '+aiIssues+' 个 · 人工推翻 '+overrides+' 次')
+  +'</div>'
+  +'<div class="grid-2">'
+    +'<div class="panel stack" style="gap:10px"><h3>'+icon('chart')+' 流程漏斗</h3>'
+      +funnel.map(f=>'<div class="fn-row"><span>'+f[0]+'</span><div class="bar"><i style="width:'+(f[1]/maxF*100)+'%"></i></div><b class="num">'+f[1]+'</b></div>').join('')+'</div>'
+    +'<div class="panel stack" style="gap:10px"><h3>'+icon('activity')+' AI 与护栏</h3>'
+      +'<div class="mrow">'+icon('activity')+'<span>AI 解析成功率</span><b>'+pct(aiParseOk, aiParse.length)+'</b><em>'+aiParseOk+' / '+aiParse.length+'，失败走规则兜底</em></div>'
+      +'<div class="mrow">'+icon('search')+'<span>AI 排序次数</span><b>'+ev.filter(e=>e.type==='match' && e.rank==='ai').length+'</b><em>共匹配 '+n('match')+' 次</em></div>'
+      +'<div class="mrow">'+icon('alert')+'<span>数字校验拦截</span><b>'+n('guard_number')+'</b><em>邮件里出现数据之外的数字</em></div>'
+      +'<div class="mrow">'+icon('refresh')+'<span>中英同步</span><b>'+n('sync')+'</b><em>人工改中文后同步英文</em></div>'
+      +'<div class="mrow">'+icon('thumbsdown')+'<span>Bad case</span><b>'+n('badcase')+'</b><em>待处理 '+loadBad().filter(b=>b.status==='open').length+'</em></div>'
+    +'</div>'
+  +'</div>'
+  +'<div class="panel stack" style="gap:8px"><h3>'+icon('clock')+' 最近操作</h3>'
+    +(ev.length?'<div class="evlog">'+ev.slice(-14).reverse().map(e=>'<div><span class="num muted">'+new Date(e.t).toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit',second:'2-digit'})+'</span><span>'+(EV_NAME[e.type]||e.type)+'</span><span class="tag '+(e.mode==='ai'?'ai':'neutral')+'">'+(e.mode==='ai'?aiName():'规则')+'</span></div>').join('')+'</div>':'<p class="meta" style="margin:0">暂无</p>')
+  +'</div></div>';
 }
 
 /* ---------- save / restore demo progress (per browser) ---------- */
@@ -2767,7 +3118,7 @@ function restore(){
 /* ---------- main render & events ---------- */
 function render(){
   renderSteps(); renderMode();
-  const v = [null,v1,v2,v3,v4,v5,v6,v7,v8][S.step] || v1;
+  const v = S.view==='dash' ? vDash : S.view==='eval' ? vEval : ([null,v1,v2,v3,v4,v5,v6,v7,v8][S.step] || v1);
   $('#view').innerHTML = v();
   persistSoon();
 }
@@ -2793,6 +3144,7 @@ document.addEventListener('click', e => {
   }
   if(d.go){ go(parseInt(d.go,10)); return; }
   if(d.preset){ S.input = PRESETS[+d.preset].text; $('#need').value = S.input; return; }
+  if(d.k && t.closest('[data-group="bctype"]')){ t.closest('[data-group]').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', String(x===t))); return; }
   if(d.k && t.closest('[data-group]')){ t.setAttribute('aria-pressed', String(t.getAttribute('aria-pressed')!=='true')); return; }
   if(d.sel){ if(t.checked) S.selected.add(d.sel); else S.selected.delete(d.sel); render(); return; }
   if(d.detail){ openDrawer(d.detail); return; }
@@ -2801,6 +3153,11 @@ document.addEventListener('click', e => {
   if(d.addsim){ const from = $('#sheet [data-similar]'); addSimilar(d.addsim); if(from) showSimilar(from.dataset.similar); return; }
   if(d.remove){ S.selected.delete(d.remove); render(); return; }
   if(d.check){ if(t.checked) S.checked.add(d.check); else S.checked.delete(d.check); render(); return; }
+  if(d.view){ S.view = d.view; render(); window.scrollTo({top:0, behavior:'smooth'}); return; }
+  if(d.bad){ const i = d.bad.indexOf(':'); openBadForm(d.bad.slice(0,i), d.bad.slice(i+1)); return; }
+  if(d.bcsave){ const i = d.bcsave.indexOf(':'); saveBadForm(d.bcsave.slice(0,i), d.bcsave.slice(i+1)); return; }
+  if(d.bcfix){ const a = loadBad(), b = a.find(x=>x.id===d.bcfix); if(b){ b.status = b.status==='fixed' ? 'open' : 'fixed'; saveBad(a); render(); } return; }
+  if(d.k && t.closest('[data-group="bctype"]')){ t.closest('[data-group]').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', String(x===t))); return; }
   if(d.tr){ const i = d.tr.indexOf(':'); doTranslate(d.tr.slice(0,i), d.tr.slice(i+1)); return; }
   if(d.sync){ const i = d.sync.indexOf(':'); doSync(d.sync.slice(0,i), d.sync.slice(i+1)); return; }
   if(d.da){ const i = d.da.indexOf(':'); dealAction(d.da.slice(0,i), d.da.slice(i+1)); return; }
@@ -2835,6 +3192,10 @@ document.addEventListener('click', e => {
     case 'genMail': doGenMail(); break;
     case 'send': doSend(); break;
     case 'report': doReport(); break;
+    case 'evalRule': runEvalRule(); break;
+    case 'evalAI': runEvalAI(); break;
+    case 'clearBad': if(confirm('清空所有 Bad case？')){ saveBad([]); render(); } break;
+    case 'clearEvents': if(confirm('清空数据看板的埋点记录？')){ try { localStorage.removeItem(EV_KEY); } catch(e){} render(); } break;
     case 'copyReport': try { navigator.clipboard.writeText(S.report.text).then(()=>toast('已复制'), ()=>toast('复制失败，请手动选中复制')); } catch(e){ toast('复制失败，请手动选中复制'); } break;
     case 'dlReport': download('达人营销复盘.txt', S.report.text); break;
     case 'writeBack': doWriteBack(); break;
@@ -2853,6 +3214,8 @@ document.addEventListener('input', e => {
   if(d.subj && S.emails[d.subj]){ S.emails[d.subj].subject = e.target.value; markZhStale('mail', d.subj); }
   if(d.body && S.emails[d.body]){
     S.emails[d.body].body = e.target.value;
+    S._ed = S._ed || new Set(); if(!S._ed.has(d.body)){ S._ed.add(d.body); track('mail_edit'); }
+    if(numberCheck(BY_ID[d.body], e.target.value).length){ S._gd = S._gd || new Set(); if(!S._gd.has(d.body)){ S._gd.add(d.body); track('guard_number'); } }
     markZhStale('mail', d.body);
     const box = document.getElementById('chk-'+d.body);
     if(box) box.innerHTML = checkTags(numberCheck(BY_ID[d.body], e.target.value));
