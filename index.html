@@ -253,6 +253,13 @@ label.inline{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-
 .lib{display:flex;flex-direction:column;margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .lib-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:13px}
 .lib-row:first-child{border-top:0}
+.zh{border:1px dashed var(--line);border-left:3px solid var(--good);border-radius:8px;background:var(--bg);padding:8px 12px;font-size:12.5px;display:flex;flex-direction:column;gap:6px}
+.zh-h{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.zh-h b{font-size:12.5px;color:var(--good)}
+.zh-b{white-space:pre-wrap;line-height:1.7;color:var(--ink)}
+.zh-none{border-left-color:var(--line)}
+.orig{padding:8px 12px;display:flex;flex-direction:column;gap:8px}
+.orig-en{white-space:pre-wrap;font-size:12.5px;line-height:1.6;color:var(--muted)}
 .basis{border:1px solid var(--line);border-radius:10px;background:var(--bg);font-size:13px}
 .basis summary{cursor:pointer;padding:8px 12px;font-weight:600;color:var(--ink)}
 .b-rows{display:flex;flex-direction:column;border-top:1px solid var(--line)}
@@ -1505,7 +1512,7 @@ function v5(){
       const m = S.emails[c.id], bad = numberCheck(c, m.body);
       return '<div class="mail"><div class="mail-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">To '+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · 报价区间 $'+c.price.lo+'–$'+c.price.hi+'</div>'+(c.real?'<div class="meta">收件人：'+(c.email?'<code style="user-select:all">'+esc(c.email)+'</code>':'未公开邮箱，需到频道“关于”页查看')+'</div>':'')+'</div></div>'
         +'<div class="mail-body"><label class="f" for="sub-'+c.id+'">主题<input id="sub-'+c.id+'" data-subj="'+c.id+'" type="text" value="'+esc(m.subject)+'"></label>'
-        +'<label class="f" for="body-'+c.id+'">正文<textarea id="body-'+c.id+'" data-body="'+c.id+'">'+esc(m.body)+'</textarea></label>'
+        +'<label class="f" for="body-'+c.id+'">正文<textarea id="body-'+c.id+'" data-body="'+c.id+'">'+esc(m.body)+'</textarea></label>'+zhBox('mail', c.id)
         +'<div class="risks" id="chk-'+c.id+'">'+checkTags(bad)+'</div></div>'
         +'<div class="mail-foot"><label><input type="checkbox" data-check="'+c.id+'"'+(S.checked.has(c.id)?' checked':'')+'> 已核对内容</label></div></div>';
     }).join('')+'</div>':'')
@@ -1520,7 +1527,7 @@ async function doGenMail(){
   S.sender.name = $('#s-name').value.trim() || 'Alex';
   S.sender.productEn = $('#s-prod').value.trim() || CATS[S.brief.category].en;
   const sel = selectedList();
-  const out = {}; sel.forEach(c=>{ out[c.id] = templateMail(c); });
+  const out = {}; sel.forEach(c=>{ const m = templateMail(c); m.zh = zhPack(templateMailZh(c), m.body); out[c.id] = m; });
   let src = 'rule';
   if(S.mode==='ai'){
     S.busy='mail'; render();
@@ -1530,11 +1537,12 @@ async function doGenMail(){
       +'- Do not invent any numbers, stats, follower counts or claims. The only prices allowed are "$price_low–$price_high" for one video, and say we are open to their rate card.\n'
       +'- Offer a free product sample. No exclusivity, no guarantees. If country is missing, do not mention where their audience is.\n- Sign off with the sender name and brand on separate lines.\n'
       +'Sender: '+S.sender.name+', brand: '+S.sender.brand+', product: '+S.sender.productEn+', collaboration: '+S.brief.format+'.\n'
-      +'Reply with only a JSON array: [{"id":"c001","subject":"...","body":"..."}]\n\nCreators:\n'+data.map(d=>JSON.stringify(d)).join('\n');
+      +'- Also give subject_zh and body_zh: a faithful Chinese translation of subject and body, for the sender to read. Keep names, prices and #tags as they are.\n'
+      +'Reply with only a JSON array: [{"id":"c001","subject":"...","body":"...","subject_zh":"...","body_zh":"..."}]\n\nCreators:\n'+data.map(d=>JSON.stringify(d)).join('\n');
     const j = await aiJson(prompt);
     S.busy='';
     if(Array.isArray(j)){
-      let n=0; j.forEach(x=>{ if(x && out[x.id] && x.body){ out[x.id] = {subject:String(x.subject||out[x.id].subject).slice(0,140), body:String(x.body).slice(0,1500)}; n++; } });
+      let n=0; j.forEach(x=>{ if(x && out[x.id] && x.body){ const body = String(x.body).slice(0,1500); out[x.id] = {subject:String(x.subject||out[x.id].subject).slice(0,140), body, zh:x.body_zh ? zhPack((x.subject_zh?'主题：'+String(x.subject_zh)+'\n\n':'')+String(x.body_zh).slice(0,3000), body) : null}; n++; } });
       if(n) src='ai';
     }
   }
@@ -1631,24 +1639,6 @@ function busyOn(id, what){ return S.busy==='deal:'+id+':'+what; }
 function r10(x){ return Math.round(x/10)*10; }
 
 /* --- creator replies --- */
-function sampleReply(c, i){
-  const s = S.sender, prod = prodEn();
-  const dl = S.deals[c.id];
-  if(dl && dl.round>1){
-    const prev = (dl.parsed && dl.parsed.ask) || r10(c.price.hi*1.2), sent = dl.sentOffer || c.price.hi;
-    if(dl.round>=3) return 'Hi '+s.name+',\n\nI really like the product. $'+r10(prev*.95)+((dl.model==='hybrid')?' as the fixed fee, plus the commission,':'')+' is the lowest I can go for a dedicated video.\n\n'+c.first;
-    const mid = r10((prev+sent)/2);
-    if(dl.model==='hybrid' || dl.model==='commission') return 'Hi '+s.name+',\n\nI like the commission idea! Could we do $'+mid+' as the fixed fee plus the '+dl.rate+'%? Then I can start as soon as the sample arrives.\n\n'+c.first;
-    return 'Hi '+s.name+',\n\nThanks for the offer. Could we meet in the middle at $'+mid+'? That would work for me.\n\n'+c.first;
-  }
-  // One of each across the first five: counter-offer, in range, questions, far too high, declined.
-  const kind = [0,1,2,4,3][i%5];
-  if(kind===3) return 'Hi '+s.name+',\n\nThanks so much for thinking of me! I\'m fully booked with sponsorships this month, so I\'ll have to pass for now. Maybe next quarter?\n\n'+c.first;
-  if(kind===4) return 'Hi '+s.name+',\n\nThanks for the message! I only take a few brand deals each month, and my rate for a dedicated video is $'+r10(c.price.hi*1.7)+'. Happy to chat if that works for your budget.\n\n'+c.first;
-  if(kind===0) return 'Hi '+s.name+',\n\nThanks for reaching out, the '+prod+' looks cool and I\'d be happy to test it. My rate for one dedicated video is $'+r10(c.price.hi*1.2)+'. I can post within 2 weeks of receiving the product.\n\nLet me know!\n'+c.first;
-  if(kind===1) return 'Hey '+s.name+'!\n\nSounds like a good fit. My usual rate is $'+r10((c.price.lo+c.price.hi)/2)+' for one video, and I can film it within 10 days after the sample arrives.\n\nBest,\n'+c.first;
-  return 'Hi '+s.name+',\n\nCould you share a bit more about the '+prod+' and what you want me to highlight? My rate is $'+r10(c.price.hi)+' for an organic post, plus $'+r10(c.price.hi*.3)+' if you want 30-day usage rights for ads. Do you need exclusivity?\n\nThanks,\n'+c.first;
-}
 function moneyIn(text){ const a = []; String(text).replace(/\$\s?(\d[\d,]*)/g, (m,x)=>{ a.push(+x.replace(/,/g,'')); return m; }); return a; }
 function parseReplyRule(text){
   const nums = moneyIn(text);
@@ -1670,7 +1660,7 @@ async function doParseReply(id){
   if(S.mode==='ai'){
     S.busy = 'deal:'+id+':parse'; render();
     const j = await aiJson('从达人回复的邮件里提取合作信息。只能根据原文提取，原文没有的信息填 null，不要推测。\n'
-      +'返回 JSON 对象：{"intent":"interested|question|declined","ask_usd":数字或null（一条视频的报价）,"usage_fee_usd":数字或null（广告授权的额外费用）,"timeline_days":数字或null,"exclusivity_asked":true/false,"questions":["达人提出的问题，原文英文"]}\n\n达人回复：\n'+d.reply);
+      +'返回 JSON 对象：{"intent":"interested|question|declined","ask_usd":数字或null（一条视频的报价）,"usage_fee_usd":数字或null（广告授权的额外费用）,"timeline_days":数字或null,"exclusivity_asked":true/false,"questions":["达人提出的问题，原文英文"],"reply_zh":"整封回复的中文翻译，人名和金额照原样"}\n\n达人回复：\n'+d.reply);
     S.busy = '';
     if(j && typeof j==='object' && !Array.isArray(j)){
       const nums = moneyIn(d.reply), ok = v => v==null || nums.indexOf(+v)>=0;
@@ -1679,6 +1669,7 @@ async function doParseReply(id){
           days:j.timeline_days==null?null:+j.timeline_days, exclusivity:!!j.exclusivity_asked, questions:Array.isArray(j.questions)?j.questions.map(String).slice(0,4):p.questions};
         src = 'ai';
       } else toast('AI 提取的金额在原文里找不到，已改用规则结果');
+      if(j.reply_zh && (!d.replyZh || d.replyZh.for!==d.reply)) d.replyZh = zhPack(String(j.reply_zh).slice(0,3000), d.reply);
     }
   }
   d.parsed = p; d.parseSrc = src; d.stage = 'talk'; d.awaitReply = false;
@@ -1782,6 +1773,7 @@ function dealNumberCheck(c, d, body){
 async function doCounter(id){
   const c = BY_ID[id], d = S.deals[id];
   let m = templateCounter(c, d), src = 'rule';
+  m.zh = zhPack(templateCounterZh(c, d), m.body);
   if(S.mode==='ai' && d.sug && d.sug.kind!=='lost'){
     S.busy = 'deal:'+id+':counter'; render();
     const j = await aiJson('Write a short reply email to an influencer who answered our collaboration invite.\n'
@@ -1789,9 +1781,10 @@ async function doCounter(id){
       +'- The only numbers you may use are: '+[d.offer, d.rate, d.parsed&&d.parsed.ask].filter(x=>x!=null).join(', ')+'. Do not invent any other numbers, dates or product facts.\n'
       +'- Answer their questions only with these facts: we do not need ad usage rights, no exclusivity, product is "'+prodEn()+'". If you cannot answer something, say we will follow up.\n'
       +'- Sign off with "'+S.sender.name+'" and "'+S.sender.brand+'" on separate lines.\n'
-      +'Reply with only JSON: {"subject":"...","body":"..."}\n\nTheir email:\n'+d.reply);
+      +'- Also give body_zh: a faithful Chinese translation of subject and body for the sender to read, starting with the line "主题：<subject in Chinese>". Keep names, prices and #tags.\n'
+      +'Reply with only JSON: {"subject":"...","body":"...","body_zh":"..."}\n\nTheir email:\n'+d.reply);
     S.busy = '';
-    if(j && j.body){ m = {subject:String(j.subject||m.subject).slice(0,140), body:String(j.body).slice(0,1500)}; src = 'ai'; }
+    if(j && j.body){ const body = String(j.body).slice(0,1500); m = {subject:String(j.subject||m.subject).slice(0,140), body, zh:j.body_zh ? zhPack(String(j.body_zh).slice(0,3000), body) : null}; src = 'ai'; }
   }
   d.counter = m; d.counterSrc = src; d.counterOk = false; d.counterSent = false;
   render();
@@ -1810,15 +1803,15 @@ function templateBrief(c, d){
 }
 async function doBrief(id){
   const c = BY_ID[id], d = S.deals[id];
-  let t = templateBrief(c, d), src = 'rule';
+  let t = templateBrief(c, d), src = 'rule', tz = templateBriefZh(c, d);
   if(S.mode==='ai'){
     S.busy = 'deal:'+id+':brief'; render();
     const j = await aiJson('为达人写一份英文拍摄要点（brief），简洁、可执行，150 词以内。\n必须包含：交付物、发布日期 '+d.terms.date+'、必须提到的卖点（只能用下面给的，不要新增产品功能）、不能说的话、#ad 标注要求、发布前先交稿审核。\n'
-      +'返回 JSON：{"brief":"..."}\n\n达人：'+c.first+'（'+c.platform+'，常做 '+c.styles.map(x=>STYLE_EN[x]).join(', ')+'）\n品牌：'+S.sender.brand+'，商品：'+prodEn()+'\n卖点：'+S.rc.points.join(' / ')+'\n禁用说法：'+S.rc.banned.join(' / '));
+      +'另外给出 brief_zh：brief 的中文翻译，给品牌方自己看。\n返回 JSON：{"brief":"...","brief_zh":"..."}\n\n达人：'+c.first+'（'+c.platform+'，常做 '+c.styles.map(x=>STYLE_EN[x]).join(', ')+'）\n品牌：'+S.sender.brand+'，商品：'+prodEn()+'\n卖点：'+S.rc.points.join(' / ')+'\n禁用说法：'+S.rc.banned.join(' / '));
     S.busy = '';
-    if(j && j.brief){ t = String(j.brief).slice(0,2000); src = 'ai'; }
+    if(j && j.brief){ t = String(j.brief).slice(0,2000); tz = j.brief_zh ? String(j.brief_zh).slice(0,3000) : null; src = 'ai'; }
   }
-  d.brief = t; d.briefSrc = src;
+  d.brief = t; d.briefSrc = src; d.briefZh = tz ? zhPack(tz, t) : null;
   render();
 }
 
@@ -1855,7 +1848,7 @@ function sampleDraft(c, fixed){
     +'What I liked: '+pts.join(', ')+'. It replaced the one I used before and I haven\'t looked back.\n\n'
     +'Link below if you want to try it. Thanks '+s.brand+' for sponsoring this video!';
   return 'Okay, I\'ve tested a LOT of these and this is the best '+prod+' ever made.\n\n'
-    +'The '+s.brand+' '+prod+' is '+(pts[0]||'great')+'. Honestly it\'s 100% better than my old '+comp+' and it will last forever.\n\n'
+    +'My favorite thing about the '+s.brand+' '+prod+': '+(pts[0]||'it just works')+'. Honestly it\'s 100% better than my old '+comp+' and it will last forever.\n\n'
     +'Grab yours with my link below 👇';
 }
 function reviewRule(c, d){
@@ -2072,7 +2065,7 @@ function mailBox(c, d){
   const bad = dealNumberCheck(c, d, d.counter.body);
   return '<div class="mail"><div class="mail-head"><b>回复 '+esc(c.first)+'</b>'+srcTag(d.counterSrc)+'<span class="spacer"></span>'+G.mail()+'</div>'
     +'<div class="mail-body"><label class="f">主题<input type="text" data-df="'+c.id+':counter.subject" value="'+esc(d.counter.subject)+'"></label>'
-    +'<label class="f">正文<textarea data-df="'+c.id+':counter.body">'+esc(d.counter.body)+'</textarea></label>'
+    +'<label class="f">正文<textarea data-df="'+c.id+':counter.body">'+esc(d.counter.body)+'</textarea></label>'+zhBox('counter', c.id)
     +'<div class="risks" id="dchk-'+c.id+'">'+checkTags(bad)+'</div></div>'
     +'<div class="mail-foot"><label><input type="checkbox" data-dcheck="'+c.id+'"'+(d.counterOk?' checked':'')+'> 已核对金额和内容</label><span class="spacer"></span>'
     +(d.counterSent?'<span class="tag good">已发送（模拟）</span>':'<button type="button" class="btn primary sm" data-da="'+c.id+':sendCounter"'+(d.counterOk?'':' disabled')+'>发送（模拟）</button>')+'</div></div>';
@@ -2083,18 +2076,18 @@ function dealPanel(c, d){
     +'<button type="button" class="btn sm" data-detail="'+c.id+'">详情</button></div>';
   let body = '';
   if(d.stage==='invited'){
-    body = '<label class="f">达人的回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, thanks for reaching out…">'+esc(d.reply)+'</textarea></label>'
+    body = '<label class="f">达人的回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, thanks for reaching out…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
       +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'<span class="meta">'+(S.mode==='ai'?aiName()+' 提取报价和问题，金额必须在原文里出现':'规则提取：金额、意向、问题')+'</span>')+'</div>';
   } else if(d.stage==='talk' && d.awaitReply){
-    body = negLog(d)+'<label class="f">达人第 '+d.round+' 轮回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, could we meet in the middle…">'+esc(d.reply)+'</textarea></label>'
+    body = negLog(d)+'<label class="f">达人第 '+d.round+' 轮回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, could we meet in the middle…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
       +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'')+'</div>';
   } else if(d.stage==='talk'){
     const p = d.parsed, sg = d.sug || {};
-    body = negLog(d)+'<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+G.parse()+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
+    body = negLog(d)+(d.reply?'<details class="basis"><summary>达人原文和中文翻译</summary><div class="orig"><div class="orig-en">'+esc(d.reply)+'</div>'+zhBox('reply', c.id)+'</div></details>':'')+'<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+G.parse()+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
       +'<div class="kv">'
         +'<div><span>达人报价</span><b>'+(p.ask?money(p.ask):'未报价')+'</b></div>'
         +'<div><span>我们的估算</span><b>'+money(c.price.lo)+'–'+money(c.price.hi)+'</b></div>'
@@ -2136,7 +2129,7 @@ function dealPanel(c, d){
   } else if(d.stage==='signed'){
     body = ((d.log||[]).length?'<details class="basis"><summary>谈判记录：'+(d.firstAsk?money(d.firstAsk)+' → ':'')+money(d.final)+'，谈了 '+(d.round||1)+' 轮</summary><div style="padding:8px 12px">'+negLog(d)+'</div></details>':'')
       +'<div class="row"><b>拍摄要点</b>'+(d.brief?srcTag(d.briefSrc):'')+'<span class="spacer"></span><button type="button" class="btn sm'+(d.brief?'':' primary')+'" data-da="'+c.id+':brief"'+(S.busy?' disabled':'')+'>'+(d.brief?'重新生成':'生成拍摄要点')+'</button>'+(busyOn(c.id,'brief')?thinking(aiName()+' 正在写要点…'):'')+'</div>'
-      +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>':'<p class="meta">要点里的卖点和禁用说法来自第 7 步的审核标准，审核时会按同一套标准检查。</p>')
+      +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>'+zhBox('brief', c.id):'<p class="meta">要点里的卖点和禁用说法来自第 7 步的审核标准，审核时会按同一套标准检查。</p>')
       +'<div class="grid3"><label class="f">物流<select data-df="'+c.id+':ship.carrier">'+['DHL','FedEx','UPS','USPS','Royal Mail','J&T'].map(x=>'<option'+(d.ship.carrier===x?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'
       +'<label class="f">运单号<input type="text" data-df="'+c.id+':ship.no" value="'+esc(d.ship.no)+'" placeholder="寄出后填写"></label>'
       +'<label class="f">&nbsp;<button type="button" class="btn sm" data-da="'+c.id+':track">填演示单号</button></label></div>'
@@ -2185,14 +2178,14 @@ function v7(){
     const bad = rv ? rv.items.filter(x=>x.lv==='bad').length : 0;
     return '<div class="deal" id="deal-'+c.id+'"><div class="deal-head">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+stageTag(d)+(d.rounds?'<span class="tag neutral">第 '+(d.rounds+1)+' 稿</span>':'')+'</div><div class="meta">'+esc(d.terms.deliverable)+' · 约定发布 '+esc(d.terms.date)+'</div></div></div>'
       +'<div class="deal-body">'
-      +'<label class="f">达人交来的脚本或文案<textarea data-df="'+c.id+':draft" placeholder="粘贴脚本、字幕或视频文案">'+esc(d.draft)+'</textarea></label>'
+      +'<label class="f">达人交来的脚本或文案<textarea data-df="'+c.id+':draft" placeholder="粘贴脚本、字幕或视频文案">'+esc(d.draft)+'</textarea></label>'+zhBox('draft', c.id)
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':draftBad">载入示例稿</button>'+(d.rounds?'<button type="button" class="btn sm" data-da="'+c.id+':draftGood">载入修改后的稿件</button>':'')
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':review"'+(S.busy?' disabled':'')+'>审核</button>'
       +(busyOn(c.id,'review')?thinking('规则检查完成，'+aiName()+' 正在找其他问题…'):'')+'</div>'
       +(rv?'<div class="review">'
         +'<div class="row" style="gap:6px"><b>审核结果</b>'+srcTag(d.reviewSrc==='ai'?'ai':'rule')+(rv.items.length?'<span class="tag '+(bad?'bad':'warn')+'">'+rv.items.length+' 个问题'+(bad?'，'+bad+' 个必须改':'')+'</span>':'<span class="tag good">没有发现问题</span>')+(stale?'<span class="tag warn">稿件改过了，请重新审核</span>':'')+'</div>'
         +(rv.items.length?'<div class="draft-view">'+markQuotes(rv.text, rv.items)+'</div><div class="issues">'+rv.items.map(x=>'<div class="issue"><span class="tag '+x.lv+'">'+esc(x.type)+'</span>'+(x.quote?'<code>'+esc(x.quote)+'</code>':'')+'<span>'+esc(x.fix)+'</span>'+(x.src==='ai'?'<span class="tag ai">AI 提示，需人判断</span>':'')+'</div>').join('')+'</div>':'')
-        +(d.feedbackOpen?'<label class="f">修改意见（发给达人）<textarea data-df="'+c.id+':feedback">'+esc(d.feedback)+'</textarea></label>'
+        +(d.feedbackOpen?'<label class="f">修改意见（发给达人）<textarea data-df="'+c.id+':feedback">'+esc(d.feedback)+'</textarea></label>'+zhBox('feedback', c.id)
           +'<div class="row"><span class="spacer"></span><button type="button" class="btn sm" data-da="'+c.id+':cancelFb">取消</button><button type="button" class="btn primary sm" data-da="'+c.id+':sendFb">发送修改意见（模拟）</button></div>'
          :'<div class="row"><span class="spacer"></span><button type="button" class="btn sm" data-da="'+c.id+':reject"'+(rv.items.length?'':' disabled')+'>退回修改</button>'
           +'<button type="button" class="btn '+(bad||stale?'':'primary ')+'sm" data-da="'+c.id+':approve"'+(stale?' disabled':'')+'>'+(bad?'仍然通过':'通过，允许发布')+'</button></div>')
@@ -2274,11 +2267,11 @@ function setPath(o, path, v){ const k = path.split('.'); let t = o; for(let i=0;
 function dealAction(id, act){
   const c = BY_ID[id], d = S.deals[id]; if(!c || !d) return;
   switch(act){
-    case 'sample': d.reply = sampleReply(c, Object.keys(S.deals).indexOf(id)); render(); break;
+    case 'sample': { const pr = sampleReplyPair(c, Object.keys(S.deals).indexOf(id)); d.reply = pr[0]; d.replyZh = zhPack(pr[1], pr[0]); render(); break; }
     case 'parse': doParseReply(id); break;
     case 'counter': doCounter(id); break;
     case 'sendCounter': d.counterSent = true; d.sentOffer = +d.offer||0; logPush(d, '我方', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '接受报价' : (d.sug && d.sug.kind==='final' ? '最终报价' : '还价'), d.model==='commission' ? null : d.sentOffer, d.model); toast('已模拟发送给 '+c.first); render(); break;
-    case 'reply2': d.round = (d.round||1) + 1; d.awaitReply = true; d.reply = ''; d.counter = null; d.counterSent = false; d.counterOk = false; render(); break;
+    case 'reply2': d.round = (d.round||1) + 1; d.awaitReply = true; d.reply = ''; d.replyZh = null; d.counter = null; d.counterSent = false; d.counterOk = false; render(); break;
     case 'again': d.agreed = false; d.counterSent = false; d.counterOk = false; d.termsOk = false; render(); break;
     case 'agree': d.agreed = true; d.termsOk = false; logPush(d, '达人', d.parsed && d.parsed.ask && d.sentOffer>=d.parsed.ask ? '确认成交' : '接受', d.sentOffer!=null ? d.sentOffer : d.offer, d.model); render(); break;
     case 'lost': d.stage = 'lost'; toast(c.name+' 已标记为未合作'); render(); break;
@@ -2287,10 +2280,10 @@ function dealAction(id, act){
     case 'track': d.ship.no = (d.ship.carrier==='USPS'?'9400':'JD')+String(1e9+hashStr(id)%9e9).slice(0,10); render(); break;
     case 'ship': d.stage = 'shipped'; toast('已模拟寄出样品，并把拍摄要点发给 '+c.first); render(); break;
     case 'submitted': d.stage = 'review'; S.max = Math.max(S.max, 7); toast(c.first+' 交稿了'); go(7); break;
-    case 'draftBad': d.draft = sampleDraft(c, false); d.review = null; render(); break;
-    case 'draftGood': d.draft = sampleDraft(c, true); d.review = null; render(); break;
+    case 'draftBad': d.draft = sampleDraft(c, false); d.draftZh = zhPack(sampleDraftZh(c, false), d.draft); d.review = null; render(); break;
+    case 'draftGood': d.draft = sampleDraft(c, true); d.draftZh = zhPack(sampleDraftZh(c, true), d.draft); d.review = null; render(); break;
     case 'review': doReview(id); break;
-    case 'reject': d.feedback = feedbackMail(c, d); d.feedbackOpen = true; render(); break;
+    case 'reject': d.feedback = feedbackMail(c, d); d.feedbackZh = zhPack(feedbackMailZh(c, d), d.feedback); d.feedbackOpen = true; render(); break;
     case 'cancelFb': d.feedbackOpen = false; render(); break;
     case 'sendFb': d.rounds += 1; d.feedbackOpen = false; d.review = null; toast('修改意见已发给 '+c.first+'（模拟），等对方交第 '+(d.rounds+1)+' 稿'); render(); break;
     case 'approve': d.stage = 'approved'; S.max = Math.max(S.max, 8); toast(c.name+' 的稿件已通过，可以发布'); render(); break;
@@ -2298,6 +2291,168 @@ function dealAction(id, act){
     case 'sampleVideo': d.video = sampleVideo(c); d.videoErr = ''; if(d.stage==='approved') d.stage = 'live'; render(); break;
     case 'sampleSales': sampleSales(c, d); render(); break;
   }
+}
+
+/* ---------- Chinese translations of the English letters, for presenting the demo ---------- */
+// Each English template below has a Chinese twin built from the same numbers, so the two always
+// agree. AI-written letters come back with their own translation. A translation remembers which
+// English it was made from ("for"); once the English is edited, the box says so.
+const PT_ZH = {
+  '3 brightness modes':'3 档亮度', 'USB-C rechargeable':'USB-C 充电', 'lightweight and packable':'轻便好收纳',
+  'ultra-quiet pump':'水泵超静音', 'filter lasts 30 days':'滤芯可用 30 天', 'easy to clean':'好清洗',
+  'lightweight texture':'质地轻薄', 'no white cast':'不泛白', 'easy to reapply':'方便补涂',
+  'saves counter space':'不占台面', 'works in 10 minutes':'10 分钟搞定',
+  'USB-C fast charging':'USB-C 快充', 'pocket-sized':'口袋大小', 'pairs in one tap':'一碰就连',
+  'non-slip surface':'表面防滑', 'easy to carry':'方便携带', 'quiet at home':'在家用也安静',
+  'soft stretch fabric':'柔软有弹性', 'true to size':'尺码标准', 'machine washable':'可以机洗',
+  'BPA-free materials':'不含双酚 A', 'one-hand use':'单手就能用'
+};
+const ptZh = p => PT_ZH[p] ? p+'（'+PT_ZH[p]+'）' : p;
+const prodZh = () => (S.brief && S.brief.product) || (S.brief ? CATS[S.brief.category].zh : '新品');
+const zhPack = (text, en) => ({text, for:en});
+
+function templateMailZh(c){
+  const b = S.brief, s = S.sender, post = c.posts[0];
+  const style = STYLES[c.styles[0]] || '视频';
+  return '主题：合作邀请：'+s.brand+' x '+c.handle+'\n\n'
+    +'嗨 '+c.first+'，\n\n'
+    +'我是 '+s.brand+' 的 '+s.name+'。看了你最近的视频“'+post+'”，很喜欢你做的'+style+'。'
+    +(c.real ? '你的频道很适合我们在'+(COUNTRIES[b.countries[0]]||'目标市场')+'上市的'+prodZh()+'。\n\n'
+             : '你有很多观众在'+(COUNTRIES[c.country]||'当地')+'，正好是我们'+prodZh()+'要上市的地方。\n\n')
+    +'我们想免费寄一台样品给你，也想谈谈付费合作。我们单条视频的预算大约是 $'+c.price.lo+'–$'+c.price.hi+'，也欢迎你把报价单发给我们。\n\n'
+    +'如果你感兴趣，直接回复就行，我会把产品详情和一份简短的拍摄说明发给你。\n\n'
+    +'祝好，\n'+s.name+'\n'+s.brand;
+}
+
+// The creator's sample replies, English and Chinese built side by side from the same case.
+function sampleReplyPair(c, i){
+  const s = S.sender, prod = prodEn(), pz = prodZh(), dl = S.deals[c.id];
+  const hi = 'Hi '+s.name+',\n\n', hz = '嗨 '+s.name+'，\n\n';
+  if(dl && dl.round>1){
+    const prev = (dl.parsed && dl.parsed.ask) || r10(c.price.hi*1.2), sent = dl.sentOffer || c.price.hi;
+    const hyb = dl.model==='hybrid';
+    if(dl.round>=3){ const x = r10(prev*.95);
+      return [hi+'I really like the product. $'+x+(hyb?' as the fixed fee, plus the commission,':'')+' is the lowest I can go for a dedicated video.\n\n'+c.first,
+              hz+'我真的很喜欢这个产品。'+(hyb?'固定费 $'+x+' 再加佣金':'$'+x)+'，是我做一条专门视频的最低价了。\n\n'+c.first]; }
+    const mid = r10((prev+sent)/2);
+    if(hyb || dl.model==='commission')
+      return [hi+'I like the commission idea! Could we do $'+mid+' as the fixed fee plus the '+dl.rate+'%? Then I can start as soon as the sample arrives.\n\n'+c.first,
+              hz+'佣金这个方式我觉得可以！固定费能不能给 $'+mid+'，再加 '+dl.rate+'% 的佣金？这样样品一到我就能开拍。\n\n'+c.first];
+    return [hi+'Thanks for the offer. Could we meet in the middle at $'+mid+'? That would work for me.\n\n'+c.first,
+            hz+'谢谢你们的报价。我们各让一步，$'+mid+' 怎么样？这个价格我可以接受。\n\n'+c.first];
+  }
+  // One of each across the first five: counter-offer, in range, questions, far too high, declined.
+  const kind = [0,1,2,4,3][i%5];
+  if(kind===3) return [hi+'Thanks so much for thinking of me! I\'m fully booked with sponsorships this month, so I\'ll have to pass for now. Maybe next quarter?\n\n'+c.first,
+                       hz+'非常感谢你们想到我！这个月的商单已经排满了，这次只能先婉拒。下个季度再联系？\n\n'+c.first];
+  if(kind===4){ const x = r10(c.price.hi*1.7);
+    return [hi+'Thanks for the message! I only take a few brand deals each month, and my rate for a dedicated video is $'+x+'. Happy to chat if that works for your budget.\n\n'+c.first,
+            hz+'谢谢来信！我每个月只接少量品牌合作，一条专门视频的报价是 $'+x+'。如果你们的预算合适，欢迎再聊。\n\n'+c.first]; }
+  if(kind===0){ const x = r10(c.price.hi*1.2);
+    return [hi+'Thanks for reaching out, the '+prod+' looks cool and I\'d be happy to test it. My rate for one dedicated video is $'+x+'. I can post within 2 weeks of receiving the product.\n\nLet me know!\n'+c.first,
+            hz+'谢谢联系我，这款'+pz+'看起来很不错，我很愿意试一试。一条专门视频我的报价是 $'+x+'，收到产品后两周内可以发布。\n\n等你回复！\n'+c.first]; }
+  if(kind===1){ const x = r10((c.price.lo+c.price.hi)/2);
+    return ['Hey '+s.name+'!\n\nSounds like a good fit. My usual rate is $'+x+' for one video, and I can film it within 10 days after the sample arrives.\n\nBest,\n'+c.first,
+            '嘿 '+s.name+'！\n\n感觉挺合适的。我一条视频通常收 $'+x+'，样品到了之后 10 天内可以拍完。\n\n祝好，\n'+c.first]; }
+  const x = r10(c.price.hi), u = r10(c.price.hi*.3);
+  return [hi+'Could you share a bit more about the '+prod+' and what you want me to highlight? My rate is $'+x+' for an organic post, plus $'+u+' if you want 30-day usage rights for ads. Do you need exclusivity?\n\nThanks,\n'+c.first,
+          hz+'能再多介绍一下这款'+pz+'，以及希望我重点讲哪些点吗？自然发布的报价是 $'+x+'；如果你们要 30 天的广告投放授权，再加 $'+u+'。需要独家吗？\n\n谢谢，\n'+c.first];
+}
+function sampleReply(c, i){ return sampleReplyPair(c, i)[0]; }
+
+function templateCounterZh(c, d){
+  const s = S.sender, p = d.parsed || {}, k = d.sug ? d.sug.kind : 'counter';
+  const subj = '主题：Re: 合作邀请：'+s.brand+' x '+c.handle+'\n\n';
+  const sign = '\n\n祝好，\n'+s.name+'\n'+s.brand;
+  if(k==='lost') return subj+'嗨 '+c.first+'，\n\n完全没关系，谢谢告知！下次新品上市时，我们很想再联系你。'+sign;
+  const comm = (d.model==='hybrid'||d.model==='commission') ? ' 加 '+d.rate+'% 佣金' : '';
+  let mid;
+  if(k==='accept' && d.round>1) mid = '成交！$'+d.offer+comm+'，我们这边没问题。';
+  else if(k==='final') mid = '我们很想和你合作，$'+d.offer+(d.model==='hybrid'?' 加 '+d.rate+'% 佣金':'')+'，是我们这次上市能给出的最好条件了。';
+  else if(k==='counter' && d.model==='hybrid' && d.round>1) mid = '很高兴你愿意接受佣金模式。因为每卖出一单你还能拿 '+d.rate+'% 的佣金，固定费能不能定在 $'+d.offer+'？';
+  else if(k==='ask') mid = '很乐意多介绍一些。'+prodZh()+'是我们的新品，希望你用自己的风格做一个真实的测评。能告诉我们一条视频的报价吗？';
+  else if(d.model==='hybrid') mid = '你的报价比我们单条视频的预算高一些。能不能改成固定费 $'+d.offer+'，再加上通过你的链接卖出的每一单 '+d.rate+'% 的佣金？如果视频效果好，你拿到的会比平时的报价更多。';
+  else if(d.model==='commission') mid = '能不能考虑纯佣金合作？通过你的链接卖出的每一单给你 '+d.rate+'% 的佣金，样品也直接送你。';
+  else if(d.model==='gifted') mid = '这次上市我们可以免费送你一台，不要求一定发视频。如果你喜欢，下次我们再谈付费视频。';
+  else if(p.ask && d.offer>=p.ask) mid = '你的报价 $'+p.ask+' 我们可以接受。';
+  else mid = '这次上市我们的预算比较紧。一条视频 $'+d.offer+' 可以吗？以后的新品我们也很想继续和你合作。';
+  const extra = [];
+  if(p.usageFee) extra.push('目前我们不需要广告授权，只做自然发布。');
+  if(p.exclusivity) extra.push('不需要独家。');
+  return subj+'嗨 '+c.first+'，\n\n谢谢回复！'+mid+extra.join('')+'\n\n如果没问题，我们会发一份简短的合作协议，并马上寄出样品。'+sign;
+}
+
+function templateBriefZh(c, d){
+  const s = S.sender, pts = S.rc.points.filter(Boolean);
+  return '嗨 '+c.first+'，这是 '+s.brand+' '+prodZh()+' 视频的拍摄要点。\n\n'
+    +'交付物：'+(c.platform==='YouTube'?'1 条 YouTube 视频，60–90 秒':'1 条 '+c.platform+' 视频，30–60 秒')+'\n'
+    +'发布日期：'+d.terms.date+'\n\n'
+    +'请提到：\n'+pts.map(p=>'- '+ptZh(p)).join('\n')+'\n\n'
+    +'请避免：\n- “best ever”“100%”“guaranteed”这类说法，以及任何我们没法证明的说法\n- 点名其他品牌\n\n'
+    +'标注：文案开头加 #ad，并打开平台的付费合作（Paid partnership）标签。\n'
+    +'发布前请先把脚本或初剪发给我们，我们 24 小时内回复。\n\n谢谢！\n'+s.name;
+}
+
+function zhFix(x){
+  if(x.type==='没有标注广告') return '请在文案开头加上 #ad，并打开付费合作标签。';
+  if(x.type==='禁用说法') return '请删掉“'+x.quote+'”，这个说法我们没法证明。';
+  if(x.type==='点名其他品牌') return '请不要点名提到 '+x.quote+'。';
+  if(x.type==='漏了卖点') return '请提到：'+ptZh(x.quote)+'。';
+  return '请修改：“'+x.quote+'”。';
+}
+function feedbackMailZh(c, d){
+  const items = (d.review && d.review.items) || [];
+  return '嗨 '+c.first+'，\n\n谢谢交稿，整体很棒！发布前还有几处小修改：\n\n'
+    +items.map((x,i)=>(i+1)+'. '+zhFix(x)).join('\n')
+    +'\n\n改好后发给我们，我们马上通过。\n\n祝好，\n'+S.sender.name;
+}
+
+function sampleDraftZh(c, fixed){
+  const s = S.sender, pz = prodZh(), pts = S.rc.points.filter(Boolean).map(p=>PT_ZH[p]||p), comp = competitors(c)[0] || '以前那个';
+  if(fixed) return '#ad 我用 '+s.brand+' 的'+pz+'两周了，说说我的真实感受。\n\n'
+    +'我喜欢的地方：'+pts.join('、')+'。它替代了我以前用的那款，用了就回不去了。\n\n'
+    +'想试试的话，链接在下面。感谢 '+s.brand+' 赞助本期视频！';
+  return '好吧，这类产品我测过一大堆，这是有史以来最好的'+pz+'。\n\n'
+    +'我最喜欢 '+s.brand+' 这款'+pz+'的一点：'+(pts[0]||'好用')+'。说实话，它比我以前那个 '+comp+' 好 100%，而且能用一辈子。\n\n'
+    +'用我下面的链接入手吧 👇';
+}
+
+// Where each kind of English text lives, and where its translation is kept.
+const ZH = {
+  mail: id => { const m = S.emails[id]; return m && {en:m.body, zh:m.zh, set:z=>{ m.zh = z; }}; },
+  reply: id => { const d = S.deals[id]; return d && {en:d.reply, zh:d.replyZh, set:z=>{ d.replyZh = z; }}; },
+  counter: id => { const d = S.deals[id]; return d && d.counter && {en:d.counter.body, zh:d.counter.zh, set:z=>{ d.counter.zh = z; }}; },
+  brief: id => { const d = S.deals[id]; return d && {en:d.brief, zh:d.briefZh, set:z=>{ d.briefZh = z; }}; },
+  feedback: id => { const d = S.deals[id]; return d && {en:d.feedback, zh:d.feedbackZh, set:z=>{ d.feedbackZh = z; }}; },
+  draft: id => { const d = S.deals[id]; return d && {en:d.draft, zh:d.draftZh, set:z=>{ d.draftZh = z; }}; }
+};
+const ZH_NOTE = {mail:'仅供演示，不会发给达人', counter:'仅供演示，不会发给达人', brief:'仅供演示，不会发给达人', feedback:'仅供演示，不会发给达人', reply:'达人原文的意思', draft:'稿件的意思'};
+function zhBox(kind, id){
+  const a = ZH[kind](id);
+  if(!a || !String(a.en||'').trim()) return '';
+  const busy = S.busy==='tr:'+kind+':'+id, ai = S.mode==='ai';
+  const btn = ai ? '<button type="button" class="btn sm" data-tr="'+kind+':'+id+'"'+(S.busy?' disabled':'')+'>'+(busy?'翻译中…':(a.zh?'重新翻译':'翻译成中文'))+'</button>' : '';
+  if(!a.zh) return '<div class="zh zh-none" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+(ai?'这段是手动粘贴或改写的，还没有翻译':'这段是手动粘贴的；规则模式只给示例文本配翻译，打开 AI 模式可以一键翻译')+'</span><span class="spacer"></span>'+btn+'</div></div>';
+  const stale = a.zh.for !== a.en;
+  return '<div class="zh" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+ZH_NOTE[kind]+'</span>'
+    +'<span class="tag warn zh-stale"'+(stale?'':' hidden')+'>英文改过了，下面还是改之前的翻译'+(ai?'':'，开 AI 模式可以重新翻译')+'</span><span class="spacer"></span>'+btn+'</div>'
+    +'<div class="zh-b">'+esc(a.zh.text)+'</div></div>';
+}
+function markZhStale(kind, id){
+  const box = document.getElementById('zh-'+kind+'-'+id), a = ZH[kind](id);
+  if(!box || !a || !a.zh) return;
+  const t = box.querySelector('.zh-stale'); if(t) t.hidden = a.zh.for === a.en;
+}
+async function doTranslate(kind, id){
+  const a = ZH[kind](id); if(!a || !a.en) return;
+  if(S.mode!=='ai'){ toast('打开 AI 模式才能翻译手动输入的文字'); return; }
+  const en = a.en;
+  S.busy = 'tr:'+kind+':'+id; render();
+  const j = await aiJson('把下面的英文翻译成自然的中文。保留换行、金额和 #ad 之类的标签，人名、品牌名和频道名不翻译。只返回 JSON：{"zh":"译文"}\n\n'+en);
+  S.busy = '';
+  const t = typeof j==='string' ? j : (j && (j.zh || j.text));
+  if(t) a.set(zhPack(String(t).slice(0,4000), en)); else toast('这次没拿到翻译，请再试一次');
+  render();
 }
 
 /* ---------- save / restore demo progress (per browser) ---------- */
@@ -2389,6 +2544,7 @@ document.addEventListener('click', e => {
   if(d.addsim){ const from = $('#sheet [data-similar]'); addSimilar(d.addsim); if(from) showSimilar(from.dataset.similar); return; }
   if(d.remove){ S.selected.delete(d.remove); render(); return; }
   if(d.check){ if(t.checked) S.checked.add(d.check); else S.checked.delete(d.check); render(); return; }
+  if(d.tr){ const i = d.tr.indexOf(':'); doTranslate(d.tr.slice(0,i), d.tr.slice(i+1)); return; }
   if(d.da){ const i = d.da.indexOf(':'); dealAction(d.da.slice(0,i), d.da.slice(i+1)); return; }
   if(d.dcheck){ const x = S.deals[d.dcheck]; if(x){ x.counterOk = t.checked; render(); } return; }
   if(d.dterms){ const x = S.deals[d.dterms]; if(x){ x.termsOk = t.checked; render(); } return; }
@@ -2434,6 +2590,7 @@ document.addEventListener('input', e => {
   if(d.subj && S.emails[d.subj]) S.emails[d.subj].subject = e.target.value;
   if(d.body && S.emails[d.body]){
     S.emails[d.body].body = e.target.value;
+    markZhStale('mail', d.body);
     const box = document.getElementById('chk-'+d.body);
     if(box) box.innerHTML = checkTags(numberCheck(BY_ID[d.body], e.target.value));
     if(S.checked.has(d.body)){ S.checked.delete(d.body); const cb=document.querySelector('[data-check="'+d.body+'"]'); if(cb) cb.checked=false; const sb=$('#send-btn'); if(sb) sb.disabled=true; }
@@ -2451,6 +2608,7 @@ document.addEventListener('input', e => {
       const box = document.getElementById('dchk-'+id); if(box) box.innerHTML = checkTags(dealNumberCheck(BY_ID[id], x, x.counter.body));
       if(x.counterOk && !x.counterSent){ x.counterOk = false; const cb = document.querySelector('[data-dcheck="'+id+'"]'); if(cb) cb.checked = false; const sb = document.querySelector('[data-da="'+id+':sendCounter"]'); if(sb) sb.disabled = true; }
     }
+    const ZK = {reply:'reply', 'counter.body':'counter', brief:'brief', feedback:'feedback', draft:'draft'}[path]; if(ZK) markZhStale(ZK, id);
     if(path==='ship.no'){ const sb = document.querySelector('[data-da="'+id+':ship"]'); if(sb) sb.disabled = !(x.brief && x.ship.no.trim()); }
     if(path==='draft' && x.review){ const st = document.querySelector('#deal-'+id+' [data-da="'+id+':approve"]'); if(st) st.disabled = x.review.text!==x.draft; }
     persistSoon();
