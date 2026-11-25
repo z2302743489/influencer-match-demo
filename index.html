@@ -352,6 +352,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
 .zh-none{border-left-color:var(--line);background:var(--field);border-color:var(--line)}
 
 /* hover notes */
+.rail-restart{margin-top:14px}
 .guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:999px;padding:3px 10px;cursor:help;white-space:nowrap;vertical-align:middle;transition:background .15s}
 .guard:hover{background:color-mix(in srgb,var(--accent-soft) 70%,var(--accent) 12%)}
 .guard:focus{outline:none}
@@ -377,7 +378,6 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
       </div>
       <div>
         <h1>出海达人匹配助手</h1>
-        <div class="sub">从一句话需求到效果复盘：需求 → 匹配 → 邀约 → 谈价签约 → 内容审核 → 效果复盘 · <span class="num">版本 11-24 · DeepSeek</span></div>
       </div>
     </div>
     <div class="top-right">
@@ -396,8 +396,7 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
   <div class="layout">
     <nav class="steps" aria-label="流程">
       <ol id="steps"></ol>
-      <div class="rail-note"><b>人工接管点</b><br>需求确认、达人选择、邀约发送、报价签约、内容放行五处必须由人点头。AI 只做理解、排序、起草和检查。</div>
-      <div class="rail-note">进度会自动保存，刷新或重新打开页面会回到原来那一步。<br><button type="button" class="btn sm" data-act="restart" style="margin-top:8px">重新开始</button></div>
+            <button type="button" class="btn sm rail-restart" data-act="restart">重新开始</button>
     </nav>
     <section id="view" aria-live="polite"></section>
   </div>
@@ -1163,23 +1162,21 @@ function budgetBar(){
 /* ---------- step 1 ---------- */
 function v1(){
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>说一句需求就行</h2>'+stepGuide(1)+'</div><p class="lead">像跟同事说话一样描述商品、市场、平台和预算。也可以贴商品链接，Demo 只读链接里的文字，不会抓取网页。</p></div></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>说一句需求就行</h2>'+stepGuide(1)+'</div></div></div>'
   +'<div class="panel stack">'
     +'<div class="chips">'+PRESETS.map((p,i)=>'<button type="button" class="chip" data-preset="'+i+'">'+esc(p.label)+'</button>').join('')+'</div>'
     +'<label class="f" for="need">品牌需求<textarea id="need" rows="4">'+esc(S.input)+'</textarea></label>'
     +'<div class="row"><button type="button" class="btn primary" data-act="parse"'+(S.busy?' disabled':'')+'>解析需求</button>'
-    +(S.busy==='parse'?thinking(aiName()+' 正在理解需求…'):'<span class="meta">'+(S.mode==='ai'?'由 '+aiName()+' 解析，失败时自动用规则兜底':'规则模式：关键词 + 正则解析，离线可用')+'</span>')+'</div>'
+    +(S.busy==='parse'?thinking(aiName()+' 正在理解需求…'):'')+'</div>'
   +'</div>'
   +(S.source==='youtube'?'<div class="panel stack"><div class="row"><h3>YouTube API Key</h3><span class="spacer"></span>'+(S.ytKey?'<span class="tag good">已保存</span>':'<span class="tag warn">未填写</span>')+'</div>'
-    +'<label class="f" for="yt-key">粘贴你自己的 Key，只保存在这台电脑的浏览器里，不会写进文件<input id="yt-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.ytKey)+'" placeholder="AIza…"></label>'
-    +'<div class="row"><button type="button" class="btn dark" data-act="saveKey">保存 Key</button><button type="button" class="btn" data-act="clearKey">清除</button></div>'
-    +'<div class="meta">实时模式只搜 YouTube：按搜索词找近一年的相关视频，再读频道简介和主题、最近 10 条视频的播放和描述、热门评论和目标市场热门榜。免费额度每天 10,000 单位，一次匹配约 150 单位。受众画像属于频道私有数据，公开接口拿不到。</div></div>':'')
+    +'<label class="f" for="yt-key">API Key（只存在本机浏览器）<input id="yt-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.ytKey)+'" placeholder="AIza…"></label>'
+    +'<div class="row"><button type="button" class="btn dark" data-act="saveKey">保存 Key</button><button type="button" class="btn" data-act="clearKey">清除</button></div>':'')
   +(!IN_ARTIFACT?'<div class="panel stack"><div class="row"><h3>AI 模式 · DeepSeek API Key</h3><span class="spacer"></span>'+(!S.dsKey?'<span class="tag neutral">未填写，当前用规则模式</span>':S.dsStatus&&S.dsStatus.lv==='good'?'<span class="tag good">连接正常</span>':S.dsStatus&&S.dsStatus.lv==='bad'?'<span class="tag bad">不可用</span>':'<span class="tag warn">已保存，未测试</span>')+'</div>'
     +(S.dsStatus?'<div class="callout'+(S.dsStatus.lv==='bad'?' ask':'')+'"><b>连接状态：</b>'+esc(S.dsStatus.t)+'</div>':'')
-    +'<label class="f" for="ds-key">粘贴你自己的 Key，只保存在这台电脑的浏览器里，不会写进文件<input id="ds-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.dsKey)+'" placeholder="sk-…"></label>'
+    +'<label class="f" for="ds-key">API Key（只存在本机浏览器）<input id="ds-key" type="password" autocomplete="off" spellcheck="false" value="'+esc(S.dsKey)+'" placeholder="sk-…"></label>'
     +'<div class="row"><button type="button" class="btn dark" data-act="saveDs">保存 Key</button><button type="button" class="btn primary" data-act="testDs">测试连接</button><button type="button" class="btn" data-act="clearDs">清除</button></div>'
-    +'<div class="meta">填了以后右上角“AI 模式”可用：需求解析、推荐理由和邀约邮件交给 DeepSeek（deepseek-chat）生成，失败时自动用规则结果兜底。品牌需求、达人公开数据和邮件草稿会发送到 DeepSeek。按量计费，一次完整演示约几分钱。</div></div>':'')
-  +'<p class="why"><b>设计取舍：</b>品牌方不会填 20 个筛选项，所以入口只有一个输入框。AI 负责把自然语言变成结构化条件，下一步由人确认，理解错了当场改。</p>'
+    +'</div>':'')
   +'</div>';
 }
 async function doParse(){
@@ -1235,7 +1232,7 @@ function v2(){
   const b = S.brief;
   const chipSet = (name, items, active) => '<div class="chips" data-group="'+name+'">'+items.map(([k,l])=>'<button type="button" class="chip" data-k="'+k+'" aria-pressed="'+(active.indexOf(k)>=0)+'">'+esc(l)+'</button>').join('')+'</div>';
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>确认 AI 理解的需求</h2>'+stepGuide(2)+'</div><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>确认 AI 理解的需求</h2>'+stepGuide(2)+'</div></div><span class="takeover">人工接管点 1/5</span></div>'
   +(S.questions.length?'<div class="callout ask"><b>需要向品牌追问</b><ul>'+S.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')
   +'<div class="panel stack">'
     +'<div class="row"><h3>需求卡</h3><span class="spacer"></span>'+srcTag(S.briefSrc)+'</div>'
@@ -1257,9 +1254,7 @@ function v2(){
     +'<div class="row"><button type="button" class="btn primary" data-act="match"'+(S.busy?' disabled':'')+'>确认需求，开始匹配</button>'
     +(S.busy==='rank'?thinking(aiName()+' 正在给候选达人排序并写推荐理由…'):S.busy==='yt'?thinking(S.busyMsg||'正在请求 YouTube…'):'')+'</div>'
     +(S.ytError?'<div class="callout ask"><b>YouTube 数据没拿到</b><ul><li>'+esc(S.ytError)+'</li></ul></div>':'')
-    +(S.source==='youtube'?'<div class="meta">实时模式只搜 YouTube，目标国家取第一个（'+esc(ctry({country:b.countries[0]}))+'）作为搜索地区。</div>':'')
   +'</div>'
-  +'<p class="why"><b>为什么要这一步：</b>国家、平台、粉丝量这类硬条件一旦理解错，后面全错。所以让人在花钱的环节之前确认一次，成本最低。</p>'
   +'</div>';
 }
 function readBrief(){
@@ -1346,7 +1341,7 @@ function itemRow(x){
 function v3(){
   const b = S.brief;
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>推荐达人</h2>'+stepGuide(3)+'</div><p class="lead">硬条件用规则筛，相关度用'+(S.rankSrc==='ai'?' '+aiName()+' ':'规则打分')+'排序。每个推荐都写明理由，风险标签由规则判定。</p></div>'+srcTag(S.rankSrc)+'</div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>推荐达人</h2>'+stepGuide(3)+'</div></div>'+srcTag(S.rankSrc)+'</div>'
   +(S.realStats
     ? '<div class="funnel"><span class="stage">YouTube 近一年相关视频 <b>'+S.realStats.searched+'</b></span><span class="arr">→</span>'
       +'<span class="stage">涉及频道 <b>'+S.realStats.channels+'</b></span><span class="arr">→</span>'
@@ -1358,15 +1353,14 @@ function v3(){
       +'<span class="stage">硬条件筛选后 <b>'+S.pool.length+'</b></span><span class="arr">→</span>'
       +'<span class="stage">排序展示 <b>'+S.results.length+'</b></span>'
       +'<span class="meta">条件：'+esc(b.countries.map(c=>COUNTRIES[c]).join('/'))+' · '+esc(b.platforms.join('/'))+' · '+fmtK(b.followersMin)+'–'+fmtK(b.followersMax)+' 粉 · 目标国家受众 ≥ 15%</span></div>')
-  +(S.realStats && S.trending && S.trending.items.length ? '<div class="panel stack" style="gap:8px;padding:14px 16px"><div class="row"><h3>'+esc(ctry({country:S.realStats.region}))+' YouTube 热门榜 · '+esc(S.trending.cat)+'</h3><span class="spacer"></span><span class="meta">可用来判断当下流行的内容方向</span></div>'
+  +(S.realStats && S.trending && S.trending.items.length ? '<div class="panel stack" style="gap:8px;padding:14px 16px"><div class="row"><h3>'+esc(ctry({country:S.realStats.region}))+' YouTube 热门榜 · '+esc(S.trending.cat)+'</h3></div>'
     +'<ul class="posts" style="color:var(--ink)">'+S.trending.items.slice(0,5).map(v=>'<li><a class="ext" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">'+esc(v.title)+'</a> <span class="meta">· '+esc(v.channel)+' · 播放 '+fmtK(v.views)+'</span></li>').join('')+'</ul></div>' : '')
   +(S.relax.length?'<div class="callout ask"><b>结果太少，已自动放宽条件</b><ul>'+S.relax.map(n=>'<li>'+esc(n)+'</li>').join('')+'</ul></div>':'')
   +(S.results.length?'<div class="list">'+S.results.map(itemRow).join('')+'</div>':'<div class="empty">没有符合条件的达人。回到上一步换个搜索词，或放宽国家和粉丝量。</div>')
-  +(S.realStats?'<p class="why"><b>实时数据说明：</b>订阅、播放、点赞、评论、频道简介、视频描述、时长和热门评论都来自 YouTube 公开接口。受众国家、年龄、性别属于频道私有数据，要达人授权（YouTube Analytics）才能看，所以这里用“频道国家 + 评论语言”推测受众，用“粉丝水分评估”（播放 / 订阅、互动率、评论质量、评论 / 点赞、播放稳定性、频道年龄）代替假粉判断；商单和品牌从视频描述里识别，可能有遗漏。</p>':'')
+  
   +'<div class="sticky-bar">'+budgetBar()+'<span class="spacer"></span>'
     +(S.aiAvailable&&S.mode==='ai'&&S.rankSrc!=='ai'?'<button type="button" class="btn" data-act="rerank">用 '+aiName()+' 重新排序</button>':'')
     +'<button type="button" class="btn primary" data-act="toReview"'+(S.selected.size?'':' disabled')+'>下一步：审核已选达人</button></div>'
-  +'<p class="why"><b>设计取舍：</b>国家、平台、粉丝量这类条件交给规则，不让大模型猜，结果可控、成本低；“内容合不合适”这种软判断才交给 AI。假粉和刷量是确定性的数据校验，也由规则判定，不交给 AI。</p>'
   +'</div>';
 }
 
@@ -1441,7 +1435,6 @@ function detailReal(c, compact){
       +(c.desc?'<div class="meta">'+esc(c.desc.slice(0,220))+(c.desc.length>220?'…':'')+'</div>':'')+'</div>')
     +'<div class="stack" style="gap:6px"><span class="lbl-s">最近视频</span><ul class="posts">'+vids.map(v=>'<li><a class="ext" href="https://www.youtube.com/watch?v='+encodeURIComponent(v.id)+'" target="_blank" rel="noopener">'+esc(v.title)+'</a> · '+(v.dur?(v.dur<=180?'Shorts ':'')+fmtDur(v.dur)+' · ':'')+'播放 '+fmtK(+(v.s&&v.s.viewCount)||0)+' · '+daysAgo(v.at)+' 天前'+(v.spon?' <span class="tag warn">商单</span>':v.aff?' <span class="tag neutral">带货链接</span>':'')+'</li>').join('')+'</ul></div>'
     +'<div class="row"><a class="ext" href="https://www.youtube.com/channel/'+encodeURIComponent(c.id)+'" target="_blank" rel="noopener">在 YouTube 打开频道 ↗</a></div>'
-    +'<div class="meta">匹配分 = 内容相关度 30 + 受众匹配（频道国家 + 评论语言）20 + 互动率 15 + 触达（播放 / 订阅）15 + 内容风格 10 + 活跃度 10</div>'
     +'<div class="meta">建议报价 <b class="num">'+money(c.price.lo)+'–'+money(c.price.hi)+'</b>（按近 10 条均播 × YouTube 参考 CPM $'+CPM.YouTube+' 估算，仅供参考）</div>';
 }
 /* ---------- creator authorisation (simulated) ---------- */
@@ -1504,7 +1497,6 @@ function authFlow(id, step, plat, note){
   let body = '';
   if(step==='invite'){
     body = '<div class="mock">演示流程：不会联系达人，也不会调用任何平台的授权接口。</div>'
-      +'<p class="lead" style="margin:0">商务或达人运营把专属邀请链接发给达人，达人用手机打开。</p>'
       +(IN_ARTIFACT
         ? '<div class="row"><button type="button" class="btn primary" data-authgo="'+id+':landing">以达人身份打开（模拟）</button><button type="button" class="btn" data-detail="'+id+'">返回详情</button></div>'
         : '<div class="row" style="gap:8px"><code class="num" style="user-select:all;word-break:break-all">'+esc(link)+'</code></div>'
@@ -1555,7 +1547,7 @@ function showSimilar(id){
       +'<div class="who">'+avatar(d)+'<div class="who-main"><div class="who-name">'+esc(d.name)+' <span class="handle">'+esc(d.handle)+'</span></div>'
       +'<div class="meta">'+d.platform+' · '+ctry(d)+' · '+fmtK(d.followers)+' 粉 · 相似度 '+Math.round(s*100)+'%</div></div></div>'
       +'<button type="button" class="btn sm" data-addsim="'+d.id+'">加入候选</button></div>').join('') : '<div class="empty">没有更多相似达人了。</div>')
-    + '<p class="why" style="margin:0">相似度 = 品类 40% + 内容风格 20% + 地区 20% + 粉丝量级 20%。已排除假粉和长期不更新的账号。</p></div>';
+    + '</div>';
 }
 function addSimilar(id){
   if(S.results.some(x=>x.id===id)) return;
@@ -1572,7 +1564,7 @@ function v4(){
   const sel = selectedList();
   const bad = sel.filter(c=>riskOf(c,S.brief).some(r=>r.lv==='bad'));
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>审核已选达人</h2>'+stepGuide(4)+'</div><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>审核已选达人</h2>'+stepGuide(4)+'</div></div><span class="takeover">人工接管点 2/5</span></div>'
   +(bad.length?'<div class="callout ask"><b>'+bad.length+' 位达人有高风险标签</b>：'+bad.map(c=>esc(c.name)).join('、')+'。建议移除或人工复核后再邀约。</div>':'')
   +(sel.length?'<div class="cards">'+sel.map(c=>'<div class="card"><div class="row">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · '+c.platform+' · '+ctry(c)+'</div></div><span class="spacer"></span>'
       +'<button type="button" class="btn sm" data-remove="'+c.id+'">移除</button></div>'+detailHTML(c, true)+'<div class="row"><button type="button" class="btn sm" data-detail="'+c.id+'">找相似 / 更多</button></div></div>').join('')+'</div>'
@@ -1611,7 +1603,7 @@ function v5(){
   const has = sel.length && sel.every(c=>S.emails[c.id]);
   const allChecked = has && sel.every(c=>S.checked.has(c.id));
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>个性化邀约</h2>'+stepGuide(5)+'</div><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>个性化邀约</h2>'+stepGuide(5)+'</div></div><span class="takeover">人工接管点 3/5</span></div>'
   +'<div class="panel"><div class="grid2">'
     +'<label class="f" for="s-brand">品牌名（英文）<input id="s-brand" type="text" value="'+esc(S.sender.brand)+'"></label>'
     +'<label class="f" for="s-name">署名<input id="s-name" type="text" value="'+esc(S.sender.name)+'"></label>'
@@ -1626,9 +1618,8 @@ function v5(){
         +'<div class="risks" id="chk-'+c.id+'">'+checkTags(bad)+'</div></div>'
         +'<div class="mail-foot"><label><input type="checkbox" data-check="'+c.id+'"'+(S.checked.has(c.id)?' checked':'')+'> 已核对内容</label></div></div>';
     }).join('')+'</div>':'')
-  +(has?'<div class="sticky-bar"><span class="meta">'+(allChecked?'全部核对完成':'还有 '+sel.filter(c=>!S.checked.has(c.id)).length+' 封未核对')+'。Demo 不会真的发出邮件。</span><span class="spacer"></span>'
+  +(has?'<div class="sticky-bar"><span class="meta">'+(allChecked?'全部核对完成':'还有 '+sel.filter(c=>!S.checked.has(c.id)).length+' 封未核对')+'</span><span class="spacer"></span>'
     +'<button type="button" class="btn primary" id="send-btn" data-act="send"'+(allChecked?'':' disabled')+'>确认发送 '+sel.length+' 封（模拟）</button></div>':'')
-  +'<p class="why"><b>兜底规则：</b>邮件只能引用库里已有的作品和报价；正文里出现数据中没有的数字会被标出来让人核对，防止 AI 编造达人数据或乱许诺价格。</p>'
   +'</div>';
 }
 function checkTags(bad){ return bad.length ? '<span class="tag warn">出现数据里没有的数字：'+esc(bad.join(', '))+'，请核对</span>' : '<span class="tag good">数字校验通过</span>'; }
@@ -2238,12 +2229,12 @@ function dealPanel(c, d){
     +'<button type="button" class="btn sm" data-detail="'+c.id+'">详情</button></div>';
   let body = '';
   if(d.stage==='invited'){
-    body = '<label class="f">达人的回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, thanks for reaching out…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
+    body = '<label class="f">达人的回复<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, thanks for reaching out…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
-      +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'<span class="meta">'+(S.mode==='ai'?aiName()+' 提取报价和问题，金额必须在原文里出现':'规则提取：金额、意向、问题')+'</span>')+'</div>';
+      +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'')+'</div>';
   } else if(d.stage==='talk' && d.awaitReply){
-    body = negLog(d)+'<label class="f">达人第 '+d.round+' 轮回复（从邮箱粘贴过来）<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, could we meet in the middle…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
+    body = negLog(d)+'<label class="f">达人第 '+d.round+' 轮回复<textarea data-df="'+c.id+':reply" placeholder="Hi Alex, could we meet in the middle…">'+esc(d.reply)+'</textarea></label>'+zhBox('reply', c.id)
       +'<div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sample">载入示例回复</button>'
       +'<button type="button" class="btn primary sm" data-da="'+c.id+':parse"'+(S.busy?' disabled':'')+'>解析回复</button>'
       +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'')+'</div>';
@@ -2291,13 +2282,13 @@ function dealPanel(c, d){
   } else if(d.stage==='signed'){
     body = ((d.log||[]).length?'<details class="basis"><summary>谈判记录：'+(d.firstAsk?money(d.firstAsk)+' → ':'')+money(d.final)+'，谈了 '+(d.round||1)+' 轮</summary><div style="padding:8px 12px">'+negLog(d)+'</div></details>':'')
       +'<div class="row"><b>拍摄要点</b>'+(d.brief?srcTag(d.briefSrc):'')+'<span class="spacer"></span><button type="button" class="btn sm'+(d.brief?'':' primary')+'" data-da="'+c.id+':brief"'+(S.busy?' disabled':'')+'>'+(d.brief?'重新生成':'生成拍摄要点')+'</button>'+(busyOn(c.id,'brief')?thinking(aiName()+' 正在写要点…'):'')+'</div>'
-      +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>'+zhBox('brief', c.id):'<p class="meta">要点里的卖点和禁用说法来自第 7 步的审核标准，审核时会按同一套标准检查。</p>')
+      +(d.brief?'<textarea data-df="'+c.id+':brief" style="min-height:200px">'+esc(d.brief)+'</textarea>'+zhBox('brief', c.id):'')
       +'<div class="grid3"><label class="f">物流<select data-df="'+c.id+':ship.carrier">'+['DHL','FedEx','UPS','USPS','Royal Mail','J&T'].map(x=>'<option'+(d.ship.carrier===x?' selected':'')+'>'+x+'</option>').join('')+'</select></label>'
       +'<label class="f">运单号<input type="text" data-df="'+c.id+':ship.no" value="'+esc(d.ship.no)+'" placeholder="寄出后填写"></label>'
       +'<label class="f">&nbsp;<button type="button" class="btn sm" data-da="'+c.id+':track">填演示单号</button></label></div>'
       +'<div class="row"><span class="spacer"></span><button type="button" class="btn primary sm" data-da="'+c.id+':ship"'+(d.brief&&d.ship.no.trim()?'':' disabled')+'>寄出样品并发送要点（模拟）</button></div>';
   } else if(d.stage==='shipped'){
-    body = '<p class="meta">'+esc(d.ship.carrier)+' '+esc(d.ship.no)+' 已寄出。达人收货后按要点拍摄，发布前先交稿审核（约定发布日 '+esc(d.terms.date)+'）。</p>'
+    body = '<p class="meta">'+esc(d.ship.carrier)+' '+esc(d.ship.no)+' 已寄出 · 约定发布 '+esc(d.terms.date)+'</p>'
       +'<div class="row"><span class="spacer"></span><button type="button" class="btn primary sm" data-da="'+c.id+':submitted">达人已交稿，去审核</button></div>';
   }
   return '<div class="deal" id="deal-'+c.id+'">'+head+(body?'<div class="deal-body">'+body+'</div>':'')+'</div>';
@@ -2312,7 +2303,7 @@ function v6(){
   const toReview = all.filter(x=>x.d.stage==='review').length;
   const bcard = x => '<button type="button" class="bmini" data-jump="'+x.c.id+'">'+avatar(x.c)+'<span><b>'+esc(x.c.name)+'</b><small>'+STAGE[x.d.stage]+(x.d.final?' · '+money(x.d.final):'')+'</small></span></button>';
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>合作跟进</h2><p class="lead">读达人回复、谈价、签约、寄样。AI 负责读回复、给谈价建议和起草邮件；报价和签约由人拍板。</p></div><div class="row" style="gap:8px">'+G.all()+'<span class="takeover">人工接管点 4/5</span></div></div>'
+  +'<div class="step-head"><div><h2>合作跟进</h2></div><div class="row" style="gap:8px">'+G.all()+'<span class="takeover">人工接管点 4/5</span></div></div>'
   +'<div class="stats">'
     +'<div class="stat"><span>发出邀约</span><b>'+n+' 封</b><small>需求到发出用时 '+Math.floor(secs/60)+' 分 '+(secs%60)+' 秒</small></div>'
     +'<div class="stat"><span>已回复</span><b>'+replied+' / '+n+'</b><small>回复率 '+(n?Math.round(replied/n*100):0)+'%</small></div>'
@@ -2327,7 +2318,6 @@ function v6(){
   +'<div class="board">'+BOARD_COLS.map(([l,st])=>{ const cs = all.filter(x=>st.indexOf(x.d.stage)>=0); return '<div class="col"><h3>'+l+' <span>'+cs.length+'</span></h3>'+(cs.length?cs.map(bcard).join(''):'<div class="empty">暂无</div>')+'</div>'; }).join('')+'</div>'
   +(active.length?'<h3>待处理 '+active.length+'</h3><div class="deals">'+active.map(x=>dealPanel(x.c, x.d)).join('')+'</div>':'<div class="callout">没有需要跟进的达人了。</div>')
   +(toReview?'<div class="row"><button type="button" class="btn dark" data-go="7">去审核 '+toReview+' 份稿件 →</button></div>':'')
-  +'<p class="why"><b>兜底规则：</b>AI 提取的报价必须在达人原文里出现；回复邮件里出现估算和报价以外的数字会被标出来；签约前显示预算占用，超预算会提醒。</p>'
   +'</div>';
 }
 
@@ -2355,14 +2345,13 @@ function v7(){
       +'</div></div>';
   };
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>内容审核</h2><p class="lead">达人发布前先交稿。规则查广告标注、禁用说法、点名竞品和漏掉的卖点，AI 再找夸大和不合适的表达。通过还是退回，由人决定。</p></div><div class="row" style="gap:8px">'+G.review()+'<span class="takeover">人工接管点 5/5</span></div></div>'
-  +'<div class="panel"><div class="row" style="margin-bottom:10px"><b>审核标准</b><span class="meta">对所有达人生效，第 6 步的拍摄要点也用这一套。卖点是示例，按真实商品修改。</span></div><div class="grid2">'
+  +'<div class="step-head"><div><h2>内容审核</h2></div><div class="row" style="gap:8px">'+G.review()+'<span class="takeover">人工接管点 5/5</span></div></div>'
+  +'<div class="panel"><div class="row" style="margin-bottom:10px"><b>审核标准</b></div><div class="grid2">'
     +'<label class="f">必须提到的卖点（每行一条）<textarea data-rc="points" style="min-height:96px">'+esc(S.rc.points.join('\n'))+'</textarea></label>'
     +'<label class="f">禁用说法（每行一条）<textarea data-rc="banned" style="min-height:96px">'+esc(S.rc.banned.join('\n'))+'</textarea></label>'
-  +'</div><p class="meta" style="margin:8px 0 0">固定检查：必须带 #ad 或 Paid partnership 标签（美国 FTC 要求）；不能点名其他品牌。</p></div>'
+  +'</div></div>'
   +(list.length?'<div class="deals">'+list.map(card).join('')+'</div>':'<div class="callout">'+(passed?'稿件都审完了。':'还没有达人交稿。在第 6 步签约、寄样后，点“达人已交稿”就会到这里。')+'</div>')
   +(passed?'<div class="row"><button type="button" class="btn dark" data-go="8">去看效果复盘 →</button></div>':'')
-  +'<p class="why"><b>为什么不让 AI 直接放行：</b>是否合规、语气是否符合品牌，最终要由品牌方负责。AI 找出的问题都标了原文位置，人能马上判断是不是误报。</p>'
   +'</div>';
 }
 
@@ -2388,7 +2377,7 @@ function v8(){
         +'<label class="f">链接点击<input type="number" min="0" data-df="'+c.id+':sales.clicks" value="'+esc(d.sales.clicks)+'"></label>'
         +'<label class="f">订单数<input type="number" min="0" data-df="'+c.id+':sales.orders" value="'+esc(d.sales.orders)+'"></label>'
         +'<label class="f">销售额（美元）<input type="number" min="0" data-df="'+c.id+':sales.revenue" value="'+esc(d.sales.revenue)+'"></label>'
-      +'</div><div class="row"><span class="meta">点击和销售来自联盟链接或专属折扣码的后台，这里手动填。</span><button type="button" class="btn sm" data-da="'+c.id+':sampleSales">填示例销售（客单价按 $'+AOV+'）</button></div>':'')
+      +'</div><div class="row"><button type="button" class="btn sm" data-da="'+c.id+':sampleSales">填示例销售（客单价按 $'+AOV+'）</button></div>':'')
       +(m?'<div class="kv kv6">'
         +'<div><span>播放</span><b>'+fmtK(m.views)+'</b></div>'
         +'<div><span>达预期</span><b>'+Math.round(m.idx*100)+'%</b></div>'
@@ -2401,7 +2390,7 @@ function v8(){
   };
   const perf = loadPerf(), pk = Object.keys(perf);
   return '<div class="stack">'
-  +'<div class="step-head"><div><div class="title-row"><h2>效果复盘</h2>'+stepGuide(8)+'</div><p class="lead">填上发布链接，用 YouTube 接口读真实的播放、点赞和评论，算出 CPM、CPE 和 ROI。结果写回达人档案，下次匹配时排序会参考。</p></div></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>效果复盘</h2>'+stepGuide(8)+'</div></div></div>'
   +'<div class="stats">'
     +'<div class="stat"><span>总花费</span><b>'+money(tc)+'</b><small>固定费 + 佣金</small></div>'
     +'<div class="stat"><span>总播放</span><b>'+fmtK(tv)+'</b><small>'+done.length+' 条视频</small></div>'
@@ -2416,11 +2405,10 @@ function v8(){
     +(S.busy==='report'?'<div style="margin-top:10px">'+thinking(aiName()+' 正在写结论…')+'</div>':'')
     +(S.report?'<textarea data-report="1" style="min-height:240px;margin-top:12px;font-family:var(--mono);font-size:12.5px">'+esc(S.report.text)+'</textarea>':'')
   +'</div>':'')
-  +'<div class="panel"><div class="row"><b>私有达人库</b><span class="meta">写回过的合作结果，保存在这台电脑的浏览器里。</span><span class="spacer"></span>'+(pk.length?'<button type="button" class="btn sm" data-act="clearPerf">清空</button>':'')+'</div>'
+  +'<div class="panel"><div class="row"><b>私有达人库</b><span class="spacer"></span>'+(pk.length?'<button type="button" class="btn sm" data-act="clearPerf">清空</button>':'')+'</div>'
     +(pk.length?'<div class="lib">'+pk.map(id=>{ const h = perf[id], l = h.runs[h.runs.length-1]; return '<div class="lib-row"><b>'+esc(h.name)+'</b><span class="meta">'+esc(h.platform)+' · 合作 '+h.runs.length+' 次</span><span class="num">CPM '+usd2(l.cpm)+'</span><span class="num">达预期 '+Math.round(l.idx*100)+'%</span><span class="tag '+(l.rating==='不建议复投'?'warn':'good')+'">'+l.rating+'</span>'+(l.sample?'<span class="tag neutral">示例</span>':'')+'</div>'; }).join('')+'</div>'
-      :'<p class="meta" style="margin:8px 0 0">还没有记录。写回后，回到第 1 步换个需求重新匹配，这些达人的排序和推荐理由会带上历史表现。</p>')
+      :'<p class="meta" style="margin:8px 0 0">还没有记录</p>')
   +'</div>'
-  +'<p class="why"><b>闭环：</b>多数工具停在“找到达人”。把真实投放效果写回档案，下一次匹配就能优先推荐性价比高的达人、避开表现差的，推荐会越用越准。</p>'
   +'</div>';
 }
 
@@ -2623,9 +2611,9 @@ function zhBox(kind, id){
   if(!a || !String(a.en||'').trim()) return '';
   const busy = S.busy==='tr:'+kind+':'+id, ai = S.mode==='ai';
   const btn = ai ? '<button type="button" class="btn sm" data-tr="'+kind+':'+id+'"'+(S.busy?' disabled':'')+'>'+(busy?'翻译中…':(a.zh?'重新翻译':'翻译成中文'))+'</button>' : '';
-  if(!a.zh) return '<div class="zh zh-none" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+(ai?'这段是手动粘贴或改写的，还没有翻译':'这段是手动粘贴的；规则模式只给示例文本配翻译，打开 AI 模式可以一键翻译')+'</span><span class="spacer"></span>'+btn+'</div></div>';
+  if(!a.zh) return '<div class="zh zh-none" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+(ai?'还没有翻译':'打开 AI 模式可翻译')+'</span><span class="spacer"></span>'+btn+'</div></div>';
   const stale = a.zh.for !== a.en;
-  return '<div class="zh" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+ZH_NOTE[kind]+'</span>'
+  return '<div class="zh" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b>'
     +'<span class="tag warn zh-stale"'+(stale?'':' hidden')+'>英文改过了，下面还是改之前的翻译'+(ai?'':'，开 AI 模式可以重新翻译')+'</span><span class="spacer"></span>'+btn+'</div>'
     +'<div class="zh-b">'+esc(a.zh.text)+'</div></div>';
 }
