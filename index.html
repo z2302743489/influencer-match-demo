@@ -2610,6 +2610,7 @@ function zhState(a){
   if(!a || !a.zh) return {dir:'', text:''};
   const enChanged = a.zh.for !== a.en;
   if(a.zh.last==='zh') return {dir:'toEn', text:'中文改过了，点“一键同步”把改动写进英文'};
+  if(HAN.test(a.en) || (a.subj && HAN.test(a.subj))) return {dir:'toEn', text:'英文里有中文，点“一键同步”按中文重新翻译成英文'};
   if(enChanged || a.zh.last==='en') return {dir:'toZh', text:'英文改过了，点“一键同步”更新中文'};
   return {dir:'', text:'中英文一致'};
 }
@@ -2660,24 +2661,54 @@ async function doTranslate(kind, id){
   render();
 }
 // One click: whichever side was edited last is the source, the other side is rewritten to match.
+const HAN = /[㐀-鿿豈-﫿]/;
+const hanShare = t => { const x = String(t||'').replace(/\s/g,''); return x ? (x.match(/[㐀-鿿豈-﫿]/g)||[]).length / x.length : 0; };
+// One click: whichever side was edited last is the source, the other side is rewritten to match.
+// The result must really be in the other language; otherwise it is retried once, and if it still
+// is not, nothing is overwritten.
 async function doSync(kind, id){
   const a = ZH[kind](id); if(!a || !a.zh) return;
   if(S.mode!=='ai'){ toast('一键同步需要 AI 模式：打开右上角“AI 模式”再点'); return; }
   const st = zhState(a); if(!st.dir) return;
-  if(st.dir==='toZh') return doTranslate(kind, id);
-  S.busy = 'sync:'+kind+':'+id; render();
+  if(st.dir==='toZh') return syncToZh(kind, id);
   const zh = a.zh.text, en = a.en;
-  const j = await aiJson('发件人改了这封信的中文版。请把英文版改成和中文版意思完全一致：中文改了哪里，英文就改哪里，没改的地方尽量保留原句。'
-    +'语气自然地道；人名、品牌名、金额和 #ad 之类的标签照中文版写；不要加中文版里没有的内容。'
-    +(a.subj?'中文第一行“主题：”是邮件主题，同样改到英文主题里。':'')
-    +'只返回 JSON：{'+(a.subj?'"subject":"英文主题",':'')+'"body":"英文正文"}\n\n当前英文'+(a.subj?'（主题：'+a.subj+'）':'')+'：\n'+en+'\n\n改过的中文：\n'+zh);
+  const m = /^\s*主题[:：]\s*(.+)\n+([\s\S]*)$/.exec(zh);
+  const zhSubj = a.subj ? (m ? m[1].trim() : (HAN.test(a.subj) ? a.subj : '')) : '', zhBody = m && a.subj ? m[2] : zh;
+  S.busy = 'sync:'+kind+':'+id; render();
+  const ask = strict => strict
+    ? 'Translate the Chinese text below into natural English. Output English only: no Chinese characters at all. Keep names, brand names, prices and #tags as they are. Do not add anything.\n'
+      +'Return only JSON: {'+(zhSubj?'"subject":"English subject",':'')+'"body":"English text"}\n\n'+(zhSubj?'Subject (Chinese): '+zhSubj+'\n\n':'')+'Text (Chinese):\n'+zhBody
+    : 'The sender edited the Chinese version of this email. Rewrite the English version so it says exactly what the Chinese version says now: change what the Chinese changed, keep the other sentences close to the current English.\n'
+      +'Rules: the output must be entirely in English, never Chinese. Keep names, brand names, prices and #tags. Do not add anything the Chinese does not say.\n'
+      +'Return only JSON: {'+(zhSubj?'"subject":"English subject",':'')+'"body":"English email body"}\n\n'
+      +'Current English'+(a.subj?' (subject: '+a.subj+')':'')+':\n'+en+'\n\nEdited Chinese'+(zhSubj?' (subject: '+zhSubj+')':'')+':\n'+zhBody;
+  const pick = j => {
+    const body = j && typeof j==='object' ? String(j.body || j.en || '') : (typeof j==='string' ? j : '');
+    const subj = zhSubj && j && typeof j==='object' && j.subject ? String(j.subject) : '';
+    return body.trim() && !HAN.test(body) && !HAN.test(subj) ? {body, subj} : null;
+  };
+  let got = pick(await aiJson(ask(false)));
+  if(!got) got = pick(await aiJson(ask(true)));
   S.busy = '';
-  const body = j && typeof j==='object' ? (j.body || j.en) : null;
-  if(body){
-    a.setEn(String(body).slice(0,3000), a.subj && j.subject ? String(j.subject).slice(0,140) : null);
+  if(got){
+    a.setEn(got.body.slice(0,3000), got.subj ? got.subj.slice(0,140) : null);
     a.set(zhPack(zh, ZH[kind](id).en));
     toast('已按中文更新英文。数字已重新校验，请重新核对后再发送');
-  } else toast('这次没同步成功，请再试一次');
+  } else toast('同步失败：模型返回的不是英文，英文没有改动。请再点一次');
+  render();
+}
+async function syncToZh(kind, id){
+  const a = ZH[kind](id); if(!a || !a.en) return;
+  const en = a.en, src = a.subj ? 'Subject: '+a.subj+'\n\n'+en : en;
+  S.busy = 'sync:'+kind+':'+id; render();
+  const ask = strict => (strict ? '只做翻译：把下面的英文完整翻译成中文，输出必须是中文。' : '把下面的英文翻译成自然的中文。')
+    +(a.subj?'第一行写成“主题：<主题的中文>”，空一行再写正文。':'')+'保留换行、金额和 #ad 之类的标签，人名、品牌名和频道名不翻译。只返回 JSON：{"zh":"译文"}\n\n'+src;
+  const pick = j => { const t = typeof j==='string' ? j : (j && (j.zh || j.text)); return t && hanShare(t) > .15 ? String(t) : null; };
+  let t = pick(await aiJson(ask(false)));
+  if(!t) t = pick(await aiJson(ask(true)));
+  S.busy = '';
+  if(t){ a.set(zhPack(t.slice(0,4000), en)); toast('已按英文更新中文'); }
+  else toast('同步失败：模型返回的不是中文，中文没有改动。请再点一次');
   render();
 }
 
