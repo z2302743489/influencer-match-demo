@@ -2419,13 +2419,42 @@ function sampleDraftZh(c, fixed){
 
 // Where each kind of English text lives, and where its translation is kept.
 const ZH = {
-  mail: id => { const m = S.emails[id]; return m && {en:m.body, zh:m.zh, set:z=>{ m.zh = z; }}; },
-  reply: id => { const d = S.deals[id]; return d && {en:d.reply, zh:d.replyZh, set:z=>{ d.replyZh = z; }}; },
-  counter: id => { const d = S.deals[id]; return d && d.counter && {en:d.counter.body, zh:d.counter.zh, set:z=>{ d.counter.zh = z; }}; },
-  brief: id => { const d = S.deals[id]; return d && {en:d.brief, zh:d.briefZh, set:z=>{ d.briefZh = z; }}; },
-  feedback: id => { const d = S.deals[id]; return d && {en:d.feedback, zh:d.feedbackZh, set:z=>{ d.feedbackZh = z; }}; },
-  draft: id => { const d = S.deals[id]; return d && {en:d.draft, zh:d.draftZh, set:z=>{ d.draftZh = z; }}; }
+  mail: id => { const m = S.emails[id]; return m && {en:m.body, zh:m.zh || autoZh('mail', id), set:z=>{ m.zh = z; }}; },
+  reply: id => { const d = S.deals[id]; return d && {en:d.reply, zh:d.replyZh || autoZh('reply', id), set:z=>{ d.replyZh = z; }}; },
+  counter: id => { const d = S.deals[id]; return d && d.counter && {en:d.counter.body, zh:d.counter.zh || autoZh('counter', id), set:z=>{ d.counter.zh = z; }}; },
+  brief: id => { const d = S.deals[id]; return d && {en:d.brief, zh:d.briefZh || autoZh('brief', id), set:z=>{ d.briefZh = z; }}; },
+  feedback: id => { const d = S.deals[id]; return d && {en:d.feedback, zh:d.feedbackZh || autoZh('feedback', id), set:z=>{ d.feedbackZh = z; }}; },
+  draft: id => { const d = S.deals[id]; return d && {en:d.draft, zh:d.draftZh || autoZh('draft', id), set:z=>{ d.draftZh = z; }}; }
 };
+// Text saved before translations existed (or before a template was reworded) has no Chinese
+// stored with it. When it is exactly what one of the demo's templates writes, the matching
+// Chinese is rebuilt, so old progress gets translations too. Pasted or edited text does not.
+function legacyDraft(c){
+  const s = S.sender, prod = prodEn(), pts = S.rc.points.filter(Boolean), comp = competitors(c)[0] || 'my old one';
+  return ['Okay, I\'ve tested a LOT of these and this is the best '+prod+' ever made.\n\n'
+    +'The '+s.brand+' '+prod+' is '+(pts[0]||'great')+'. Honestly it\'s 100% better than my old '+comp+' and it will last forever.\n\n'
+    +'Grab yours with my link below 👇',
+    '好吧，这类产品我测过一大堆，这是有史以来最好的'+prodZh()+'。\n\n'
+    +s.brand+' 的'+prodZh()+'：'+(pts[0]?(PT_ZH[pts[0]]||pts[0]):'很棒')+'。说实话，它比我以前那个 '+(competitors(c)[0]||'')+' 好 100%，而且能用一辈子。\n\n'
+    +'用我下面的链接入手吧 👇'];
+}
+function autoZh(kind, id){
+  const c = BY_ID[id], d = S.deals[id];
+  if(!c || !S.brief) return null;
+  try {
+    if(kind==='mail'){ const m = S.emails[id], t = templateMail(c); if(m && m.body===t.body) return zhPack(templateMailZh(c), t.body); }
+    if(!d) return null;
+    if(kind==='reply'){ const pr = sampleReplyPair(c, Object.keys(S.deals).indexOf(id)); if(d.reply===pr[0]) return zhPack(pr[1], pr[0]); }
+    if(kind==='counter' && d.counter){ const t = templateCounter(c, d); if(d.counter.body===t.body) return zhPack(templateCounterZh(c, d), t.body); }
+    if(kind==='brief' && S.rc){ const t = templateBrief(c, d); if(d.brief===t) return zhPack(templateBriefZh(c, d), t); }
+    if(kind==='feedback'){ const t = feedbackMail(c, d); if(d.feedback===t) return zhPack(feedbackMailZh(c, d), t); }
+    if(kind==='draft' && S.rc){
+      for(const f of [false, true]){ const t = sampleDraft(c, f); if(d.draft===t) return zhPack(sampleDraftZh(c, f), t); }
+      const lg = legacyDraft(c); if(d.draft===lg[0]) return zhPack(lg[1], lg[0]);
+    }
+  } catch(e){}
+  return null;
+}
 const ZH_NOTE = {mail:'仅供演示，不会发给达人', counter:'仅供演示，不会发给达人', brief:'仅供演示，不会发给达人', feedback:'仅供演示，不会发给达人', reply:'达人原文的意思', draft:'稿件的意思'};
 function zhBox(kind, id){
   const a = ZH[kind](id);
