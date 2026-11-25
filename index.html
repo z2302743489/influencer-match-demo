@@ -253,6 +253,19 @@ label.inline{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-
 .lib{display:flex;flex-direction:column;margin-top:10px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
 .lib-row{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;padding:8px 12px;border-top:1px solid var(--line);font-size:13px}
 .lib-row:first-child{border-top:0}
+.guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--focus);background:var(--panel);border:1px dashed var(--focus);border-radius:999px;padding:2px 9px;cursor:help;white-space:nowrap;vertical-align:middle}
+.guard:focus{outline:none}
+.guard:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.guard .tipbox{display:none;position:fixed;z-index:25;top:0;left:0;width:min(360px,calc(100vw - 24px));max-height:calc(100vh - 24px);overflow:auto;background:var(--ink);color:var(--bg);font-weight:400;font-size:12.5px;line-height:1.6;padding:12px 14px;border-radius:10px;box-shadow:0 8px 28px rgba(10,16,24,.28);text-align:left;white-space:normal;cursor:default}
+.guard .tipbox::before{content:'';position:absolute;top:-10px;left:0;right:0;height:10px}
+.guard .tipbox.up::before{top:auto;bottom:-10px}
+.guard:hover .tipbox,.guard:focus .tipbox,.guard:focus-within .tipbox{display:block}
+.tipbox b{display:block;font-size:13px;margin-bottom:4px}
+.tipbox ul{margin:0;padding-left:16px}
+.tipbox li{margin:3px 0}
+.tipbox .say{margin-top:8px;padding-top:8px;border-top:1px solid rgba(127,127,127,.35)}
+.tipbox .say::before{content:'演示时可以说：';display:block;font-size:11.5px;opacity:.7}
+.tipbox .todo{opacity:.72}
 .posts a{color:var(--ink)}
 </style>
 
@@ -1549,6 +1562,53 @@ function dealList(stages){
 function committed(){ return sum(dealList(SIGNED).map(x=>+x.d.final||0)); }
 function budgetLeft(){ return S.brief && S.brief.budgetUsd ? S.brief.budgetUsd - committed() : null; }
 function prodEn(){ return S.sender.productEn || CATS[S.brief.category].en; }
+// A dashed chip that explains a guardrail on hover, keyboard focus or tap. Only what the demo
+// really enforces is listed as a rule; what a real product would add is marked as such.
+function guard(label, title, items, say, right){
+  return '<span class="guard'+(right?' r':'')+'" tabindex="0" role="note" aria-label="'+esc(title)+'">🛡 '+esc(label)
+    +'<span class="tipbox"><b>'+esc(title)+'</b><ul>'+items.map(x=>'<li'+(x[0]==='~'?' class="todo"':'')+'>'+esc(x[0]==='~'?'真实产品会加：'+x.slice(1):x)+'</li>').join('')+'</ul>'
+    +(say?'<div class="say">“'+esc(say)+'”</div>':'')+'</span></span>';
+}
+const G = {
+  all: () => guard('护栏规则一览', '谈价和签约的护栏', [
+    '读回复：AI 提取的金额必须在达人原文里找得到，对不上就改用规则结果',
+    '给建议：用规则把报价和合理价区间、剩余预算比较，不让 AI 自己定价',
+    '写邮件：出现约定以外的数字会标黄；改了正文要重新勾“已核对”',
+    '签约：必须人勾选核对才能签；签约前显示预算占用，超预算会提醒',
+    'AI 不会自动答应价格，也不会自动发邮件，Demo 里的发送都是模拟',
+    '~超出合理价一定比例要主管审批；付款走财务流程'
+  ], 'AI 负责读、算、写，涉及钱的决定必须由人点头。', true),
+  parse: () => guard('金额来源校验', '回复解析的护栏', [
+    'AI 从达人邮件里提取：报价、广告授权费、发布时间、提的问题',
+    '提取出的每个金额都要在原文里对上，有一个对不上，整条改用规则提取的结果',
+    '原文没写的信息显示“未报价”，不做推测'
+  ], '大模型最容易编数字，所以跟钱有关的字段必须能回到原文。'),
+  suggest: () => guard('建议怎么算的', '谈价建议的规则', [
+    '合理价 = 近期平均播放 ÷ 1000 × 平台 CPM × 市场系数；下限按 ×0.8，上限按 ×1.25，最低 $150',
+    '平台 CPM：TikTok $25、Instagram $35、YouTube $45；市场系数：东南亚 0.4、拉美 0.5、中东 0.8、日本 0.9，其他 1。这些是 Demo 的假设值',
+    '报价在区间内 → 接受；超出上限 30% 以内 → 还价到上限；超出 30% 以上 → 改成“固定费 + 佣金”；超出剩余预算 → 先暂缓',
+    '建议由规则算出，不是 AI 拍脑袋；最终报多少由人定，可以直接改“我方报价”',
+    '~用公司自己的历史成交价校准 CPM 和市场系数'
+  ], '先有合理价才谈得上砍价。差距小就还价，差距大就换合作方式，用带货效果补差价。'),
+  mail: () => guard('邮件护栏', '回复邮件的护栏', [
+    '正文只允许出现这些数字：估算区间、达人报价、我方报价、佣金比例、约定日期',
+    '出现其他数字会标黄，提醒人核对',
+    '改了正文，“已核对”会自动取消，要重新确认',
+    '勾选“已核对”后才能发送；Demo 只是模拟发送'
+  ], '防止 AI 在邮件里乱许诺价格，人发出去的每个数字都核对过。', true),
+  sign: () => guard('签约护栏', '签约前的护栏', [
+    '必须人勾选“金额和条款已核对”，签约按钮才能点',
+    '显示签下这单后的已承诺费用，超过总预算会醒目提醒',
+    '条款里固定写入：#ad 标注、发布前先交稿审核、发布后 7 天内付款',
+    '~超出合理价一定比例需主管审批；合同走电子签；付款走财务流程'
+  ], '签约和付款是不可撤回的动作，所以必须由人拍板。'),
+  review: () => guard('审核护栏', '内容审核的护栏', [
+    '规则必查四项：#ad 标注、禁用说法、点名竞品、漏掉卖点',
+    'AI 只补充找夸大和不合适的表达；它指出的问题必须引用原文，引用对不上就丢弃',
+    'AI 提出的问题都标着“需人判断”；通过还是退回由人点',
+    '稿件改过之后必须重新审核，否则不能点通过'
+  ], '内容合规的责任在品牌方，所以放行必须是人。', true)
+};
 function stageTag(d){ return '<span class="tag '+STAGE_LV[d.stage]+'">'+STAGE[d.stage]+'</span>'; }
 function busyOn(id, what){ return S.busy==='deal:'+id+':'+what; }
 function r10(x){ return Math.round(x/10)*10; }
@@ -1927,7 +1987,7 @@ function download(name, text){
 /* --- step 6 view --- */
 function mailBox(c, d){
   const bad = dealNumberCheck(c, d, d.counter.body);
-  return '<div class="mail"><div class="mail-head"><b>回复 '+esc(c.first)+'</b>'+srcTag(d.counterSrc)+'</div>'
+  return '<div class="mail"><div class="mail-head"><b>回复 '+esc(c.first)+'</b>'+srcTag(d.counterSrc)+'<span class="spacer"></span>'+G.mail()+'</div>'
     +'<div class="mail-body"><label class="f">主题<input type="text" data-df="'+c.id+':counter.subject" value="'+esc(d.counter.subject)+'"></label>'
     +'<label class="f">正文<textarea data-df="'+c.id+':counter.body">'+esc(d.counter.body)+'</textarea></label>'
     +'<div class="risks" id="dchk-'+c.id+'">'+checkTags(bad)+'</div></div>'
@@ -1946,14 +2006,14 @@ function dealPanel(c, d){
       +(busyOn(c.id,'parse')?thinking(aiName()+' 正在读回复…'):'<span class="meta">'+(S.mode==='ai'?aiName()+' 提取报价和问题，金额必须在原文里出现':'规则提取：金额、意向、问题')+'</span>')+'</div>';
   } else if(d.stage==='talk'){
     const p = d.parsed, sg = d.sug || {};
-    body = '<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
+    body = '<div class="parsed"><div class="row" style="gap:6px"><b>回复解析</b>'+srcTag(d.parseSrc)+G.parse()+'<span class="tag '+(p.intent==='declined'?'bad':'good')+'">'+INTENT[p.intent]+'</span></div>'
       +'<div class="kv">'
         +'<div><span>达人报价</span><b>'+(p.ask?money(p.ask):'未报价')+'</b></div>'
         +'<div><span>我们的估算</span><b>'+money(c.price.lo)+'–'+money(c.price.hi)+'</b></div>'
         +'<div><span>剩余预算</span><b>'+(budgetLeft()==null?'未设':money(budgetLeft()))+'</b></div>'
       +'</div>'
       +(p.usageFee||p.days||p.exclusivity||(p.questions&&p.questions.length)?'<ul class="posts">'+(p.usageFee?'<li>广告授权另收 '+money(p.usageFee)+'</li>':'')+(p.days?'<li>收到样品后约 '+p.days+' 天发布</li>':'')+(p.exclusivity?'<li>问到是否需要独家</li>':'')+(p.questions||[]).map(q=>'<li>问题：'+esc(q)+'</li>').join('')+'</ul>':'')
-      +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+'</div></div>';
+      +'<div class="callout '+(sg.kind==='accept'?'':'ask')+'"><b>建议：</b>'+esc(sg.t||'')+' '+G.suggest()+'</div></div>';
     if(sg.kind==='lost'){
       body += '<div class="row">'+(d.counter?'':'<button type="button" class="btn sm" data-da="'+c.id+':counter">写一封礼貌的回复</button>')
         +'<button type="button" class="btn sm" data-da="'+c.id+':lost">标记为未合作</button><button type="button" class="btn sm" data-go="3">回第 3 步补人</button></div>'
@@ -1970,7 +2030,7 @@ function dealPanel(c, d){
       +(d.counterSent?'<div class="row"><span class="meta">达人怎么说？</span><button type="button" class="btn primary sm" data-da="'+c.id+':agree">达人接受了</button><button type="button" class="btn sm" data-da="'+c.id+':again">还要再谈</button></div>':'');
     } else {
       const left = budgetLeft(), over = left!=null && d.offer>left;
-      body += '<div class="terms"><b>确认合作条款</b>'
+      body += '<div class="terms"><div class="row" style="gap:8px"><b>确认合作条款</b>'+G.sign()+'</div>'
         +'<div class="grid3">'
           +'<label class="f">合作方式<input type="text" value="'+esc(MODEL[d.model])+(d.model==='hybrid'||d.model==='commission'?' · 佣金 '+d.rate+'%':'')+'" disabled></label>'
           +'<label class="f">固定费用（美元）<input type="number" min="0" step="10" data-df="'+c.id+':offer" value="'+esc(d.offer)+'"></label>'
@@ -2007,7 +2067,7 @@ function v6(){
   const toReview = all.filter(x=>x.d.stage==='review').length;
   const bcard = x => '<button type="button" class="bmini" data-jump="'+x.c.id+'">'+avatar(x.c)+'<span><b>'+esc(x.c.name)+'</b><small>'+STAGE[x.d.stage]+(x.d.final?' · '+money(x.d.final):'')+'</small></span></button>';
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>合作跟进</h2><p class="lead">读达人回复、谈价、签约、寄样。AI 负责读回复、给谈价建议和起草邮件；报价和签约由人拍板。</p></div><span class="takeover">人工接管点 4/5</span></div>'
+  +'<div class="step-head"><div><h2>合作跟进</h2><p class="lead">读达人回复、谈价、签约、寄样。AI 负责读回复、给谈价建议和起草邮件；报价和签约由人拍板。</p></div><div class="row" style="gap:8px">'+G.all()+'<span class="takeover">人工接管点 4/5</span></div></div>'
   +'<div class="stats">'
     +'<div class="stat"><span>发出邀约</span><b>'+n+' 封</b><small>需求到发出用时 '+Math.floor(secs/60)+' 分 '+(secs%60)+' 秒</small></div>'
     +'<div class="stat"><span>已回复</span><b>'+replied+' / '+n+'</b><small>回复率 '+(n?Math.round(replied/n*100):0)+'%</small></div>'
@@ -2045,7 +2105,7 @@ function v7(){
       +'</div></div>';
   };
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>内容审核</h2><p class="lead">达人发布前先交稿。规则查广告标注、禁用说法、点名竞品和漏掉的卖点，AI 再找夸大和不合适的表达。通过还是退回，由人决定。</p></div><span class="takeover">人工接管点 5/5</span></div>'
+  +'<div class="step-head"><div><h2>内容审核</h2><p class="lead">达人发布前先交稿。规则查广告标注、禁用说法、点名竞品和漏掉的卖点，AI 再找夸大和不合适的表达。通过还是退回，由人决定。</p></div><div class="row" style="gap:8px">'+G.review()+'<span class="takeover">人工接管点 5/5</span></div></div>'
   +'<div class="panel"><div class="row" style="margin-bottom:10px"><b>审核标准</b><span class="meta">对所有达人生效，第 6 步的拍摄要点也用这一套。卖点是示例，按真实商品修改。</span></div><div class="grid2">'
     +'<label class="f">必须提到的卖点（每行一条）<textarea data-rc="points" style="min-height:96px">'+esc(S.rc.points.join('\n'))+'</textarea></label>'
     +'<label class="f">禁用说法（每行一条）<textarea data-rc="banned" style="min-height:96px">'+esc(S.rc.banned.join('\n'))+'</textarea></label>'
@@ -2302,6 +2362,19 @@ document.addEventListener('input', e => {
   if(d.rc){ if(!S.rc) S.rc = defaultRC(); S.rc[d.rc] = e.target.value.split('\n').map(x=>x.trim()).filter(Boolean); persistSoon(); }
   if(d.report && S.report){ S.report.text = e.target.value; persistSoon(); }
 });
+// Guardrail tips are fixed-position and placed next to their chip, kept inside the window.
+function placeTip(g){
+  const tip = g.querySelector('.tipbox'); if(!tip) return;
+  const r = g.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight, pad = 12;
+  const left = clamp(r.left, pad, Math.max(pad, innerWidth - w - pad));
+  const below = r.bottom + 8 + h <= innerHeight - pad || r.top - 8 - h < pad;
+  tip.classList.toggle('up', !below);
+  tip.style.left = left+'px';
+  tip.style.top = (below ? r.bottom + 8 : r.top - 8 - h)+'px';
+}
+document.addEventListener('mouseover', e => { const g = e.target.closest && e.target.closest('.guard'); if(g && !e.target.closest('.tipbox')) placeTip(g); });
+document.addEventListener('focusin', e => { const g = e.target.closest && e.target.closest('.guard'); if(g) placeTip(g); });
+document.addEventListener('scroll', () => { const g = document.querySelector('.guard:hover, .guard:focus'); if(g) placeTip(g); }, true);
 document.addEventListener('keydown', e => { if(e.key==='Escape' && !$('#drawer').hidden) closeDrawer(); });
 
 /* ---------- creator-facing invite page (opened from the invite link) ---------- */
