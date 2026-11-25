@@ -272,6 +272,7 @@ label.inline{display:inline-flex;gap:8px;align-items:center;cursor:pointer;font-
 .neglog{display:flex;flex-direction:column;gap:6px;font-size:13px}
 .neglog ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
 .neglog li{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.title-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px}
 .guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--focus);background:var(--panel);border:1px dashed var(--focus);border-radius:999px;padding:2px 9px;cursor:help;white-space:nowrap;vertical-align:middle}
 .guard:focus{outline:none}
 .guard:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
@@ -1055,7 +1056,7 @@ function budgetBar(){
 /* ---------- step 1 ---------- */
 function v1(){
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>说一句需求就行</h2><p class="lead">像跟同事说话一样描述商品、市场、平台和预算。也可以贴商品链接，Demo 只读链接里的文字，不会抓取网页。</p></div></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>说一句需求就行</h2>'+stepGuide(1)+'</div><p class="lead">像跟同事说话一样描述商品、市场、平台和预算。也可以贴商品链接，Demo 只读链接里的文字，不会抓取网页。</p></div></div>'
   +'<div class="panel stack">'
     +'<div class="chips">'+PRESETS.map((p,i)=>'<button type="button" class="chip" data-preset="'+i+'">'+esc(p.label)+'</button>').join('')+'</div>'
     +'<label class="f" for="need">品牌需求<textarea id="need" rows="4">'+esc(S.input)+'</textarea></label>'
@@ -1127,7 +1128,7 @@ function v2(){
   const b = S.brief;
   const chipSet = (name, items, active) => '<div class="chips" data-group="'+name+'">'+items.map(([k,l])=>'<button type="button" class="chip" data-k="'+k+'" aria-pressed="'+(active.indexOf(k)>=0)+'">'+esc(l)+'</button>').join('')+'</div>';
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>确认 AI 理解的需求</h2><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>确认 AI 理解的需求</h2>'+stepGuide(2)+'</div><p class="lead">这张需求卡决定了后面的筛选条件。哪里不对直接改，改完再匹配。</p></div><span class="takeover">人工接管点 1/5</span></div>'
   +(S.questions.length?'<div class="callout ask"><b>需要向品牌追问</b><ul>'+S.questions.map(q=>'<li>'+esc(q)+'</li>').join('')+'</ul></div>':'')
   +'<div class="panel stack">'
     +'<div class="row"><h3>需求卡</h3><span class="spacer"></span>'+srcTag(S.briefSrc)+'</div>'
@@ -1238,7 +1239,7 @@ function itemRow(x){
 function v3(){
   const b = S.brief;
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>推荐达人</h2><p class="lead">硬条件用规则筛，相关度用'+(S.rankSrc==='ai'?' '+aiName()+' ':'规则打分')+'排序。每个推荐都写明理由，风险标签由规则判定。</p></div>'+srcTag(S.rankSrc)+'</div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>推荐达人</h2>'+stepGuide(3)+'</div><p class="lead">硬条件用规则筛，相关度用'+(S.rankSrc==='ai'?' '+aiName()+' ':'规则打分')+'排序。每个推荐都写明理由，风险标签由规则判定。</p></div>'+srcTag(S.rankSrc)+'</div>'
   +(S.realStats
     ? '<div class="funnel"><span class="stage">YouTube 近一年相关视频 <b>'+S.realStats.searched+'</b></span><span class="arr">→</span>'
       +'<span class="stage">涉及频道 <b>'+S.realStats.channels+'</b></span><span class="arr">→</span>'
@@ -1462,7 +1463,7 @@ function v4(){
   const sel = selectedList();
   const bad = sel.filter(c=>riskOf(c,S.brief).some(r=>r.lv==='bad'));
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>审核已选达人</h2><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>审核已选达人</h2>'+stepGuide(4)+'</div><p class="lead">看受众、互动和风险，决定谁进入邀约。花钱之前的最后一道人工把关。</p></div><span class="takeover">人工接管点 2/5</span></div>'
   +(bad.length?'<div class="callout ask"><b>'+bad.length+' 位达人有高风险标签</b>：'+bad.map(c=>esc(c.name)).join('、')+'。建议移除或人工复核后再邀约。</div>':'')
   +(sel.length?'<div class="cards">'+sel.map(c=>'<div class="card"><div class="row">'+avatar(c)+'<div style="min-width:0"><div class="who-name">'+esc(c.name)+' '+dataTag(c)+'</div><div class="meta">'+esc(c.handle)+' · '+c.platform+' · '+ctry(c)+'</div></div><span class="spacer"></span>'
       +'<button type="button" class="btn sm" data-remove="'+c.id+'">移除</button></div>'+detailHTML(c, true)+'<div class="row"><button type="button" class="btn sm" data-detail="'+c.id+'">找相似 / 更多</button></div></div>').join('')+'</div>'
@@ -1501,7 +1502,7 @@ function v5(){
   const has = sel.length && sel.every(c=>S.emails[c.id]);
   const allChecked = has && sel.every(c=>S.checked.has(c.id));
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>个性化邀约</h2><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/5</span></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>个性化邀约</h2>'+stepGuide(5)+'</div><p class="lead">每封邮件引用达人自己的作品和受众，报价区间来自上一步的估算。改到满意、逐封勾选“已核对”后才能发送。</p></div><span class="takeover">人工接管点 3/5</span></div>'
   +'<div class="panel"><div class="grid2">'
     +'<label class="f" for="s-brand">品牌名（英文）<input id="s-brand" type="text" value="'+esc(S.sender.brand)+'"></label>'
     +'<label class="f" for="s-name">署名<input id="s-name" type="text" value="'+esc(S.sender.name)+'"></label>'
@@ -1633,6 +1634,58 @@ const G = {
     'AI 提出的问题都标着“需人判断”；通过还是退回由人点',
     '稿件改过之后必须重新审核，否则不能点通过'
   ], '内容合规的责任在品牌方，所以放行必须是人。', true)
+};
+// One chip per step, next to its title: what the step does and the rules behind it, for presenting.
+function stepGuide(n){
+  const t = STEP_GUIDE[n]; if(!t) return '';
+  return guard('这一步的规则', t[0], t[1], t[2]).replace('🛡 ', '📌 ');
+}
+const STEP_GUIDE = {
+  1:['第 1 步：输入需求', [
+    '用一句话说清商品、市场、平台和预算；也能贴商品链接，Demo 只读链接里的文字，不抓网页',
+    '规则模式：关键词 + 正则解析，离线也能用。AI 模式：解析成固定格式的 JSON，失败自动用规则结果兜底',
+    'AI 给的品类、国家、平台、风格只能从固定清单里选，清单外的值直接丢掉',
+    '没说的信息用默认值，并把假设写出来：没说平台就三个平台都找；没说粉丝量按 1 万–50 万；人民币按 7.2 换算成美元',
+    '缺品类、国家或预算时会生成追问，最多 2 条'
+  ], '品牌方不用学筛选条件，说人话就行，AI 负责把它变成结构化的需求卡。'],
+  2:['第 2 步：确认需求（人工接管点 1/5）', [
+    '需求卡每一项都能直接改：品类、国家、平台、粉丝量、预算、内容风格、受众性别、合作形式',
+    'AI 做了哪些默认假设、还有哪些要追问品牌的问题，都单独列出来提醒人看',
+    '这张卡就是后面的硬筛选条件，所以必须人确认后才去匹配',
+    '至少要选一个国家和一个平台，否则不让继续'
+  ], '理解错一步，后面全错。AI 理解完先给人看一眼，这是第一个人工接管点。'],
+  3:['第 3 步：匹配排序', [
+    '先用规则硬筛：平台、粉丝量、目标国家受众占比至少 15%、60 天内有更新（YouTube 实时数据为 90 天）',
+    '同品类达人不足 5 位时逐步放宽：先放宽粉丝量，再放开平台，最后把受众占比门槛降到 5%，放宽了什么都会写出来',
+    '示例数据打分：品类 35 + 受众在目标国家 25 + 互动率 15 + 内容风格 10 + 受众性别 5 + 粉丝质量 10；有高风险标签扣 18 分，30 天没更新扣 8 分',
+    'YouTube 实时数据打分：内容相关度 30 + 受众 20 + 互动率 15 + 播放占订阅比 15 + 风格 10 + 活跃度 10',
+    '风险标签由规则判定：疑似假粉 ≥ 20%、互动率超过同量级参考值 2.6 倍、30 天没更新、单人报价超过预算的 60%',
+    'AI 模式只在规则前 20 名里重新排序、写推荐理由，只能用给定的数据；AI 返回不到 5 位就用规则排序',
+    '合作过的达人按历史表现调分：上次“优先复投”加 8 分，“不建议复投”减 12 分'
+  ], '硬条件用规则，保证不出错；排序和推荐理由交给 AI，每条理由都要引用真实数据。'],
+  4:['第 4 步：审核确认（人工接管点 2/5）', [
+    '逐个看达人的受众国家、互动率、近期作品和风险标签，不合适的直接移除',
+    '有高风险标签（疑似假粉、刷量）的达人会在页面顶部醒目提醒',
+    '底部实时显示已选达人的预计总费用和预算占用',
+    '可以找相似达人补位；也可以邀请达人授权，拿到后台的真实受众数据（演示）',
+    'YouTube 实时数据会评估粉丝水分：播放占订阅比、互动率是否异常、评论像不像机器人、播放是否集中在一条、频道年龄'
+  ], '这是花钱之前最后一道人工把关：AI 负责推荐，人决定邀请谁。'],
+  5:['第 5 步：生成邀约（人工接管点 3/5）', [
+    '每封邮件都要引用达人自己的一条近期作品，让对方知道我们认真看过',
+    '报价只能用估算区间，并说明欢迎对方发报价单；不许诺独家，不编数据',
+    '正文里出现数据以外的数字会标黄，提醒人核对',
+    '每封都要人勾选“已核对”，全部核对完才能发送；改了正文会自动取消勾选',
+    '每封邮件下面有中文翻译，仅供演示；Demo 不会真的发出邮件'
+  ], '批量但不是群发：每封都是个性化的，每个数字都经过人核对。'],
+  8:['第 8 步：效果复盘', [
+    '填上发布链接，用 YouTube 官方接口读取播放、点赞、评论；视频不是签约达人的频道发的会提示',
+    '点击、订单、销售额来自联盟链接或专属折扣码的后台，手动填',
+    'CPM = 花费 ÷ 播放 × 1000；CPE = 花费 ÷（点赞 + 评论）；达预期 = 这条播放 ÷ 达人平时平均播放；ROI = 销售额 ÷ 花费；花费包含佣金',
+    '评级：播放不到平时 60% → 不建议复投；达到 90% 且 CPM 不高于本次活动的中位数 → 优先复投；其他 → 可以再合作',
+    'ROI 只展示、不参与评级，因为一条种草视频很少单独回本',
+    '复盘结论只能引用算出来的数字，AI 写的结论里出现别的数字就改用规则结论',
+    '写回达人档案后，下次匹配会按历史表现调整排序'
+  ], '不只看找到了谁，还要看投得值不值。结果写回推荐里，推荐会越用越准。']
 };
 function stageTag(d){ return '<span class="tag '+STAGE_LV[d.stage]+'">'+STAGE[d.stage]+'</span>'; }
 function busyOn(id, what){ return S.busy==='deal:'+id+':'+what; }
@@ -2239,7 +2292,7 @@ function v8(){
   };
   const perf = loadPerf(), pk = Object.keys(perf);
   return '<div class="stack">'
-  +'<div class="step-head"><div><h2>效果复盘</h2><p class="lead">填上发布链接，用 YouTube 接口读真实的播放、点赞和评论，算出 CPM、CPE 和 ROI。结果写回达人档案，下次匹配时排序会参考。</p></div></div>'
+  +'<div class="step-head"><div><div class="title-row"><h2>效果复盘</h2>'+stepGuide(8)+'</div><p class="lead">填上发布链接，用 YouTube 接口读真实的播放、点赞和评论，算出 CPM、CPE 和 ROI。结果写回达人档案，下次匹配时排序会参考。</p></div></div>'
   +'<div class="stats">'
     +'<div class="stat"><span>总花费</span><b>'+money(tc)+'</b><small>固定费 + 佣金</small></div>'
     +'<div class="stat"><span>总播放</span><b>'+fmtK(tv)+'</b><small>'+done.length+' 条视频</small></div>'
