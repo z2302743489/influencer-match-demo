@@ -348,6 +348,8 @@ input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);cursor:po
 .zh-b{white-space:pre-wrap;line-height:1.7;color:var(--ink)}
 .zh-none{border-left-color:var(--line);background:var(--field);border-color:var(--line)}
 
+.zh-edit textarea{background:var(--panel);min-height:150px;font-size:13px;border-color:color-mix(in srgb,var(--good) 25%,var(--line))}
+.zh-dir.on{color:var(--warn);font-weight:600}
 /* hover notes */
 .rail-restart{margin-top:14px}
 .guard{position:relative;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 25%,transparent);border-radius:999px;padding:3px 10px;cursor:help;white-space:nowrap;vertical-align:middle;transition:background .15s}
@@ -2564,11 +2566,11 @@ function sampleDraftZh(c, fixed){
 
 // Where each kind of English text lives, and where its translation is kept.
 const ZH = {
-  mail: id => { const m = S.emails[id]; return m && {en:m.body, zh:m.zh || autoZh('mail', id), set:z=>{ m.zh = z; }}; },
+  mail: id => { const m = S.emails[id]; return m && {en:m.body, zh:m.zh || autoZh('mail', id), set:z=>{ m.zh = z; }, subj:m.subject, setEn:(b, sj)=>{ m.body = b; if(sj) m.subject = sj; S.checked.delete(id); }}; },
   reply: id => { const d = S.deals[id]; return d && {en:d.reply, zh:d.replyZh || autoZh('reply', id), set:z=>{ d.replyZh = z; }}; },
-  counter: id => { const d = S.deals[id]; return d && d.counter && {en:d.counter.body, zh:d.counter.zh || autoZh('counter', id), set:z=>{ d.counter.zh = z; }}; },
-  brief: id => { const d = S.deals[id]; return d && {en:d.brief, zh:d.briefZh || autoZh('brief', id), set:z=>{ d.briefZh = z; }}; },
-  feedback: id => { const d = S.deals[id]; return d && {en:d.feedback, zh:d.feedbackZh || autoZh('feedback', id), set:z=>{ d.feedbackZh = z; }}; },
+  counter: id => { const d = S.deals[id]; return d && d.counter && {en:d.counter.body, zh:d.counter.zh || autoZh('counter', id), set:z=>{ d.counter.zh = z; }, subj:d.counter.subject, setEn:(b, sj)=>{ d.counter.body = b; if(sj) d.counter.subject = sj; if(!d.counterSent) d.counterOk = false; }}; },
+  brief: id => { const d = S.deals[id]; return d && {en:d.brief, zh:d.briefZh || autoZh('brief', id), set:z=>{ d.briefZh = z; }, setEn:b=>{ d.brief = b; }}; },
+  feedback: id => { const d = S.deals[id]; return d && {en:d.feedback, zh:d.feedbackZh || autoZh('feedback', id), set:z=>{ d.feedbackZh = z; }, setEn:b=>{ d.feedback = b; }}; },
   draft: id => { const d = S.deals[id]; return d && {en:d.draft, zh:d.draftZh || autoZh('draft', id), set:z=>{ d.draftZh = z; }}; }
 };
 // Text saved before translations existed (or before a template was reworded) has no Chinese
@@ -2601,31 +2603,81 @@ function autoZh(kind, id){
   return null;
 }
 const ZH_NOTE = {mail:'仅供演示，不会发给达人', counter:'仅供演示，不会发给达人', brief:'仅供演示，不会发给达人', feedback:'仅供演示，不会发给达人', reply:'达人原文的意思', draft:'稿件的意思'};
+// Letters we send (invites, replies, briefs, feedback) can be edited on either side; the other side
+// is then rewritten to match with one click. Letters we receive keep a read-only translation.
+const ZH_EDIT = {mail:1, counter:1, brief:1, feedback:1};
+function zhState(a){
+  if(!a || !a.zh) return {dir:'', text:''};
+  const enChanged = a.zh.for !== a.en;
+  if(a.zh.last==='zh') return {dir:'toEn', text:'中文改过了，点“一键同步”把改动写进英文'};
+  if(enChanged || a.zh.last==='en') return {dir:'toZh', text:'英文改过了，点“一键同步”更新中文'};
+  return {dir:'', text:'中英文一致'};
+}
 function zhBox(kind, id){
   const a = ZH[kind](id);
   if(!a || !String(a.en||'').trim()) return '';
-  const busy = S.busy==='tr:'+kind+':'+id, ai = S.mode==='ai';
-  const btn = ai ? '<button type="button" class="btn sm" data-tr="'+kind+':'+id+'"'+(S.busy?' disabled':'')+'>'+(busy?'翻译中…':(a.zh?'重新翻译':'翻译成中文'))+'</button>' : '';
-  if(!a.zh) return '<div class="zh zh-none" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+(ai?'还没有翻译':'打开 AI 模式可翻译')+'</span><span class="spacer"></span>'+btn+'</div></div>';
-  const stale = a.zh.for !== a.en;
-  return '<div class="zh" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b>'
-    +'<span class="tag warn zh-stale"'+(stale?'':' hidden')+'>英文改过了，下面还是改之前的翻译'+(ai?'':'，开 AI 模式可以重新翻译')+'</span><span class="spacer"></span>'+btn+'</div>'
-    +'<div class="zh-b">'+esc(a.zh.text)+'</div></div>';
+  const ai = S.mode==='ai', busyTr = S.busy==='tr:'+kind+':'+id, busySync = S.busy==='sync:'+kind+':'+id;
+  if(!a.zh){
+    const btn = ai ? '<button type="button" class="btn sm" data-tr="'+kind+':'+id+'"'+(S.busy?' disabled':'')+'>'+(busyTr?'翻译中…':'翻译成中文')+'</button>' : '';
+    return '<div class="zh zh-none" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b><span class="meta">'+(ai?'还没有翻译':'打开 AI 模式可翻译')+'</span><span class="spacer"></span>'+btn+'</div></div>';
+  }
+  if(!ZH_EDIT[kind]){
+    const stale = a.zh.for !== a.en;
+    const btn = ai ? '<button type="button" class="btn sm" data-tr="'+kind+':'+id+'"'+(S.busy?' disabled':'')+'>'+(busyTr?'翻译中…':'重新翻译')+'</button>' : '';
+    return '<div class="zh" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文翻译</b>'
+      +'<span class="tag warn zh-stale"'+(stale?'':' hidden')+'>原文改过了，下面还是之前的翻译</span><span class="spacer"></span>'+btn+'</div>'
+      +'<div class="zh-b">'+esc(a.zh.text)+'</div></div>';
+  }
+  const st = zhState(a);
+  return '<div class="zh zh-edit" id="zh-'+kind+'-'+id+'"><div class="zh-h"><b>中文</b><span class="meta zh-dir'+(st.dir?' on':'')+'">'+st.text+'</span><span class="spacer"></span>'
+    +'<button type="button" class="btn sm'+(st.dir?' primary':'')+'" data-sync="'+kind+':'+id+'"'+(S.busy||!ai||!st.dir?' disabled':'')+' title="'+(ai?'改动一边，另一边自动改成一致':'需要打开右上角 AI 模式')+'">'+(busySync?'同步中…':'⇅ 一键同步')+'</button></div>'
+    +'<textarea data-zh="'+kind+':'+id+'" rows="8">'+esc(a.zh.text)+'</textarea>'
+    +(ai?'':'<span class="meta">一键同步需要 AI 模式</span>')+'</div>';
 }
-function markZhStale(kind, id){
+// Called while either side is being typed in: remembers which side changed last and updates the hint.
+function markZhStale(kind, id, side){
   const box = document.getElementById('zh-'+kind+'-'+id), a = ZH[kind](id);
   if(!box || !a || !a.zh) return;
+  if(ZH_EDIT[kind]){
+    const z = Object.assign({}, a.zh, {last: side || 'en'});
+    a.set(z);
+    const st = zhState(ZH[kind](id)), t = box.querySelector('.zh-dir'), b = box.querySelector('[data-sync]');
+    if(t){ t.textContent = st.text; t.classList.toggle('on', !!st.dir); }
+    if(b){ b.disabled = !!S.busy || S.mode!=='ai' || !st.dir; b.classList.toggle('primary', !!st.dir); }
+    return;
+  }
   const t = box.querySelector('.zh-stale'); if(t) t.hidden = a.zh.for === a.en;
 }
 async function doTranslate(kind, id){
   const a = ZH[kind](id); if(!a || !a.en) return;
   if(S.mode!=='ai'){ toast('打开 AI 模式才能翻译手动输入的文字'); return; }
-  const en = a.en;
+  const en = a.en, withSubj = a.subj ? 'Subject: '+a.subj+'\n\n'+en : en;
   S.busy = 'tr:'+kind+':'+id; render();
-  const j = await aiJson('把下面的英文翻译成自然的中文。保留换行、金额和 #ad 之类的标签，人名、品牌名和频道名不翻译。只返回 JSON：{"zh":"译文"}\n\n'+en);
+  const j = await aiJson('把下面的英文翻译成自然的中文。'+(a.subj?'第一行写成“主题：<主题的中文>”，空一行再写正文。':'')+'保留换行、金额和 #ad 之类的标签，人名、品牌名和频道名不翻译。只返回 JSON：{"zh":"译文"}\n\n'+withSubj);
   S.busy = '';
   const t = typeof j==='string' ? j : (j && (j.zh || j.text));
   if(t) a.set(zhPack(String(t).slice(0,4000), en)); else toast('这次没拿到翻译，请再试一次');
+  render();
+}
+// One click: whichever side was edited last is the source, the other side is rewritten to match.
+async function doSync(kind, id){
+  const a = ZH[kind](id); if(!a || !a.zh) return;
+  if(S.mode!=='ai'){ toast('一键同步需要 AI 模式：打开右上角“AI 模式”再点'); return; }
+  const st = zhState(a); if(!st.dir) return;
+  if(st.dir==='toZh') return doTranslate(kind, id);
+  S.busy = 'sync:'+kind+':'+id; render();
+  const zh = a.zh.text, en = a.en;
+  const j = await aiJson('发件人改了这封信的中文版。请把英文版改成和中文版意思完全一致：中文改了哪里，英文就改哪里，没改的地方尽量保留原句。'
+    +'语气自然地道；人名、品牌名、金额和 #ad 之类的标签照中文版写；不要加中文版里没有的内容。'
+    +(a.subj?'中文第一行“主题：”是邮件主题，同样改到英文主题里。':'')
+    +'只返回 JSON：{'+(a.subj?'"subject":"英文主题",':'')+'"body":"英文正文"}\n\n当前英文'+(a.subj?'（主题：'+a.subj+'）':'')+'：\n'+en+'\n\n改过的中文：\n'+zh);
+  S.busy = '';
+  const body = j && typeof j==='object' ? (j.body || j.en) : null;
+  if(body){
+    a.setEn(String(body).slice(0,3000), a.subj && j.subject ? String(j.subject).slice(0,140) : null);
+    a.set(zhPack(zh, ZH[kind](id).en));
+    toast('已按中文更新英文。数字已重新校验，请重新核对后再发送');
+  } else toast('这次没同步成功，请再试一次');
   render();
 }
 
@@ -2719,6 +2771,7 @@ document.addEventListener('click', e => {
   if(d.remove){ S.selected.delete(d.remove); render(); return; }
   if(d.check){ if(t.checked) S.checked.add(d.check); else S.checked.delete(d.check); render(); return; }
   if(d.tr){ const i = d.tr.indexOf(':'); doTranslate(d.tr.slice(0,i), d.tr.slice(i+1)); return; }
+  if(d.sync){ const i = d.sync.indexOf(':'); doSync(d.sync.slice(0,i), d.sync.slice(i+1)); return; }
   if(d.da){ const i = d.da.indexOf(':'); dealAction(d.da.slice(0,i), d.da.slice(i+1)); return; }
   if(d.dcheck){ const x = S.deals[d.dcheck]; if(x){ x.counterOk = t.checked; render(); } return; }
   if(d.dterms){ const x = S.deals[d.dterms]; if(x){ x.termsOk = t.checked; render(); } return; }
@@ -2761,7 +2814,12 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const d = e.target.dataset;
   if(e.target.id==='need') S.input = e.target.value;
-  if(d.subj && S.emails[d.subj]) S.emails[d.subj].subject = e.target.value;
+  if(d.zh){
+    const i = d.zh.indexOf(':'), kind = d.zh.slice(0,i), id = d.zh.slice(i+1), a = ZH[kind] && ZH[kind](id);
+    if(a && a.zh){ a.set(Object.assign({}, a.zh, {text:e.target.value})); markZhStale(kind, id, 'zh'); persistSoon(); }
+    return;
+  }
+  if(d.subj && S.emails[d.subj]){ S.emails[d.subj].subject = e.target.value; markZhStale('mail', d.subj); }
   if(d.body && S.emails[d.body]){
     S.emails[d.body].body = e.target.value;
     markZhStale('mail', d.body);
@@ -2782,7 +2840,7 @@ document.addEventListener('input', e => {
       const box = document.getElementById('dchk-'+id); if(box) box.innerHTML = checkTags(dealNumberCheck(BY_ID[id], x, x.counter.body));
       if(x.counterOk && !x.counterSent){ x.counterOk = false; const cb = document.querySelector('[data-dcheck="'+id+'"]'); if(cb) cb.checked = false; const sb = document.querySelector('[data-da="'+id+':sendCounter"]'); if(sb) sb.disabled = true; }
     }
-    const ZK = {reply:'reply', 'counter.body':'counter', brief:'brief', feedback:'feedback', draft:'draft'}[path]; if(ZK) markZhStale(ZK, id);
+    const ZK = {reply:'reply', 'counter.body':'counter', 'counter.subject':'counter', brief:'brief', feedback:'feedback', draft:'draft'}[path]; if(ZK) markZhStale(ZK, id);
     if(path==='ship.no'){ const sb = document.querySelector('[data-da="'+id+':ship"]'); if(sb) sb.disabled = !(x.brief && x.ship.no.trim()); }
     if(path==='draft' && x.review){ const st = document.querySelector('#deal-'+id+' [data-da="'+id+':approve"]'); if(st) st.disabled = x.review.text!==x.draft; }
     persistSoon();
